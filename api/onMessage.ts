@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
     console.log("verification request", req.query);
     if (
       req.query["hub.mode"] !== "subscribe" ||
-      req.query["hub.verify_token"] !== process.env.VERIFY_TOKEN
+      req.query["hub.verify_token"] !== process.env.VERCEL_VERIFY_TOKEN
     ) {
       return res.status(403).send("Validation Error");
     }
