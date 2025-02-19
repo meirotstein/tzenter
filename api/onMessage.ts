@@ -1,28 +1,20 @@
-const verifyToken = process.env.VERIFY_TOKEN;
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { HandlerFactory } from "../handlers/HandlerFactory";
+import { Endpoint } from "../handlers/types";
+import { errorToHttpStatusCode } from "../utils";
 
-module.exports = async (req, res) => {
-  if (req.method === "GET") {
-    // verification request
-    console.log("verification request", req.query);
-    if (
-      req.query["hub.mode"] !== "subscribe" ||
-      req.query["hub.verify_token"] !== process.env.VERCEL_VERIFY_TOKEN
-    ) {
-      return res.status(403).send("Validation Error");
-    }
-    return req.query["hub.challenge"]
-      ? res.status(200).send(req.query["hub.challenge"])
-      : res.status(400).send("Error");
-  }
+module.exports = async (req: VercelRequest, res: VercelResponse) => {
+  const factory = new HandlerFactory();
+  const handler = factory.getHandler(Endpoint.ON_MESSAGE, req.method);
 
-  if (req.method !== "POST")
+  if (!handler) {
     return res.status(405).json({ error: "Method not allowed" });
+  }
 
   try {
-    console.log(JSON.stringify(req.body));
+    const response = handler.handle(req);
+    return res.status(200).send(response);
   } catch (e) {
-    console.log(req.body);
+    return res.status(errorToHttpStatusCode(e)).send(e.message);
   }
-
-  res.json({ status: "Message received" });
 };
