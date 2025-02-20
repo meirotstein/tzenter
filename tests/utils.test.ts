@@ -1,5 +1,5 @@
-import { errorToHttpStatusCode } from "../utils";
-import { BadInputError, InvalidInputError } from "../errors";
+import { errorToHttpStatusCode } from "../src/utils";
+import { BadInputError, InvalidInputError } from "../src/errors";
 
 describe('errorToHttpStatusCode', () => {
   it('should return 400 for BadInputError', () => {

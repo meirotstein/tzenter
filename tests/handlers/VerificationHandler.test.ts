@@ -1,5 +1,5 @@
-import { BadInputError, InvalidInputError } from "../../errors";
-import { VerificationHandler } from "../../handlers/VerificationHandler";
+import { BadInputError, InvalidInputError } from "../../src/errors";
+import { VerificationHandler } from "../../src/handlers/VerificationHandler";
 
 describe("VerificationHandler", () => {
   it("handle should return the verification challenge", () => {

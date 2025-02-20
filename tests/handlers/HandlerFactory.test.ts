@@ -1,7 +1,7 @@
-import { HandlerFactory } from "../../handlers/HandlerFactory";
-import { MessageHandler } from "../../handlers/MessageHandler";
-import { Endpoint } from "../../handlers/types";
-import { VerificationHandler } from "../../handlers/VerificationHandler";
+import { HandlerFactory } from "../../src/handlers/HandlerFactory";
+import { MessageHandler } from "../../src/handlers/MessageHandler";
+import { Endpoint } from "../../src/handlers/types";
+import { VerificationHandler } from "../../src/handlers/VerificationHandler";
 
 describe("HandlerFactory", () => {
   let handlerFactory: HandlerFactory;
