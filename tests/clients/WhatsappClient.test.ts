@@ -1,51 +1,65 @@
 import { WhatsappClient } from "../../src/clients/WhatsappClient";
+import WhatsApp from "whatsapp";
 
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    json: () => Promise.resolve({}),
-  })
-) as jest.Mock;
+jest.mock("whatsapp");
 
 describe("WhatsappClient", () => {
-  const accessToken = "testAccessToken";
-  const senderId = "testSenderId";
-  const recipientPhoneNum = "1234567890";
-  const textMessage = "Hello, World!";
   let whatsappClient: WhatsappClient;
+  let mockWhatsAppInstance: jest.Mocked<WhatsApp>;
 
   beforeEach(() => {
-    whatsappClient = new WhatsappClient(accessToken, senderId);
-    (fetch as jest.Mock).mockClear();
+    mockWhatsAppInstance = new WhatsApp(12345) as jest.Mocked<WhatsApp>;
+    Object.defineProperty(mockWhatsAppInstance, "messages", {
+      value: { text: jest.fn() },
+      writable: true,
+    });
+    (WhatsApp as jest.Mock).mockImplementation(() => mockWhatsAppInstance);
+    whatsappClient = new WhatsappClient("fakeAccessToken", 12345);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should initialize WhatsApp instance with senderId", () => {
+    expect(WhatsApp).toHaveBeenCalledWith(12345);
   });
 
   it("should send a text message", async () => {
-    await whatsappClient.sendTextMessage(recipientPhoneNum, textMessage);
+    const recipientPhoneNum = 972547488557;
+    const textMessage = "Hello, this is a test message";
+    const mockResponse = {
+      responseBodyToJSON: jest.fn().mockReturnValue({ success: true }),
+    };
 
-    expect(fetch).toHaveBeenCalledWith(
-      `https://graph.facebook.com/v22.0/${senderId}/messages`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messaging_product: "whatsapp",
-          to: recipientPhoneNum,
-          type: "text",
-          text: { body: textMessage, preview_url: true },
-        }),
-      }
+    (mockWhatsAppInstance.messages.text as jest.Mock).mockResolvedValue(
+      mockResponse
     );
+
+    const response = await whatsappClient.sendTextMessage(
+      recipientPhoneNum,
+      textMessage
+    );
+
+    expect(mockWhatsAppInstance.messages.text).toHaveBeenCalledWith(
+      { body: textMessage },
+      recipientPhoneNum
+    );
+    expect(mockResponse.responseBodyToJSON).toHaveBeenCalled();
+    expect(response).toEqual({ success: true });
   });
 
-  it("should handle fetch errors gracefully", async () => {
-    (fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.reject(new Error("Network error"))
+  it("should handle errors when sending a text message", async () => {
+    const recipientPhoneNum = 972547488557;
+    const textMessage = "Hello, this is a test message";
+    const mockError = new Error("Failed to send message");
+
+    (mockWhatsAppInstance.messages.text as jest.Mock).mockRejectedValue(
+      mockError
     );
 
     await expect(
       whatsappClient.sendTextMessage(recipientPhoneNum, textMessage)
-    ).rejects.toThrow("Network error");
+    ).rejects.toThrow("Failed to send message");
   });
 });

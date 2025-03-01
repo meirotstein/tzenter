@@ -1,22 +1,16 @@
-export class WhatsappClient {
-  constructor(private accessToken: string, private senderId: string) {}
+import WhatsApp from "whatsapp";
 
-  sendTextMessage = async (recipientPhoneNum: string, textMessage: string) => {
+export class WhatsappClient {
+  wa: WhatsApp;
+  constructor(private accessToken: string, private senderId: number) {
+    this.wa =  new WhatsApp(senderId);
+  }
+
+  sendTextMessage = async (recipientPhoneNum: number, textMessage: string): Promise<Record<string, any>> => {
     console.log("sending text message", recipientPhoneNum, textMessage);
 
-    await fetch(`https://graph.facebook.com/v22.0/${this.senderId}/messages`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        to: recipientPhoneNum,
-        type: "text",
-        text: { body: textMessage, preview_url: true },
-      }),
-    });
+    const resp = await this.wa.messages.text({body: textMessage}, recipientPhoneNum);
+    return resp.responseBodyToJSON();
   };
 }
 
