@@ -1,8 +1,8 @@
 import { BadInputError, InvalidInputError } from "../errors";
-import { HandlerRequest, HandlerResponse, IHandler } from "./types";
+import { HandlerRequest, HandlerResponse, IHandler } from "../types/handlerTypes";
 
 export class VerificationHandler implements IHandler {
-  handle(req: HandlerRequest): HandlerResponse {
+  async handle(req: HandlerRequest): Promise<HandlerResponse> {
     console.log("verification request", req.query);
 
     if (!req.query || !req.query["hub.challenge"]) {
@@ -15,6 +15,6 @@ export class VerificationHandler implements IHandler {
     ) {
       throw new InvalidInputError("verification data is invalid");
     }
-    return req.query["hub.challenge"];
+    return Promise.resolve(req.query["hub.challenge"]);
   }
 }

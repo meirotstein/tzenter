@@ -1,7 +1,7 @@
 import { HandlerFactory } from "../../src/handlers/HandlerFactory";
 import { MessageHandler } from "../../src/handlers/MessageHandler";
-import { Endpoint } from "../../src/handlers/types";
 import { VerificationHandler } from "../../src/handlers/VerificationHandler";
+import { Endpoint } from "../../src/types/handlerTypes";
 
 describe("HandlerFactory", () => {
   let handlerFactory: HandlerFactory;

@@ -12,13 +12,13 @@ describe("VerificationHandler", () => {
       },
     };
     const res = handler.handle(req);
-    expect(res).toBe("123");
+    expect(res).resolves.toBe("123");
   });
 
   it("handle should throw BadInputError if query is missing", () => {
     const handler = new VerificationHandler();
     const req = {};
-    expect(() => handler.handle(req)).toThrow(BadInputError);
+    expect(() => handler.handle(req)).rejects.toThrow(BadInputError);
   });
 
   it("handle should throw BadInputError if challenge is missing", () => {
@@ -29,7 +29,7 @@ describe("VerificationHandler", () => {
         "hub.verify_token": "test_token",
       },
     };
-    expect(() => handler.handle(req)).toThrow(BadInputError);
+    expect(() => handler.handle(req)).rejects.toThrow(BadInputError);
   });
 
   it("handle should throw InvalidInputError if mode is not subscribe", () => {
@@ -41,7 +41,7 @@ describe("VerificationHandler", () => {
         "hub.verify_token": "test_token",
       },
     };
-    expect(() => handler.handle(req)).toThrow(InvalidInputError);
+    expect(() => handler.handle(req)).rejects.toThrow(InvalidInputError);
   });
 
   it("handle should throw InvalidInputError if verify_token is incorrect", () => {
@@ -53,6 +53,6 @@ describe("VerificationHandler", () => {
         "hub.verify_token": "incorrect_token",
       },
     };
-    expect(() => handler.handle(req)).toThrow(InvalidInputError);
+    expect(() => handler.handle(req)).rejects.toThrow(InvalidInputError);
   });
 });

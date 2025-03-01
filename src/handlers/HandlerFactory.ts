@@ -1,5 +1,5 @@
 import { MessageHandler } from "./MessageHandler";
-import { Endpoint, IHandler } from "./types";
+import { Endpoint, IHandler } from "../types/handlerTypes";
 import { VerificationHandler } from "./VerificationHandler";
 
 export class HandlerFactory {

@@ -2,7 +2,7 @@ import WhatsApp from "whatsapp";
 
 export class WhatsappClient {
   wa: WhatsApp;
-  constructor(private accessToken: string, private senderId: number) {
+  constructor(senderId: number) {
     this.wa =  new WhatsApp(senderId);
   }
 
