@@ -1,18 +1,18 @@
 import { HandlerRequest, HandlerResponse, IHandler } from "../types/handlerTypes";
 import { WebhookObject } from "../types/whatsapp/types/webhooks";
 import { WhatsappClient } from '../clients/WhatsappClient';
-import { extractMessage } from "../utils";
+import { extractTextMessage } from "../utils";
 
 export class MessageHandler implements IHandler {
   
   async handle(req: HandlerRequest): Promise<HandlerResponse> {
-    console.log("incoming message request", JSON.stringify(req.query));
+    console.log("incoming message request", JSON.stringify(req.body));
 
     try {
       const waMessage = req.body as WebhookObject;
-      const message = extractMessage(waMessage);
+      const message = extractTextMessage(waMessage);
       if (!message) {
-        console.error("Cannot extract message from webhook object", JSON.stringify(waMessage));
+        // non-text message (video, status, etc)- currently not interested in handling
         return;
       }
       const waClient = new WhatsappClient(Number(process.env.WA_PHONE_NUMBER_ID));

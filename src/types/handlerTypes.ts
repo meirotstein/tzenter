@@ -13,7 +13,7 @@ export interface IHandler {
   handle(req: HandlerRequest): Promise<HandlerResponse>;
 }
 
-export type WAMessage = {
+export type WATextMessage = {
   id: string;
   recipient: {
     phoneNum: string;

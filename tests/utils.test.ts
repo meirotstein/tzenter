@@ -1,4 +1,4 @@
-import { errorToHttpStatusCode, extractMessage } from "../src/utils";
+import { errorToHttpStatusCode, extractTextMessage } from "../src/utils";
 import { BadInputError, InvalidInputError } from "../src/errors";
 import { WebhookObject } from "../src/types/whatsapp/types/webhooks";
 import { WebhookTypesEnum } from "../src/types/whatsapp/types/enums";
@@ -31,10 +31,10 @@ describe("utils tests", () => {
     });
   });
 
-  describe("extractMessage", () => {
+  describe("extractTextMessage", () => {
     it("should return undefined for invalid message structure", () => {
       const message: WebhookObject = { entry: [] } as unknown as WebhookObject;
-      const result = extractMessage(message);
+      const result = extractTextMessage(message);
       expect(result).toBeUndefined();
     });
 
@@ -66,7 +66,7 @@ describe("utils tests", () => {
           },
         ],
       } as unknown as WebhookObject;
-      const result = extractMessage(message);
+      const result = extractTextMessage(message);
       expect(result).toEqual({
         id: "message-id",
         recipient: {
@@ -97,7 +97,7 @@ describe("utils tests", () => {
           },
         ],
       } as unknown as WebhookObject;
-      const result = extractMessage(message);
+      const result = extractTextMessage(message);
       expect(result).toBeUndefined();
     });
 
@@ -121,7 +121,7 @@ describe("utils tests", () => {
           },
         ],
       } as unknown as WebhookObject;
-      const result = extractMessage(message);
+      const result = extractTextMessage(message);
       expect(result).toBeUndefined();
     });
   });

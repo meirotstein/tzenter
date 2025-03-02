@@ -1,5 +1,5 @@
 import { BadInputError, InvalidInputError } from "./errors";
-import { WAMessage } from "./types/handlerTypes";
+import { WATextMessage } from "./types/handlerTypes";
 import { WebhookObject } from "./types/whatsapp/types/webhooks";
 
 export function errorToHttpStatusCode(error: Error) {
@@ -12,7 +12,7 @@ export function errorToHttpStatusCode(error: Error) {
   return 500;
 }
 
-export function extractMessage(message: WebhookObject): WAMessage | undefined {
+export function extractTextMessage(message: WebhookObject): WATextMessage | undefined {
   if (
     !message?.entry[0]?.changes[0]?.value?.messages ||
     !message?.entry[0]?.changes[0]?.value?.contacts
