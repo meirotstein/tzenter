@@ -12,7 +12,7 @@ export class MessageHandler implements IHandler {
       const waMessage = req.body as WebhookObject;
       const message = extractMessage(waMessage);
       if (!message) {
-        console.error("Cannot extract message from webhook object", waMessage);
+        console.error("Cannot extract message from webhook object", JSON.stringify(waMessage));
         return;
       }
       const waClient = new WhatsappClient(Number(process.env.WA_PHONE_NUMBER_ID));
