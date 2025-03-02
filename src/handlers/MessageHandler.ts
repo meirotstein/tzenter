@@ -5,7 +5,7 @@ import { WhatsappClient } from '../clients/WhatsappClient';
 export class MessageHandler implements IHandler {
   
   async handle(req: HandlerRequest): Promise<HandlerResponse> {
-    console.log("incoming message request", req.query);
+    console.log("incoming message request", JSON.stringify(req.query));
 
     try {
       const message = req.body as WebhookObject;
