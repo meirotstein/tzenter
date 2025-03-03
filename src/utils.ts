@@ -1,6 +1,6 @@
 import { BadInputError, InvalidInputError } from "./errors";
-import { WATextMessage } from "./types/handlerTypes";
-import { WebhookObject } from "./types/whatsapp/types/webhooks";
+import { WATextMessage } from "./handlers/types";
+import { WebhookObject } from "./external/whatsapp/types/webhooks";
 
 export function errorToHttpStatusCode(error: Error) {
   if (error instanceof BadInputError) {

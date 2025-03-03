@@ -1,5 +1,5 @@
 import { BadInputError, InvalidInputError } from "../errors";
-import { HandlerRequest, HandlerResponse, IHandler } from "../types/handlerTypes";
+import { HandlerRequest, HandlerResponse, IHandler } from "./types";
 
 export class VerificationHandler implements IHandler {
   async handle(req: HandlerRequest): Promise<HandlerResponse> {

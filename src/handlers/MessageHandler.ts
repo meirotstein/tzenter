@@ -1,5 +1,5 @@
-import { HandlerRequest, HandlerResponse, IHandler } from "../types/handlerTypes";
-import { WebhookObject } from "../types/whatsapp/types/webhooks";
+import { HandlerRequest, HandlerResponse, IHandler } from "./types";
+import { WebhookObject } from "../external/whatsapp/types/webhooks";
 import { WhatsappClient } from '../clients/WhatsappClient';
 import { extractTextMessage } from "../utils";
 

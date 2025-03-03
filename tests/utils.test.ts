@@ -1,7 +1,7 @@
 import { errorToHttpStatusCode, extractTextMessage } from "../src/utils";
 import { BadInputError, InvalidInputError } from "../src/errors";
-import { WebhookObject } from "../src/types/whatsapp/types/webhooks";
-import { WebhookTypesEnum } from "../src/types/whatsapp/types/enums";
+import { WebhookObject } from "../src/external/whatsapp/types/webhooks";
+import { WebhookTypesEnum } from "../src/external/whatsapp/types/enums";
 
 describe("utils tests", () => {
   describe("errorToHttpStatusCode", () => {
