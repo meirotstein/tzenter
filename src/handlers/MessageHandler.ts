@@ -3,6 +3,8 @@ import { WebhookObject } from "../external/whatsapp/types/webhooks";
 import { WhatsappClient } from "../clients/WhatsappClient";
 import { extractTextMessage } from "../utils";
 import { KVClient } from "../clients/KVClient";
+import { getDataSource } from "../datasource";
+import { User } from "../datasource/entities/User";
 
 export class MessageHandler implements IHandler {
   async handle(req: HandlerRequest): Promise<HandlerResponse> {
@@ -30,6 +32,10 @@ export class MessageHandler implements IHandler {
       const waClient = new WhatsappClient(
         Number(process.env.WA_PHONE_NUMBER_ID)
       );
+
+      const ds = await getDataSource();
+      await ds.manager.save(User, { phone: message.recipient.phoneNum, name: nameFromKv?.name });
+
       const recipientPhoneNum = message.recipient.phoneNum;
       const resp = await waClient.sendTextMessage(
         +recipientPhoneNum,
