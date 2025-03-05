@@ -33,8 +33,15 @@ export class MessageHandler implements IHandler {
         Number(process.env.WA_PHONE_NUMBER_ID)
       );
 
-      const ds = await getDataSource();
-      await ds.manager.save(User, { phone: message.recipient.phoneNum, name: nameFromKv?.name });
+      try {
+        const ds = await getDataSource();
+        await ds.manager.save(User, {
+          phone: message.recipient.phoneNum,
+          name: nameFromKv?.name,
+        });
+      } catch (e) {
+        console.log(e);
+      }
 
       const recipientPhoneNum = message.recipient.phoneNum;
       const resp = await waClient.sendTextMessage(
