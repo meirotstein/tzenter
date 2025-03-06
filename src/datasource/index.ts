@@ -7,9 +7,9 @@ import { Minyan } from "./entities/Minyan";
 const AppDataSource = new DataSource({
   type: "postgres",
   url: process.env.POSTGRES_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  // ssl: {
+  //   rejectUnauthorized: false,
+  // },
   synchronize: true,
   logging: true,
   entities: [User, Minyan],
