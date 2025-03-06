@@ -35,10 +35,18 @@ export class MessageHandler implements IHandler {
 
       try {
         const ds = await getDataSource();
-        await ds.manager.save(User, {
-          phone: message.recipient.phoneNum,
-          name: nameFromKv?.name,
+        const user = await ds.manager.findOne(User, {
+          where: {
+            phone: message.recipient.phoneNum,
+          },
         });
+        if (!user) {
+          await ds.manager.save(User, {
+            phone: message.recipient.phoneNum,
+            name: nameFromKv?.name,
+          });
+        }
+        console.log("user saved", user);
       } catch (e) {
         console.log(e);
       }
