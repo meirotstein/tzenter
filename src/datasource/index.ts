@@ -6,10 +6,15 @@ import { Minyan } from "./entities/Minyan";
 
 const AppDataSource = new DataSource({
   type: "postgres",
-  url: process.env.POSTGRES_URL,
-  // ssl: {
-  //   rejectUnauthorized: false,
-  // },
+  // url: process.env.POSTGRES_URL,
+  host: process.env.DATABASE_HOST,
+  port: Number(process.env.DATABASE_PORT),
+  username: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASS,
+  database: process.env.DATABASE_NAME,
+  ssl: {
+    rejectUnauthorized: false,
+  },
   synchronize: true,
   logging: true,
   entities: [User, Minyan],
