@@ -1,5 +1,6 @@
 import { KVClient } from "../clients/KVClient";
 import { WhatsappClient } from "../clients/WhatsappClient";
+import { getStep } from "../conversation";
 import { User } from "../datasource/entities/User";
 import { getMinyanByName } from "../datasource/minyansRepository";
 import {
@@ -55,12 +56,14 @@ export class MessageHandler implements IHandler {
       }
 
       const recipientPhoneNum = message.recipient.phoneNum;
-      const resp = await waClient.sendTextMessage(
-        +recipientPhoneNum,
-        `התקבל ${new Date().toLocaleString()}
-        מאת: ${nameFromKv?.name}`
-      );
-      console.log("response from whatsapp", resp);
+      // const resp = await waClient.sendTextMessage(
+      //   +recipientPhoneNum,
+      //   `התקבל ${new Date().toLocaleString()}
+      //   מאת: ${nameFromKv?.name}`
+      // );
+
+      const step = getStep();
+      await step.action(+recipientPhoneNum, waClient, message.message!);
     } catch (e) {
       console.log(req.body);
     }
