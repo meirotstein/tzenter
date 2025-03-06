@@ -32,7 +32,8 @@ export class WhatsappClient {
     const resp = await this.wa.messages.template(
       {
         name,
-        language: { code: LanguagesEnum.Hebrew, policystring: "deterministic" },
+        // @ts-ignore
+        language: { code: LanguagesEnum.Hebrew },
       },
       recipientPhoneNum
     );
