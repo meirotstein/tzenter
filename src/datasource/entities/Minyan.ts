@@ -1,11 +1,9 @@
-// entities/User.ts
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  OneToMany,
-  JoinColumn,
+  Entity,
+  JoinTable,
   ManyToMany,
+  PrimaryGeneratedColumn,
 } from "typeorm";
 import { User } from "./User";
 
@@ -14,13 +12,13 @@ export class Minyan {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column()
+  @Column({ unique: true })
   name!: string;
 
   @Column()
   city!: string;
 
   @ManyToMany((type) => User, (user) => user.minyans)
-  @JoinColumn()
+  @JoinTable()
   users?: User[];
 }

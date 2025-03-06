@@ -3,7 +3,7 @@ import { WebhookObject } from "../external/whatsapp/types/webhooks";
 import { WhatsappClient } from "../clients/WhatsappClient";
 import { extractTextMessage } from "../utils";
 import { KVClient } from "../clients/KVClient";
-import { getDataSource } from "../datasource";
+import { initDataSource } from "../datasource";
 import { User } from "../datasource/entities/User";
 
 export class MessageHandler implements IHandler {
@@ -34,7 +34,12 @@ export class MessageHandler implements IHandler {
       );
 
       try {
-        const ds = await getDataSource();
+        const ds = await initDataSource();
+        ds.getRepository(User).findOne({
+          where: {
+            phone: message.recipient.phoneNum,
+          },
+        });
         const user = await ds.manager.findOne(User, {
           where: {
             phone: message.recipient.phoneNum,
