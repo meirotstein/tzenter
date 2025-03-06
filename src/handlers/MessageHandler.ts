@@ -1,10 +1,15 @@
-import { HandlerRequest, HandlerResponse, IHandler } from "./types";
-import { WebhookObject } from "../external/whatsapp/types/webhooks";
-import { WhatsappClient } from "../clients/WhatsappClient";
-import { extractTextMessage } from "../utils";
 import { KVClient } from "../clients/KVClient";
-import { initDataSource } from "../datasource";
+import { WhatsappClient } from "../clients/WhatsappClient";
 import { User } from "../datasource/entities/User";
+import { getMinyanByName } from "../datasource/minyansRepository";
+import {
+  assignUserToAMinyan,
+  getUserByPhone,
+  saveUser,
+} from "../datasource/usersRepository";
+import { WebhookObject } from "../external/whatsapp/types/webhooks";
+import { extractTextMessage } from "../utils";
+import { HandlerRequest, HandlerResponse, IHandler } from "./types";
 
 export class MessageHandler implements IHandler {
   async handle(req: HandlerRequest): Promise<HandlerResponse> {
@@ -34,23 +39,16 @@ export class MessageHandler implements IHandler {
       );
 
       try {
-        const ds = await initDataSource();
-        ds.getRepository(User).findOne({
-          where: {
-            phone: message.recipient.phoneNum,
-          },
-        });
-        const user = await ds.manager.findOne(User, {
-          where: {
-            phone: message.recipient.phoneNum,
-          },
-        });
+        let user = await getUserByPhone(message.recipient.phoneNum);
         if (!user) {
-          await ds.manager.save(User, {
-            phone: message.recipient.phoneNum,
-            name: nameFromKv?.name,
-          });
+          user = new User();
+          user.name = message.recipient.name;
+          user.phone = message.recipient.phoneNum;
+          user = await saveUser(user);
         }
+
+        const minyan = await getMinyanByName("איצקוביץ ברוכין");
+        assignUserToAMinyan(user.id, minyan!.id);
         console.log("user saved", user);
       } catch (e) {
         console.log(e);

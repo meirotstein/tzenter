@@ -14,7 +14,7 @@ module.exports = async (req: VercelRequest, res: VercelResponse) => {
   try {
     const response = await handler.handle(req);
     return res.status(200).send(response);
-  } catch (e) {
+  } catch (e: any) {
     return res.status(errorToHttpStatusCode(e)).send(e.message);
   }
 };
