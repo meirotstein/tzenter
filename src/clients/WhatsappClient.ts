@@ -33,7 +33,7 @@ export class WhatsappClient {
       {
         name,
         // @ts-ignore
-        language: { code: 'he_IL' },
+        language: { code: LanguagesEnum.Hebrew },
       },
       recipientPhoneNum
     );
