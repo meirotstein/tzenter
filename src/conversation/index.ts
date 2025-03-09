@@ -1,5 +1,6 @@
-import exp from "constants";
+import { getUserMinyansStep } from "./steps/getUserMinyansStep";
 import { initialMenuStep } from "./steps/initialMenuStep";
+import { listAvailableMinyansStep } from "./steps/listAvailableMinyansStep";
 import { Step } from "./types";
 
 const initialStep = initialMenuStep;
@@ -14,6 +15,8 @@ restartWordHooks.forEach((word) => {
 
 const steps = {
   [initialMenuStep.id]: initialMenuStep,
+  [getUserMinyansStep.id]: getUserMinyansStep,
+  [listAvailableMinyansStep.id]: listAvailableMinyansStep,
 };
 
 export function getStep(stepId: string): Step | undefined {

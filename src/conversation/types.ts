@@ -8,5 +8,5 @@ export type Step = {
     userText: string,
     context?: Record<string, any>
   ) => Promise<void>;
-  getNextStepId: (userText: string, context?: Record<string, any>) => string;
+  getNextStepId: (userText: string, context?: Record<string, any>) => string | undefined;
 };

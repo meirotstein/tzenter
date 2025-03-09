@@ -1,7 +1,6 @@
 import { Repository } from "typeorm";
 import { initDataSource } from ".";
 import { Minyan } from "./entities/Minyan";
-import { MinyanNotFoundError } from "../errors";
 
 export async function getRepo(): Promise<Repository<Minyan>> {
   const ds = await initDataSource();
@@ -16,4 +15,9 @@ export async function saveMinyan(minyan: Minyan): Promise<Minyan> {
 export async function getMinyanByName(name: string): Promise<Minyan | null> {
   const repo = await getRepo();
   return repo.findOne({ where: { name }, relations: ["users"] });
+}
+
+export async function getAllMinyans(): Promise<Minyan[]> {
+  const repo = await getRepo();
+  return repo.find();
 }
