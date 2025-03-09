@@ -15,6 +15,6 @@ export const initialMenuStep: Step = {
     );
     console.log("response from whatsapp", resp);
   },
-  getNextStepId: (text: string, context?: Record<string, any>) =>
+  getNextStepId: (userText: string, context?: Record<string, any>) =>
     "showMenuStep",
 };

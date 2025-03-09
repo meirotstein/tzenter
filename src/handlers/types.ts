@@ -32,4 +32,5 @@ export enum WAMessageType {
 export type UserContext = {
   currentStepId?: string;
   context?: Record<string, any>;
+  retry?: boolean;
 }
