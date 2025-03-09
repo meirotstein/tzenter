@@ -3,7 +3,7 @@ import { getUserByPhone } from "../../datasource/usersRepository";
 import { Step } from "../types";
 
 export const getUserMinyansStep: Step = {
-  id: "initialMenuStep",
+  id: "getUserMinyansStep",
   action: async (
     userNum: number,
     waClient: WhatsappClient,

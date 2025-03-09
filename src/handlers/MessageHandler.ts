@@ -79,7 +79,7 @@ export class MessageHandler implements IHandler {
           userContext.context
         );
         if (!nextStepId) {
-          console.log("next step not found - final step", nextStepId);
+          console.log("next step not found - final step");
           await kvClient.del(message.recipient.phoneNum);
           return;
         }
