@@ -14,6 +14,7 @@ export interface IHandler {
 }
 
 export type WATextMessage = {
+  type: WAMessageType,
   id: string;
   recipient: {
     phoneNum: string;
@@ -22,3 +23,13 @@ export type WATextMessage = {
   timestamp: string;
   message: string | undefined;
 };
+
+export enum WAMessageType {
+  TEXT = "text",
+  TEMPLATE = "template",
+}
+
+export type UserContext = {
+  currentStepId?: string;
+  context?: Record<string, any>;
+}

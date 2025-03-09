@@ -21,12 +21,12 @@ describe("KVClient", () => {
   it("should set a value with expiration", async () => {
     Redis.prototype.set = jest.fn().mockResolvedValue("OK");
 
-    await kvClient.set("test-key", { foo: "bar" }, 600);
+    await kvClient.set("test-key", { currentStepId: "bar" }, 1800);
 
     expect(redisMock.set).toHaveBeenCalledWith(
       "test-key",
-      { foo: "bar" },
-      { ex: 600 }
+      { currentStepId: "bar" },
+      { ex: 1800 }
     );
   });
 
@@ -50,12 +50,20 @@ describe("KVClient", () => {
   it("should set a value with default expiration", async () => {
     Redis.prototype.set = jest.fn().mockResolvedValue("OK");
 
-    await kvClient.set("test-key", { foo: "bar" });
+    await kvClient.set("test-key", { currentStepId: "bar" });
 
     expect(redisMock.set).toHaveBeenCalledWith(
       "test-key",
-      { foo: "bar" },
-      { ex: 600 }
+      { currentStepId: "bar" },
+      { ex: 1800 }
     );
+  });
+
+  it("should delete a key", async () => {
+    Redis.prototype.del = jest.fn().mockResolvedValue(1);
+
+    await kvClient.del("test-key");
+
+    expect(redisMock.del).toHaveBeenCalledWith("test-key");
   });
 });

@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { UserContext } from "../handlers/types";
 
 export class KVClient {
   private redis: Redis;
@@ -12,15 +13,19 @@ export class KVClient {
 
   async set(
     key: string,
-    value: Record<string, any>,
-    expirationSecs: number = 600
+    value: UserContext,
+    expirationSecs: number = 60 * 30
   ) {
-    await this.redis.set<Record<string, any>>(key, value, {
+    await this.redis.set<UserContext>(key, value, {
       ex: expirationSecs,
     });
   }
 
-  async get(key: string): Promise<Record<string, any> | null> {
+  async del(key: string) {
+    await this.redis.del(key);
+  }
+
+  async get(key: string): Promise<UserContext | null> {
     return await this.redis.get(key);
   }
 }
