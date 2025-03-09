@@ -1,7 +1,7 @@
-import { errorToHttpStatusCode, extractTextMessage } from "../src/utils";
 import { BadInputError, InvalidInputError } from "../src/errors";
 import { WebhookObject } from "../src/external/whatsapp/types/webhooks";
-import { WebhookTypesEnum } from "../src/external/whatsapp/types/enums";
+import { WAMessageType } from "../src/handlers/types";
+import { errorToHttpStatusCode, extractTextFromMessage } from "../src/utils";
 
 describe("utils tests", () => {
   describe("errorToHttpStatusCode", () => {
@@ -34,11 +34,11 @@ describe("utils tests", () => {
   describe("extractTextMessage", () => {
     it("should return undefined for invalid message structure", () => {
       const message: WebhookObject = { entry: [] } as unknown as WebhookObject;
-      const result = extractTextMessage(message);
+      const result = extractTextFromMessage(message);
       expect(result).toBeUndefined();
     });
 
-    it("should extract message correctly", () => {
+    it("should extract text message correctly", () => {
       const message = {
         entry: [
           {
@@ -51,7 +51,7 @@ describe("utils tests", () => {
                       id: "message-id",
                       timestamp: "timestamp",
                       text: { body: "message body" },
-                      type: WebhookTypesEnum.Text,
+                      type: "text",
                     },
                   ],
                   contacts: [
@@ -66,8 +66,9 @@ describe("utils tests", () => {
           },
         ],
       } as unknown as WebhookObject;
-      const result = extractTextMessage(message);
+      const result = extractTextFromMessage(message);
       expect(result).toEqual({
+        type: WAMessageType.TEXT,
         id: "message-id",
         recipient: {
           phoneNum: "phone-number",
@@ -76,6 +77,85 @@ describe("utils tests", () => {
         timestamp: "timestamp",
         message: "message body",
       });
+    });
+
+    it("should extract button message correctly", () => {
+      const message = {
+        entry: [
+          {
+            changes: [
+              {
+                value: {
+                  messages: [
+                    {
+                      from: "972547488557",
+                      id: "message-id",
+                      timestamp: "timestamp",
+                      button: {
+                        payload: "button payload",
+                        text: "button text",
+                      },
+                      type: "button",
+                    },
+                  ],
+                  contacts: [
+                    {
+                      wa_id: "phone-number",
+                      profile: { name: "contact name" },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      } as unknown as WebhookObject;
+      const result = extractTextFromMessage(message);
+      expect(result).toEqual({
+        type: WAMessageType.TEMPLATE,
+        id: "message-id",
+        recipient: {
+          phoneNum: "phone-number",
+          name: "contact name",
+        },
+        timestamp: "timestamp",
+        message: "button text",
+      });
+    });
+
+    it("should return undefined if message type is not supported", () => {
+      const message = {
+        entry: [
+          {
+            changes: [
+              {
+                value: {
+                  messages: [
+                    {
+                      from: "972547488557",
+                      id: "message-id",
+                      timestamp: "timestamp",
+                      kookoo: {
+                        payload: "kookoo payload",
+                        text: "kookoo text",
+                      },
+                      type: "kookoo",
+                    },
+                  ],
+                  contacts: [
+                    {
+                      wa_id: "phone-number",
+                      profile: { name: "contact name" },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      } as unknown as WebhookObject;
+      const result = extractTextFromMessage(message);
+      expect(result).toBeUndefined();
     });
 
     it("should return undefined if messages array is missing", () => {
@@ -97,7 +177,7 @@ describe("utils tests", () => {
           },
         ],
       } as unknown as WebhookObject;
-      const result = extractTextMessage(message);
+      const result = extractTextFromMessage(message);
       expect(result).toBeUndefined();
     });
 
@@ -121,7 +201,7 @@ describe("utils tests", () => {
           },
         ],
       } as unknown as WebhookObject;
-      const result = extractTextMessage(message);
+      const result = extractTextFromMessage(message);
       expect(result).toBeUndefined();
     });
   });
