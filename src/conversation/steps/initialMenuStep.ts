@@ -24,7 +24,8 @@ export const initialMenuStep: Step = {
     );
     console.log("response from whatsapp", resp);
   },
-  getNextStepId: (userText: string, context?: Record<string, any>) => {
+  getNextStepId: (userText: string, context?: Record<string, any>): string | undefined => {
+    console.log("received userText on initialMenuStep.getNextStepId", userText);
     if (userText === expectedUserResponses.MyMinyans) {
       return getUserMinyansStep.id;
     } else if (userText === expectedUserResponses.JoinMinyan) {
