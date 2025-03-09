@@ -16,9 +16,9 @@ export const listAvailableMinyansStep: Step = {
     if (!minyans?.length) {
       await waClient.sendTextMessage(userNum, "אין מניינים זמינים כרגע");
     } else {
-      let minyansText = "המניינים הזמינים: %0A";
+      let minyansText = "המניינים הזמינים: \n";
       minyans.forEach((minyan, index) => {
-        minyansText += `${index + 1}. ${minyan.name} %0A`;
+        minyansText += `${index + 1}. ${minyan.name} \n`;
       });
       await waClient.sendTextMessage(userNum, minyansText);
     }

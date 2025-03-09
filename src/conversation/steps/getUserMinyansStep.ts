@@ -14,9 +14,9 @@ export const getUserMinyansStep: Step = {
     if (!user || !user.minyans?.length) {
       await waClient.sendTextMessage(userNum, "אתה לא רשום כרגע לאף מניין");
     } else {
-      let minyansText = "המניינים שלך: %0A";
+      let minyansText = "המניינים שלך: \n";
       user.minyans.forEach((minyan, index) => {
-        minyansText += `${index + 1}. ${minyan.name} %0A`;
+        minyansText += `${index + 1}. ${minyan.name} \n`;
       });
       await waClient.sendTextMessage(userNum, minyansText);
     }
