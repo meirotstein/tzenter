@@ -20,6 +20,7 @@ export const listAvailableMinyansStep: Step = {
       minyans.forEach((minyan, index) => {
         minyansText += `${index + 1}. ${minyan.name} %0A`;
       });
+      await waClient.sendTextMessage(userNum, minyansText);
     }
   },
   getNextStepId: (userText: string, context?: Record<string, any>) => undefined,
