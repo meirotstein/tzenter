@@ -84,12 +84,25 @@ export class MessageHandler implements IHandler {
         );
       }
 
-      return this.nextMessage(
+      const nextResponse = this.nextMessage(
         lastStep,
         userContext,
         +recipientPhoneNum,
         message
       );
+
+      if (nextResponse) {
+        return nextResponse;
+      }
+
+      const hookStatus = await this.hookMessage(
+        userContext,
+        +recipientPhoneNum,
+        message
+      );
+      if (hookStatus) {
+        return hookStatus;
+      }
     } catch (e) {
       if (e instanceof UnexpectedUserInputError) {
         console.log("unexpected user input", e);
