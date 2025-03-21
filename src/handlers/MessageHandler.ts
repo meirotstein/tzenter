@@ -75,14 +75,14 @@ export class MessageHandler implements IHandler {
         throw new Error(`current step not found ${userContext.currentStepId}`);
       }
 
-      if (userContext.retry) {
-        return await this.retryMessage(
-          lastStep,
-          userContext,
-          +recipientPhoneNum,
-          message
-        );
-      }
+      // if (userContext.retry) {
+      //   return await this.retryMessage(
+      //     lastStep,
+      //     userContext,
+      //     +recipientPhoneNum,
+      //     message
+      //   );
+      // }
 
       const nextResponse = await this.nextMessage(
         lastStep,
@@ -115,10 +115,10 @@ export class MessageHandler implements IHandler {
           return hookStatus;
         }
 
-        return await this.systemMessage(
+        return await this.systemMessageUnexpected(
           userContext,
           +recipientPhoneNum,
-          message
+          message,
         );
       } else {
         console.log("unexpected error occurred, resetting user state", e);
@@ -191,7 +191,7 @@ export class MessageHandler implements IHandler {
     }
   }
 
-  async systemMessage(
+  async systemMessageUnexpected(
     userContext: UserContext | null,
     phoneNum: number,
     message: WATextMessage
