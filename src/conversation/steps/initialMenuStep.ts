@@ -6,9 +6,19 @@ import { getUserMinyansStep } from "./getUserMinyansStep";
 import { listAvailableMinyansStep } from "./listAvailableMinyansStep";
 
 const expectedUserResponses = {
-  MyMinyans: "המניינים שלי",
-  JoinMinyan: "הצטרפות למניין",
+  MyMinyans: "1",
+  JoinMinyan: "2",
 };
+
+const MESSAGE = `שלום, כאן צענטר 🤖 - התפילבוט שלך.
+
+הקש את מספר האפשרות הרצויה:
+
+1. המניינים שלי
+2. הצטרפות למניין
+
+[בכל שלב - רק תכתוב צענטר ונחזור לכאן]
+`;
 
 export const initialMenuStep: Step = {
   id: "initialMenuStep",
@@ -18,13 +28,13 @@ export const initialMenuStep: Step = {
     userText: string,
     context?: Record<string, any>
   ) => {
-    const resp = await waClient.sendTemplateMessage(
-      userNum,
-      templates.greetings
-    );
+    const resp = await waClient.sendTextMessage(userNum, MESSAGE);
     console.log("response from whatsapp", resp);
   },
-  getNextStepId: (userText: string, context?: Record<string, any>): string | undefined => {
+  getNextStepId: (
+    userText: string,
+    context?: Record<string, any>
+  ): string | undefined => {
     console.log("received userText on initialMenuStep.getNextStepId", userText);
     if (userText === expectedUserResponses.MyMinyans) {
       return getUserMinyansStep.id;
