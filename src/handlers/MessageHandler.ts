@@ -75,15 +75,6 @@ export class MessageHandler implements IHandler {
         throw new Error(`current step not found ${userContext.currentStepId}`);
       }
 
-      // if (userContext.retry) {
-      //   return await this.retryMessage(
-      //     lastStep,
-      //     userContext,
-      //     +recipientPhoneNum,
-      //     message
-      //   );
-      // }
-
       const nextResponse = await this.nextMessage(
         lastStep,
         userContext,
@@ -115,11 +106,7 @@ export class MessageHandler implements IHandler {
           return hookStatus;
         }
 
-        return await this.systemMessageUnexpected(
-          userContext,
-          +recipientPhoneNum,
-          message,
-        );
+        return await this.systemMessageUnexpected(+recipientPhoneNum);
       } else {
         console.log("unexpected error occurred, resetting user state", e);
         await this.kvClient.del(message.recipient.phoneNum);
@@ -133,18 +120,6 @@ export class MessageHandler implements IHandler {
     const newUserContext = { currentStepId: initialStep.id };
     await this.kvClient.set(message.recipient.phoneNum, newUserContext);
     return { status: "Message received - initial" };
-  }
-
-  async retryMessage(
-    step: Step,
-    userContext: UserContext,
-    phoneNum: number,
-    message: WATextMessage
-  ) {
-    await step.action(phoneNum, this.waClient, message.message!);
-    userContext.retry = false;
-    await this.kvClient.set(message.recipient.phoneNum, userContext);
-    return { status: "Message retried" };
   }
 
   async nextMessage(
@@ -191,16 +166,7 @@ export class MessageHandler implements IHandler {
     }
   }
 
-  async systemMessageUnexpected(
-    userContext: UserContext | null,
-    phoneNum: number,
-    message: WATextMessage
-  ) {
-    const newUserContext = {
-      ...(userContext || {}),
-      retry: true,
-    };
-    await this.kvClient.set(message.recipient.phoneNum, newUserContext);
+  async systemMessageUnexpected(phoneNum: number) {
     await sendSystemMessage(
       phoneNum,
       this.waClient,
