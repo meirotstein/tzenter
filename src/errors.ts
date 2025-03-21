@@ -28,8 +28,4 @@ export class UserNotFoundError extends Error {
   }
 }
 
-export class UnexpectedUserInputError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
+export class UnexpectedUserInputError extends Error {}

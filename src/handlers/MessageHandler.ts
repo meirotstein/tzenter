@@ -84,7 +84,7 @@ export class MessageHandler implements IHandler {
         );
       }
 
-      const nextResponse = this.nextMessage(
+      const nextResponse = await this.nextMessage(
         lastStep,
         userContext,
         +recipientPhoneNum,
