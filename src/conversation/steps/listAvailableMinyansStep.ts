@@ -18,8 +18,14 @@ export const listAvailableMinyansStep: Step = {
     } else {
       let minyansText = "המניינים הזמינים: \n";
       minyans.forEach((minyan, index) => {
-        minyansText += `${index + 1}. ${minyan.name} \n`;
+        const isUserRegistered = !!user?.minyans?.find(
+          (userMinyan) => userMinyan.id === minyan.id
+        );
+        minyansText += `${index + 1}. ${minyan.name} ${
+          isUserRegistered ? "*" : ""
+        }\n`;
       });
+      minyansText += `\n\n כדי להמשיך יש להזין את מספר המניין הרצוי`;
       await waClient.sendTextMessage(userNum, minyansText);
     }
   },

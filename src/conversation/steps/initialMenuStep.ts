@@ -12,7 +12,7 @@ const expectedUserResponses = {
 
 const MESSAGE = `שלום, כאן צענטר 🤖 - התפילבוט שלך.
 
-הקש את מספר האפשרות הרצויה:
+הזן את מספר האפשרות הרצויה:
 
 1. המניינים שלי
 2. הצטרפות למניין
