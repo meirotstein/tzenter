@@ -1,6 +1,6 @@
-import { KVClient } from "../clients/KVClient";
 import { WhatsappClient } from "../clients/WhatsappClient";
 import { getHookStep, getInitialStep, getStep } from "../conversation";
+import { Context } from "../conversation/context";
 import {
   sendSystemMessage,
   SystemMessages,
@@ -13,20 +13,13 @@ import {
   HandlerRequest,
   HandlerResponse,
   IHandler,
-  UserContext,
   WATextMessage,
 } from "./types";
 
 export class MessageHandler implements IHandler {
-  private kvClient: KVClient;
   private waClient: WhatsappClient;
 
   constructor() {
-    this.kvClient = new KVClient(
-      process.env.KV_REST_API_TOKEN!,
-      process.env.KV_REST_API_URL!
-    );
-
     this.waClient = new WhatsappClient(Number(process.env.WA_PHONE_NUMBER_ID));
   }
 
@@ -62,11 +55,13 @@ export class MessageHandler implements IHandler {
 
     const recipientPhoneNum = message.recipient.phoneNum;
 
-    const userContext = await this.kvClient.get(message.recipient.phoneNum);
+    const context = new Context(recipientPhoneNum);
 
     try {
+      const userContext = await context.getUserContext();
+
       if (!userContext?.currentStepId) {
-        return await this.initialMessage(+recipientPhoneNum, message);
+        return await this.initialMessage(+recipientPhoneNum, message, context);
       }
 
       const lastStep = getStep(userContext.currentStepId);
@@ -77,7 +72,7 @@ export class MessageHandler implements IHandler {
 
       const nextResponse = await this.nextMessage(
         lastStep,
-        userContext,
+        context,
         +recipientPhoneNum,
         message
       );
@@ -87,7 +82,7 @@ export class MessageHandler implements IHandler {
       }
 
       const hookStatus = await this.hookMessage(
-        userContext,
+        context,
         +recipientPhoneNum,
         message
       );
@@ -98,7 +93,7 @@ export class MessageHandler implements IHandler {
       if (e instanceof UnexpectedUserInputError) {
         console.log("unexpected user input", e);
         const hookStatus = await this.hookMessage(
-          userContext,
+          context,
           +recipientPhoneNum,
           message
         );
@@ -109,59 +104,60 @@ export class MessageHandler implements IHandler {
         return await this.systemMessageUnexpected(+recipientPhoneNum);
       } else {
         console.log("unexpected error occurred, resetting user state", e);
-        await this.kvClient.del(message.recipient.phoneNum);
+        await context.deleteUserContext();
       }
     }
   }
 
-  async initialMessage(phoneNum: number, message: WATextMessage) {
+  async initialMessage(
+    phoneNum: number,
+    message: WATextMessage,
+    context: Context
+  ) {
     const initialStep = getInitialStep();
-    await initialStep.action(phoneNum, this.waClient, message.message!);
+    await initialStep.action(
+      phoneNum,
+      this.waClient,
+      message.message!,
+      context
+    );
     const newUserContext = { currentStepId: initialStep.id };
-    await this.kvClient.set(message.recipient.phoneNum, newUserContext);
+    await context.setUserContext(newUserContext);
     return { status: "Message received - initial" };
   }
 
   async nextMessage(
     step: Step,
-    userContext: UserContext,
+    context: Context,
     phoneNum: number,
     message: WATextMessage
   ) {
-    const nextStepId = step.getNextStepId(
-      message.message!,
-      userContext.context
-    );
+    const nextStepId = step.getNextStepId(message.message!, context);
     if (!nextStepId) {
       console.log("next step not found - final step");
-      await this.kvClient.del(message.recipient.phoneNum);
+      await context.deleteUserContext();
       return;
     }
     const nextStep = getStep(nextStepId);
     if (!nextStep) {
       throw new Error(`next step not found ${nextStepId}`); //unexpected error
     }
-    await nextStep.action(phoneNum, this.waClient, message.message!);
-    userContext.currentStepId = nextStepId;
-    await this.kvClient.set(message.recipient.phoneNum, userContext);
+    await nextStep.action(phoneNum, this.waClient, message.message!, context);
+    await context.updateUserContext({ currentStepId: nextStepId });
 
     return { status: "Message received" };
   }
 
   async hookMessage(
-    userContext: UserContext | null,
+    context: Context,
     phoneNum: number,
     message: WATextMessage
   ) {
     const hookStep = getHookStep(message.message!);
     if (hookStep) {
       console.log("hook step found", hookStep.id);
-      await hookStep.action(phoneNum, this.waClient, message.message!);
-      const newUserContext = {
-        ...(userContext || {}),
-        currentStepId: hookStep.id,
-      };
-      await this.kvClient.set(message.recipient.phoneNum, newUserContext);
+      await hookStep.action(phoneNum, this.waClient, message.message!, context);
+      await context.updateUserContext({ currentStepId: hookStep.id });
       return { status: "Message received" };
     }
   }

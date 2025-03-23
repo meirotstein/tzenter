@@ -1,4 +1,5 @@
 import { WhatsappClient } from "../clients/WhatsappClient";
+import { Context } from "./context";
 
 export type Step = {
   id: string;
@@ -6,7 +7,7 @@ export type Step = {
     userNum: number,
     waClient: WhatsappClient,
     userText: string,
-    context?: Record<string, any>
+    context: Context
   ) => Promise<void>;
-  getNextStepId: (userText: string, context?: Record<string, any>) => string | undefined;
+  getNextStepId: (userText: string, context: Context) => string | undefined;
 };

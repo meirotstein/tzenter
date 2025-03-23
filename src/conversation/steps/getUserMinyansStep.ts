@@ -1,5 +1,6 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { getUserByPhone } from "../../datasource/usersRepository";
+import { Context } from "../context";
 import { Step } from "../types";
 
 export const getUserMinyansStep: Step = {
@@ -8,7 +9,7 @@ export const getUserMinyansStep: Step = {
     userNum: number,
     waClient: WhatsappClient,
     userText: string,
-    context?: Record<string, any>
+    context: Context
   ) => {
     let user = await getUserByPhone(userNum.toString());
     if (!user || !user.minyans?.length) {
@@ -21,5 +22,5 @@ export const getUserMinyansStep: Step = {
       await waClient.sendTextMessage(userNum, minyansText);
     }
   },
-  getNextStepId: (userText: string, context?: Record<string, any>) => undefined,
+  getNextStepId: (userText: string, context: Context) => undefined,
 };

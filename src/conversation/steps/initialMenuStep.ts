@@ -1,7 +1,7 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { UnexpectedUserInputError } from "../../errors";
+import { Context } from "../context";
 import { Step } from "../types";
-import templates from "../waTemplates";
 import { getUserMinyansStep } from "./getUserMinyansStep";
 import { listAvailableMinyansStep } from "./listAvailableMinyansStep";
 
@@ -26,15 +26,12 @@ export const initialMenuStep: Step = {
     userNum: number,
     waClient: WhatsappClient,
     userText: string,
-    context?: Record<string, any>
+    context: Context
   ) => {
     const resp = await waClient.sendTextMessage(userNum, MESSAGE);
     console.log("response from whatsapp", resp);
   },
-  getNextStepId: (
-    userText: string,
-    context?: Record<string, any>
-  ): string | undefined => {
+  getNextStepId: (userText: string, context: Context): string | undefined => {
     console.log("received userText on initialMenuStep.getNextStepId", userText);
     if (userText === expectedUserResponses.MyMinyans) {
       return getUserMinyansStep.id;
