@@ -9,5 +9,5 @@ export type Step = {
     userText: string,
     context: Context
   ) => Promise<void>;
-  getNextStepId: (userText: string, context: Context) => string | undefined;
+  getNextStepId: (userText: string, context: Context) => Promise<string | undefined>;
 };

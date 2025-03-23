@@ -22,5 +22,5 @@ export const getUserMinyansStep: Step = {
       await waClient.sendTextMessage(userNum, minyansText);
     }
   },
-  getNextStepId: (userText: string, context: Context) => undefined,
+  getNextStepId: (userText: string, context: Context) => Promise.resolve(undefined),
 };

@@ -31,12 +31,12 @@ export const initialMenuStep: Step = {
     const resp = await waClient.sendTextMessage(userNum, MESSAGE);
     console.log("response from whatsapp", resp);
   },
-  getNextStepId: (userText: string, context: Context): string | undefined => {
+  getNextStepId: (userText: string, context: Context): Promise<string | undefined> => {
     console.log("received userText on initialMenuStep.getNextStepId", userText);
     if (userText === expectedUserResponses.MyMinyans) {
-      return getUserMinyansStep.id;
+      return Promise.resolve(getUserMinyansStep.id);
     } else if (userText === expectedUserResponses.JoinMinyan) {
-      return listAvailableMinyansStep.id;
+      return Promise.resolve(listAvailableMinyansStep.id);
     }
     throw new UnexpectedUserInputError(userText);
   },

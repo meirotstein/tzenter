@@ -132,7 +132,7 @@ export class MessageHandler implements IHandler {
     phoneNum: number,
     message: WATextMessage
   ) {
-    const nextStepId = step.getNextStepId(message.message!, context);
+    const nextStepId = await step.getNextStepId(message.message!, context);
     if (!nextStepId) {
       console.log("next step not found - final step");
       await context.deleteUserContext();
