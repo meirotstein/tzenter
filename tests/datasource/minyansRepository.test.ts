@@ -1,6 +1,7 @@
 import { Minyan } from "../../src/datasource/entities/Minyan";
 import { User } from "../../src/datasource/entities/User";
 import {
+  getMinyanById,
   getMinyanByName,
   getRepo as getMinyanRepo,
   saveMinyan,
@@ -61,5 +62,17 @@ describe("minyansRepository", () => {
     expect(_minyan).toBeDefined();
     expect(_minyan!.users).toHaveLength(1);
     expect(_minyan!.users![0].id).toBe(user.id);
+  });
+
+  it("should get a minyan by id", async () => {
+    const foundMinyan = await getMinyanById(minyan.id);
+    expect(foundMinyan).toBeDefined();
+    expect(foundMinyan?.id).toBe(minyan.id);
+    expect(foundMinyan?.name).toBe("Minyan A");
+  });
+
+  it("should return null if minyan not found by id", async () => {
+    const foundMinyan = await getMinyanById(9999); // Assuming 9999 is a non-existent ID
+    expect(foundMinyan).toBeNull();
   });
 });

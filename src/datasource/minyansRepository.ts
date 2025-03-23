@@ -17,6 +17,11 @@ export async function getMinyanByName(name: string): Promise<Minyan | null> {
   return repo.findOne({ where: { name }, relations: ["users"] });
 }
 
+export async function getMinyanById(id: number): Promise<Minyan | null> {
+  const repo = await getRepo();
+  return repo.findOne({ where: { id }, relations: ["users"] });
+}
+
 export async function getAllMinyans(): Promise<Minyan[]> {
   const repo = await getRepo();
   return repo.find();
