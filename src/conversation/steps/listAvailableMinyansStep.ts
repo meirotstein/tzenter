@@ -34,7 +34,7 @@ export const listAvailableMinyansStep: Step = {
       });
       minyansText += `\n\n כדי להמשיך יש להזין את מספר המניין הרצוי`;
       await waClient.sendTextMessage(userNum, minyansText);
-      await context.updateUserContext({ context: availableMinyans });
+      await context.updateUserContext({ context: { availableMinyans } });
     }
   },
   getNextStepId: async (userText: string, context: Context) => {
@@ -56,7 +56,9 @@ export const listAvailableMinyansStep: Step = {
       throw new UnexpectedUserInputError(userText);
     }
 
-    await context.updateUserContext({ context: { selectedMinyanId: selection.minyanId } });
+    await context.updateUserContext({
+      context: { selectedMinyanId: selection.minyanId },
+    });
     return Promise.resolve(selectedMinyanStep.id);
   },
 };
