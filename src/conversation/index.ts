@@ -1,7 +1,9 @@
 import { getUserMinyansStep } from "./steps/getUserMinyansStep";
 import { initialMenuStep } from "./steps/initialMenuStep";
 import { listAvailableMinyansStep } from "./steps/listAvailableMinyansStep";
+import { registerMinyanStep } from "./steps/registerMinyanStep";
 import { selectedMinyanStep } from "./steps/selectedMinyanStep";
+import { unregisterMinyanStep } from "./steps/unregisterMinyanStep";
 import { Step } from "./types";
 
 const initialStep = initialMenuStep;
@@ -19,6 +21,8 @@ const steps = {
   [getUserMinyansStep.id]: getUserMinyansStep,
   [listAvailableMinyansStep.id]: listAvailableMinyansStep,
   [selectedMinyanStep.id]: selectedMinyanStep,
+  [registerMinyanStep.id]: registerMinyanStep,
+  [unregisterMinyanStep.id]: unregisterMinyanStep,
 };
 
 export function getStep(stepId: string): Step | undefined {
