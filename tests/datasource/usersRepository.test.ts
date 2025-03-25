@@ -8,6 +8,7 @@ import {
   assignUserToAMinyan,
   getUserByPhone,
   getRepo as getUserRepo,
+  removeUserFromMinyan,
   saveUser,
 } from "../../src/datasource/usersRepository";
 import { MinyanNotFoundError, UserNotFoundError } from "../../src/errors";
@@ -74,5 +75,39 @@ describe("usersRepository", () => {
     await expect(assignUserToAMinyan(user.id, 999)).rejects.toThrow(
       MinyanNotFoundError
     );
+  });
+
+  it("should remove a user from a minyan", async () => {
+    await assignUserToAMinyan(user.id, minyan.id);
+
+    let _user = await getUserByPhone("123456789");
+    expect(_user).toBeDefined();
+    expect(_user!.minyans).toHaveLength(1);
+
+    await removeUserFromMinyan(user.id, minyan.id);
+
+    _user = await getUserByPhone("123456789");
+    expect(_user).toBeDefined();
+    expect(_user!.minyans).toHaveLength(0);
+  });
+
+  it("should throw an error if user not found when removing from a minyan", async () => {
+    await expect(removeUserFromMinyan(999, minyan.id)).rejects.toThrow(
+      UserNotFoundError
+    );
+  });
+
+  it("should throw an error if minyan not found when removing a user", async () => {
+    await expect(removeUserFromMinyan(user.id, 999)).rejects.toThrow(
+      MinyanNotFoundError
+    );
+  });
+
+  it("should not throw an error if user is not part of the minyan when removing", async () => {
+    await expect(removeUserFromMinyan(user.id, minyan.id)).resolves.not.toThrow();
+
+    const _user = await getUserByPhone("123456789");
+    expect(_user).toBeDefined();
+    expect(_user!.minyans).toHaveLength(0);
   });
 });
