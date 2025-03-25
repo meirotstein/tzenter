@@ -21,14 +21,14 @@ export const listAvailableMinyansStep: Step = {
     if (!minyans?.length) {
       await waClient.sendTextMessage(userNum, "אין מניינים זמינים כרגע");
     } else {
-      let minyansText = "המניינים הזמינים: \n";
+      let minyansText = "המניינים הזמינים: \n\n";
       minyans.forEach((minyan, index) => {
         const currentMinyan = { minyanId: minyan.id, minyanIndex: index + 1 };
         const isUserRegistered = !!user?.minyans?.find(
           (userMinyan) => userMinyan.id === minyan.id
         );
-        minyansText += `${currentMinyan.minyanIndex}. ${minyan.name} ${
-          isUserRegistered ? "*" : ""
+        minyansText += `${currentMinyan.minyanIndex}. ${minyan.name}${
+          isUserRegistered ? " *" : ""
         }\n`;
         availableMinyans.push(currentMinyan);
       });

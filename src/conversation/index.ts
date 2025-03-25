@@ -1,3 +1,4 @@
+import { restartWordHooks } from "./consts";
 import { getUserMinyansStep } from "./steps/getUserMinyansStep";
 import { initialMenuStep } from "./steps/initialMenuStep";
 import { listAvailableMinyansStep } from "./steps/listAvailableMinyansStep";
@@ -8,7 +9,6 @@ import { Step } from "./types";
 
 const initialStep = initialMenuStep;
 
-const restartWordHooks = ["צענטר", "תפריט"];
 
 const hooks: Record<string, Step> = {};
 
