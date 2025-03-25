@@ -1,8 +1,12 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
-import { getAllMinyans, getMinyanById } from "../../datasource/minyansRepository";
+import { getMinyanById } from "../../datasource/minyansRepository";
 import { getUserByPhone } from "../../datasource/usersRepository";
+import { UnexpectedUserInputError } from "../../errors";
+import { noWords, yesWords } from "../consts";
 import { Context } from "../context";
 import { Step } from "../types";
+import { registerMinyanStep } from "./registerMinyanStep";
+import { unregisterMinyanStep } from "./unregisterMinyanStep";
 
 export const selectedMinyanStep: Step = {
   id: "selectedMinyanStep",
@@ -12,7 +16,8 @@ export const selectedMinyanStep: Step = {
     userText: string,
     context: Context
   ) => {
-    const selectedMinyanId = (await context.getUserContext())?.context?.selectedMinyanId;
+    const selectedMinyanId = (await context.getUserContext())?.context
+      ?.selectedMinyanId;
     if (!selectedMinyanId) {
       throw new Error("selectedMinyan is not defined in context");
     }
@@ -31,11 +36,27 @@ export const selectedMinyanStep: Step = {
 
     let responseText = `בחרת במניין ${minyan.name}\n\n`;
 
-    responseText += isUserRegistered ? 
-      "אתה כבר רשום למניין זה, האם אתה מעוניין להסיר את ההרשמה?" :
-      "האם אתה רוצה להירשם למניין זה?";
+    responseText += isUserRegistered
+      ? "אתה כבר רשום למניין זה, האם אתה מעוניין להסיר את ההרשמה?"
+      : "האם אתה רוצה להירשם למניין זה?";
     await waClient.sendTextMessage(userNum, responseText);
-    await context.updateUserContext({ context: { isUserRegistered } });  
+    await context.updateUserContext({
+      context: { isUserRegistered, userId: user.id, minyanId: minyan.id },
+    });
   },
-  getNextStepId: (userText: string, context: Context) => Promise.resolve(undefined),
+  getNextStepId: async (userText: string, context: Context) => {
+    if (yesWords.includes(userText.toLowerCase())) {
+      const isUserRegistered = (await context.getUserContext())?.context
+        ?.isUserRegistered;
+      if (isUserRegistered) {
+        return unregisterMinyanStep.id;
+      }
+      return registerMinyanStep.id;
+    }
+    if (noWords.includes(userText.toLowerCase())) {
+      await context.deleteUserContext();
+      return undefined;
+    }
+    throw new UnexpectedUserInputError(userText);
+  },
 };
