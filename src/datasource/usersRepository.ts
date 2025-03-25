@@ -19,6 +19,11 @@ export async function getUserByPhone(phone: string): Promise<User | null> {
   return repo.findOne({ where: { phone }, relations: ["minyans"] });
 }
 
+export async function getUserById(userId: number): Promise<User | null> {
+  const repo = await getRepo();
+  return repo.findOne({ where: { id: userId }, relations: ["minyans"] });
+}
+
 export async function assignUserToAMinyan(
   userId: number,
   minyanId: number

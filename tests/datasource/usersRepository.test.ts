@@ -6,6 +6,7 @@ import {
 } from "../../src/datasource/minyansRepository";
 import {
   assignUserToAMinyan,
+  getUserById,
   getUserByPhone,
   getRepo as getUserRepo,
   removeUserFromMinyan,
@@ -54,6 +55,18 @@ describe("usersRepository", () => {
 
   it("should return null if user not found by phone", async () => {
     const foundUser = await getUserByPhone("987654321");
+    expect(foundUser).toBeNull();
+  });
+
+  it("should get a user by ID", async () => {
+    const foundUser = await getUserById(user.id);
+    expect(foundUser).toBeDefined();
+    expect(foundUser?.name).toBe("John Doe");
+    expect(foundUser?.phone).toBe("123456789");
+  });
+
+  it("should return null if user not found by ID", async () => {
+    const foundUser = await getUserById(999);
     expect(foundUser).toBeNull();
   });
 
