@@ -9,7 +9,6 @@ import { Step } from "../conversation/types";
 import { UnexpectedUserInputError } from "../errors";
 import { WebhookObject } from "../external/whatsapp/types/webhooks";
 import { extractTextFromMessage } from "../utils";
-import { verifyWhatsappMessage } from "../verifiers";
 import {
   HandlerRequest,
   HandlerResponse,
@@ -26,8 +25,6 @@ export class MessageHandler implements IHandler {
 
   async handle(req: HandlerRequest): Promise<HandlerResponse> {
     console.log("incoming message request", JSON.stringify(req.body));
-
-    verifyWhatsappMessage(req);
 
     /**
      * Message handling flow:
