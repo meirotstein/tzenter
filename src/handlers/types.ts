@@ -1,8 +1,11 @@
+import { IncomingHttpHeaders } from "http";
+
 export enum Endpoint {
   ON_MESSAGE = "onMessage",
 }
 
 export type HandlerRequest = {
+  headers? : IncomingHttpHeaders;
   query?: Record<string, string | string[]>;
   body?: Record<string, any>;
 };

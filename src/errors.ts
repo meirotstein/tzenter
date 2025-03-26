@@ -29,3 +29,4 @@ export class UserNotFoundError extends Error {
 }
 
 export class UnexpectedUserInputError extends Error {}
+export class UnauthorizedMessageError extends Error {}

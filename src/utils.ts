@@ -1,4 +1,4 @@
-import { BadInputError, InvalidInputError } from "./errors";
+import { BadInputError, InvalidInputError, UnauthorizedMessageError } from "./errors";
 import { WebhookObject } from "./external/whatsapp/types/webhooks";
 import { WAMessageType, WATextMessage } from "./handlers/types";
 
@@ -8,6 +8,9 @@ export function errorToHttpStatusCode(error: Error) {
   }
   if (error instanceof InvalidInputError) {
     return 422;
+  }
+  if (error instanceof UnauthorizedMessageError) {
+    return 401;
   }
   return 500;
 }
