@@ -18,7 +18,7 @@ export const unregisterMinyanStep: Step = {
 
     await removeUserFromMinyan(userContext!.userId, userContext!.minyanId);
 
-    let responseText = "ההרשמה שלך למניין הוסרה בהצלחה";
+    let responseText = "ההרשמה למניין הוסרה בהצלחה";
 
     await waClient.sendTextMessage(userNum, responseText);
     await context.deleteUserContext();
