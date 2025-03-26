@@ -1,96 +1,87 @@
-import { verifyWhatsappMessage } from "../src/verifiers";
-import { UnauthorizedMessageError } from "../src/errors";
 import crypto from "crypto";
+import { IncomingMessage } from "http";
+import getRawBody from "raw-body";
+import { UnauthorizedMessageError } from "../src/errors";
+import { verifyWhatsappMessage } from "../src/verifiers";
+
+jest.mock("crypto");
+jest.mock("raw-body");
 
 describe("verifyWhatsappMessage", () => {
-  const originalEnv = process.env;
+  const mockReq = (
+    headers: any,
+    method = "POST"
+  ): IncomingMessage & { headers: any } =>
+    ({
+      headers,
+      method,
+    } as IncomingMessage & { headers: any });
 
   beforeEach(() => {
-    jest.resetModules();
-    process.env = { ...originalEnv };
+    jest.clearAllMocks();
+    process.env.WA_APP_SECRET = "test_secret";
   });
 
   afterEach(() => {
-    process.env = originalEnv;
+    delete process.env.WA_APP_SECRET;
   });
 
-  it("should throw an error if WA_APP_SECRET is not defined", () => {
+  it("should throw an error if WA_APP_SECRET is not defined", async () => {
     delete process.env.WA_APP_SECRET;
+    const req = mockReq({});
 
-    const req = {
-      headers: { "x-hub-signature-256": "some-signature" },
-      body: { key: "value" },
-    };
-
-    expect(() => verifyWhatsappMessage(req as any)).toThrow(
+    await expect(verifyWhatsappMessage(req)).rejects.toThrow(
       "WA_APP_SECRET is not defined"
     );
   });
 
-  it("should throw UnauthorizedMessageError if signature header is missing", () => {
-    process.env.WA_APP_SECRET = "test-secret";
+  it("should throw UnauthorizedMessageError if signature header is missing", async () => {
+    const req = mockReq({});
 
-    const req = {
-      headers: {},
-      body: { key: "value" },
-    };
-
-    expect(() => verifyWhatsappMessage(req as any)).toThrow(
+    await expect(verifyWhatsappMessage(req)).rejects.toThrow(
       UnauthorizedMessageError
     );
   });
 
-  it("should throw UnauthorizedMessageError if signature header is invalid", () => {
-    process.env.WA_APP_SECRET = "test-secret";
+  it("should throw UnauthorizedMessageError if signature header is invalid", async () => {
+    const req = mockReq({ "x-hub-signature-256": 123 });
 
-    const req = {
-      headers: { "x-hub-signature-256": 123 },
-      body: { key: "value" },
-    };
-
-    expect(() => verifyWhatsappMessage(req as any)).toThrow(
+    await expect(verifyWhatsappMessage(req)).rejects.toThrow(
       UnauthorizedMessageError
     );
   });
 
-  it("should throw UnauthorizedMessageError if request body is missing", () => {
-    process.env.WA_APP_SECRET = "test-secret";
-
-    const req = {
-      headers: { "x-hub-signature-256": "some-signature" },
+  it("should throw UnauthorizedMessageError if signature does not match", async () => {
+    const req = mockReq({ "x-hub-signature-256": "sha256=invalid_signature" });
+    (getRawBody as jest.Mock).mockResolvedValueOnce("test_body");
+    const hmacMock = {
+      update: jest.fn(),
+      digest: jest.fn().mockReturnValueOnce("valid_signature"),
     };
+    (crypto.createHmac as jest.Mock).mockReturnValueOnce(hmacMock);
 
-    expect(() => verifyWhatsappMessage(req as any)).toThrowError(
+    await expect(verifyWhatsappMessage(req)).rejects.toThrow(
       UnauthorizedMessageError
     );
+    expect(hmacMock.update).toHaveBeenCalledWith("test_body");
   });
 
-  it("should throw UnauthorizedMessageError if signature does not match", () => {
-    process.env.WA_APP_SECRET = "test-secret";
-
-    const req = {
-      headers: { "x-hub-signature-256": "invalid-signature" },
-      body: { key: "value" },
+  it("should not throw if signature matches", async () => {
+    const req = mockReq({ "x-hub-signature-256": "sha256=valid_signature" });
+    (getRawBody as jest.Mock).mockResolvedValueOnce("test_body");
+    const hmacMock = {
+      update: jest.fn(),
+      digest: jest.fn().mockReturnValueOnce("valid_signature"),
     };
+    (crypto.createHmac as jest.Mock).mockReturnValueOnce(hmacMock);
 
-    expect(() => verifyWhatsappMessage(req as any)).toThrow(
-      UnauthorizedMessageError
-    );
+    await expect(verifyWhatsappMessage(req)).resolves.toBeUndefined();
+    expect(hmacMock.update).toHaveBeenCalledWith("test_body");
   });
 
-  it("should not throw an error if signature matches", () => {
-    process.env.WA_APP_SECRET = "test-secret";
+  it("should return early if request method is not POST", async () => {
+    const req = mockReq({}, "GET");
 
-    const body = { key: "value" };
-    const hmac = crypto.createHmac("sha256", process.env.WA_APP_SECRET);
-    hmac.update(JSON.stringify(body));
-    const validSignature = `sha256=${hmac.digest("hex")}`;
-
-    const req = {
-      headers: { "x-hub-signature-256": validSignature },
-      body,
-    };
-
-    expect(() => verifyWhatsappMessage(req as any)).not.toThrow();
+    await expect(verifyWhatsappMessage(req)).resolves.toBeUndefined();
   });
 });
