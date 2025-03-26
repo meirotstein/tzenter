@@ -26,6 +26,7 @@ export function verifyWhatsappMessage(req: HandlerRequest) {
   if (signature !== expectedSignature) {
     console.warn("Invalid signature", signature, expectedSignature);
     // throw new UnauthorizedMessageError("Invalid signature");
+  } else {
+    console.log("Signature match!");
   }
-  console.log("Signature match!");
 }
