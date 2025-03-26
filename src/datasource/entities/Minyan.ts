@@ -3,9 +3,11 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { User } from "./User";
+import { Schedule } from "./Schedule";
 
 @Entity("minyans")
 export class Minyan {
@@ -21,4 +23,7 @@ export class Minyan {
   @ManyToMany((type) => User, (user) => user.minyans)
   @JoinTable()
   users?: User[];
+
+  @OneToMany(() => Schedule, (schedule) => schedule.minyan)
+  schedules?: Schedule[]; // Optional: a minyan may have no schedules
 }
