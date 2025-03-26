@@ -110,4 +110,42 @@ describe("scheduleRepository", () => {
     expect(upcomingSchedules[0].name).toBe("Morning Prayer");
     expect(upcomingSchedules[1].name).toBe("Afternoon Prayer");
   });
+
+  it("should fetch upcoming schedules within the specified time range considering a different timezone", async () => {
+    const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+
+    const savedMinyan = await saveMinyan(minyan);
+
+    const schedules = [
+      {
+        name: "Morning Prayer",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+      },
+      {
+        name: "Afternoon Prayer",
+        prayer: Prayer.Mincha,
+        time: "13:00:00",
+        minyan: savedMinyan,
+      },
+      {
+        name: "Evening Prayer",
+        prayer: Prayer.Arvit,
+        time: "19:00:00",
+        minyan: savedMinyan,
+      },
+    ];
+
+    for (const schedule of schedules) {
+      await addSchedule(schedule);
+    }
+
+    const fromDate = new Date("2023-01-01T07:00:00Z"); // UTC time
+    const timezone = "America/New_York"; // Different timezone to consider
+    const upcomingSchedules = await getUpcomingSchedules(360, fromDate, timezone); // 360 minutes = 6 hours
+
+    expect(upcomingSchedules).toHaveLength(1);
+    expect(upcomingSchedules[0].name).toBe("Morning Prayer");
+  });
 });

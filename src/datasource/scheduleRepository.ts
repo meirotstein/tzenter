@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { Repository } from "typeorm";
 import { initDataSource } from ".";
 import { Schedule } from "./entities/Schedule";
@@ -41,30 +42,33 @@ export async function updateSchedule(
 export async function getUpcomingSchedules(
   minutes: number,
   from: Date = new Date(),
+  timezone: string = "Asia/Jerusalem"
 ): Promise<Schedule[]> {
   const repo = await getRepo();
 
-  const future = new Date(from.getTime() + minutes * 60 * 1000);
+  const now = DateTime.fromJSDate(from, { zone: timezone });
+  const later = now.plus({ minutes });
 
-  const format = (d: Date) => d.toTimeString().split(" ")[0]; // "HH:MM:SS"
-  const fromTime = format(from);
-  const futureTime = format(future);
+  const format = (dt: DateTime) => dt.toFormat("HH:mm:ss");
+
+  const fromTime = format(now);
+  const futureTime = format(later);
 
   const isWrappingMidnight = fromTime > futureTime;
 
   if (isWrappingMidnight) {
     return repo
       .createQueryBuilder("schedule")
-      .where("schedule.time >= :currentTime OR schedule.time <= :futureTime", {
-        currentTime: fromTime,
+      .where("schedule.time >= :fromTime OR schedule.time <= :futureTime", {
+        fromTime,
         futureTime,
       })
       .getMany();
   } else {
     return repo
       .createQueryBuilder("schedule")
-      .where("schedule.time >= :currentTime AND schedule.time <= :futureTime", {
-        currentTime: fromTime,
+      .where("schedule.time >= :fromTime AND schedule.time <= :futureTime", {
+        fromTime,
         futureTime,
       })
       .getMany();
