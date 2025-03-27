@@ -1,5 +1,9 @@
 import WhatsApp from "whatsapp";
-import { ComponentTypesEnum, LanguagesEnum } from "whatsapp/build/types/enums";
+import {
+  ComponentTypesEnum,
+  LanguagesEnum,
+  ParametersTypesEnum,
+} from "whatsapp/build/types/enums";
 
 export class WhatsappClient {
   wa: WhatsApp;
@@ -29,11 +33,26 @@ export class WhatsappClient {
 
     // TODO: add support for params - map to components (https://whatsapp.github.io/WhatsApp-Nodejs-SDK/api-reference/messages/template)
 
+    const parameters = [];
+    for (const key in params) {
+      parameters.push({
+        type: ParametersTypesEnum.Text,
+        text: String(params[key]),
+      });
+    }
+
     const resp = await this.wa.messages.template(
       {
         name,
         // @ts-ignore
         language: { code: LanguagesEnum.Hebrew },
+        components: [
+          {
+            type: ComponentTypesEnum.Body,
+            // @ts-ignore
+            parameters,
+          },
+        ],
       },
       recipientPhoneNum
     );

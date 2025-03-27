@@ -1,7 +1,7 @@
 import { WhatsappClient } from "../../src/clients/WhatsappClient";
 import {
   getInitScheduleStep,
-  getProcessingScheduleStep,
+  getProcessScheduleStep,
 } from "../../src/conversation";
 import { Context, ContextType } from "../../src/conversation/context";
 import { handleSchedule } from "../../src/conversation/scheduledMessages";
@@ -13,7 +13,7 @@ jest.mock("../../src/datasource/minyansRepository");
 jest.mock("../../src/conversation/context");
 jest.mock("../../src/conversation", () => ({
   getInitScheduleStep: jest.fn(),
-  getProcessingScheduleStep: jest.fn(),
+  getProcessScheduleStep: jest.fn(),
 }));
 
 describe("handleSchedule", () => {
@@ -44,7 +44,7 @@ describe("handleSchedule", () => {
       action: jest.fn().mockResolvedValue(void 0),
     });
 
-    (getProcessingScheduleStep as jest.Mock).mockReturnValue({
+    (getProcessScheduleStep as jest.Mock).mockReturnValue({
       id: "processingStep",
       action: jest.fn().mockResolvedValue(void 0),
     });

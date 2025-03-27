@@ -1,4 +1,4 @@
-import { getInitScheduleStep, getProcessingScheduleStep } from ".";
+import { getInitScheduleStep, getProcessScheduleStep } from ".";
 import {
   ScheduleContext,
   UserContext,
@@ -29,7 +29,7 @@ export async function handleSchedule(
 
     if (scheduleContext?.status === ScheduleStatus.initiated) {
       // schedule is already initiated
-      scheduleStep = getProcessingScheduleStep();
+      scheduleStep = getProcessScheduleStep();
     } else {
       // initiate the schedule
       scheduleStep = getInitScheduleStep();
@@ -42,8 +42,8 @@ export async function handleSchedule(
     await userContext.set({
       currentStepId: scheduleStep.id,
       context: {
-        schedule: schedule,
-        minyan: minyan,
+        schedule,
+        minyan,
       },
     });
     scheduleActions.push(scheduleStep.action(+user.phone, waClient, "", userContext));

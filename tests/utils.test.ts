@@ -1,7 +1,12 @@
+import { Prayer } from "../src/datasource/entities/Schedule";
 import { BadInputError, InvalidInputError } from "../src/errors";
 import { WebhookObject } from "../src/external/whatsapp/types/webhooks";
 import { WAMessageType } from "../src/handlers/types";
-import { errorToHttpStatusCode, extractTextFromMessage } from "../src/utils";
+import {
+  errorToHttpStatusCode,
+  extractTextFromMessage,
+  prayerHebName,
+} from "../src/utils";
 
 describe("utils tests", () => {
   describe("errorToHttpStatusCode", () => {
@@ -203,6 +208,23 @@ describe("utils tests", () => {
       } as unknown as WebhookObject;
       const result = extractTextFromMessage(message);
       expect(result).toBeUndefined();
+    });
+  });
+
+  describe("prayerHebName", () => {
+    it("should return 'שחרית' for Prayer.Shacharit", () => {
+      const result = prayerHebName(Prayer.Shacharit);
+      expect(result).toBe("שחרית");
+    });
+
+    it("should return 'מנחה' for Prayer.Mincha", () => {
+      const result = prayerHebName(Prayer.Mincha);
+      expect(result).toBe("מנחה");
+    });
+
+    it("should return 'ערבית' for any other prayer", () => {
+      const result = prayerHebName(Prayer.Arvit);
+      expect(result).toBe("ערבית");
     });
   });
 });

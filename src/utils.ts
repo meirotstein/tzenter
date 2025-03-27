@@ -1,6 +1,11 @@
-import { BadInputError, InvalidInputError, UnauthorizedMessageError } from "./errors";
+import {
+  BadInputError,
+  InvalidInputError,
+  UnauthorizedMessageError,
+} from "./errors";
 import { WebhookObject } from "./external/whatsapp/types/webhooks";
 import { WAMessageType, WATextMessage } from "./handlers/types";
+import { Prayer } from "./datasource/entities/Schedule";
 
 export function errorToHttpStatusCode(error: Error) {
   if (error instanceof BadInputError) {
@@ -58,4 +63,15 @@ export function extractTextFromMessage(
     timestamp: message.entry[0].changes[0].value.messages[0]?.timestamp,
     message: msgText,
   };
+}
+
+export function prayerHebName(prayer: Prayer): string {
+  switch (prayer) {
+    case Prayer.Shacharit:
+      return "שחרית";
+    case Prayer.Mincha:
+      return "מנחה";
+    default:
+      return "ערבית";
+  }
 }
