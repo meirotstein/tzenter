@@ -2,7 +2,10 @@ import { WhatsappClient } from "../clients/WhatsappClient";
 import { Context, ContextType } from "../conversation/context";
 import { handleSchedule } from "../conversation/scheduledMessages";
 import { ScheduleContext } from "../conversation/types";
-import { getUpcomingSchedules } from "../datasource/scheduleRepository";
+import {
+  getScheduleById,
+  getUpcomingSchedules,
+} from "../datasource/scheduleRepository";
 import { HandlerRequest, HandlerResponse, IHandler } from "./types";
 
 const oneHourInMinutes = 60;
@@ -24,12 +27,13 @@ export class ScheduleHandler implements IHandler {
     console.log("next relevant schedules", nextSchedules.length);
 
     const scheduleActions: Array<Promise<string>> = [];
-    for (const schedule of nextSchedules) {
+    for (const upcomingSchedule of nextSchedules) {
       const context: Context<ScheduleContext> = new Context<ScheduleContext>(
-        String(schedule.id),
+        String(upcomingSchedule.id),
         ContextType.Schedule
       );
-      scheduleActions.push(handleSchedule(this.waClient, schedule, context));
+      const schedule = await getScheduleById(upcomingSchedule.id);
+      scheduleActions.push(handleSchedule(this.waClient, schedule!, context));
     }
 
     const statuses = await Promise.all(scheduleActions);

@@ -1,7 +1,10 @@
 import { WhatsappClient } from "../../src/clients/WhatsappClient";
 import { Context } from "../../src/conversation/context";
 import { handleSchedule } from "../../src/conversation/scheduledMessages";
-import { getUpcomingSchedules } from "../../src/datasource/scheduleRepository";
+import {
+  getScheduleById,
+  getUpcomingSchedules,
+} from "../../src/datasource/scheduleRepository";
 import { ScheduleHandler } from "../../src/handlers/ScheduleHandler";
 
 jest.mock("../../src/clients/WhatsappClient");
@@ -28,13 +31,17 @@ describe("ScheduleHandler", () => {
 
   it("should handle schedules and return statuses", async () => {
     const mockSchedules = [
-      { id: 1, message: "Test message 1" },
-      { id: 2, message: "Test message 2" },
+      { id: 101, message: "Updated message 1" },
+      { id: 102, message: "Updated message 2" },
     ];
+    const mockScheduleByIdResult = { id: 101, message: "Updated message 1" };
     (getUpcomingSchedules as jest.Mock).mockResolvedValue(mockSchedules);
+    (getScheduleById as jest.Mock).mockResolvedValueOnce(
+      mockScheduleByIdResult
+    );
     (handleSchedule as jest.Mock)
-      .mockResolvedValueOnce("success-1")
-      .mockResolvedValueOnce("success-2");
+      .mockResolvedValueOnce("success-101")
+      .mockResolvedValueOnce("success-102");
 
     const response = await scheduleHandler.handle({});
 
@@ -42,12 +49,12 @@ describe("ScheduleHandler", () => {
     expect(handleSchedule).toHaveBeenCalledTimes(2);
     expect(handleSchedule).toHaveBeenCalledWith(
       expect.any(WhatsappClient),
-      mockSchedules[0],
+      mockScheduleByIdResult,
       expect.any(Context)
     );
     expect(handleSchedule).toHaveBeenCalledWith(
       expect.any(WhatsappClient),
-      mockSchedules[1],
+      mockScheduleByIdResult,
       expect.any(Context)
     );
     expect(response).toEqual({ status: "done" });
