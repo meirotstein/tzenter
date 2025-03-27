@@ -1,4 +1,5 @@
 import { MessageHandler } from "./MessageHandler";
+import { ScheduleHandler } from "./ScheduleHandler";
 import { Endpoint, IHandler } from "./types";
 import { VerificationHandler } from "./VerificationHandler";
 
@@ -10,6 +11,11 @@ export class HandlerFactory {
       }
       if (method === "GET") {
         return new VerificationHandler();
+      }
+    }
+    if (endpoint === Endpoint.ON_SCHEDULE) {
+      if (method === "GET") {
+        return new ScheduleHandler();
       }
     }
   }

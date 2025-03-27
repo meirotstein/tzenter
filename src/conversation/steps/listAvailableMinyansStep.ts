@@ -2,6 +2,7 @@ import { WhatsappClient } from "../../clients/WhatsappClient";
 import { getAllMinyans } from "../../datasource/minyansRepository";
 import { getUserByPhone } from "../../datasource/usersRepository";
 import { UnexpectedUserInputError } from "../../errors";
+import { UserContext } from "../../handlers/types";
 import { Context } from "../context";
 import { Step } from "../types";
 import { selectedMinyanStep } from "./selectedMinyanStep";
@@ -12,7 +13,7 @@ export const listAvailableMinyansStep: Step = {
     userNum: number,
     waClient: WhatsappClient,
     userText: string,
-    context: Context
+    context: Context<UserContext>
   ) => {
     let user = await getUserByPhone(userNum.toString());
     const minyans = await getAllMinyans();
@@ -34,17 +35,17 @@ export const listAvailableMinyansStep: Step = {
       });
       minyansText += `\n\n כדי להמשיך יש להזין את מספר המניין הרצוי`;
       await waClient.sendTextMessage(userNum, minyansText);
-      await context.updateUserContext({ context: { availableMinyans } });
+      await context.update({ context: { availableMinyans } });
     }
   },
-  getNextStepId: async (userText: string, context: Context) => {
+  getNextStepId: async (userText: string, context: Context<UserContext>) => {
     const expectedSelection = Number(userText);
     if (isNaN(expectedSelection)) {
       console.log("userText is not a number", userText);
       throw new UnexpectedUserInputError(userText);
     }
     const availableMinyans: Array<{ minyanId: number; minyanIndex: number }> = (
-      await context.getUserContext()
+      await context.get()
     )?.context?.availableMinyans;
 
     const selection = availableMinyans?.find(
@@ -56,7 +57,7 @@ export const listAvailableMinyansStep: Step = {
       throw new UnexpectedUserInputError(userText);
     }
 
-    await context.updateUserContext({
+    await context.update({
       context: { selectedMinyanId: selection.minyanId },
     });
     return Promise.resolve(selectedMinyanStep.id);

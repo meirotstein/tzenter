@@ -1,4 +1,4 @@
-import { Context } from "../../src/conversation/context";
+import { Context, ContextType } from "../../src/conversation/context";
 import { KVClient } from "../../src/clients/KVClient";
 import { UserContext } from "../../src/handlers/types";
 
@@ -12,13 +12,13 @@ describe("Context", () => {
     context: { data: "step" },
   };
 
-  let context: Context;
+  let context: Context<UserContext>;
 
   beforeEach(() => {
     mockKVClient.prototype.set = jest.fn();
     mockKVClient.prototype.get = jest.fn();
     mockKVClient.prototype.del = jest.fn();
-    context = new Context(userReferenceId);
+    context = new Context<UserContext>(userReferenceId, ContextType.User);
   });
 
   afterEach(() => {
@@ -26,7 +26,7 @@ describe("Context", () => {
   });
 
   it("should set user context", async () => {
-    await context.setUserContext(mockUserContext);
+    await context.set(mockUserContext);
 
     expect(mockKVClient.prototype.set).toHaveBeenCalledWith(
       expect.stringMatching(new RegExp(`${userReferenceId}$`)),
@@ -37,16 +37,18 @@ describe("Context", () => {
   it("should get user context", async () => {
     mockKVClient.prototype.get.mockResolvedValue(mockUserContext);
 
-    const result = await context.getUserContext();
+    const result = await context.get();
 
-    expect(mockKVClient.prototype.get).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`${userReferenceId}$`)));
+    expect(mockKVClient.prototype.get).toHaveBeenCalledWith(
+      expect.stringMatching(new RegExp(`${userReferenceId}$`))
+    );
     expect(result).toEqual(mockUserContext);
   });
 
   it("should return null if user context does not exist", async () => {
     mockKVClient.prototype.get.mockResolvedValue(null);
 
-    const result = await context.getUserContext();
+    const result = await context.get();
 
     expect(mockKVClient.prototype.get).toHaveBeenCalledWith(
       expect.stringMatching(new RegExp(`${userReferenceId}$`))
@@ -60,7 +62,7 @@ describe("Context", () => {
 
     mockKVClient.prototype.get.mockResolvedValue(mockUserContext);
 
-    const result = await context.updateUserContext(partialContext);
+    const result = await context.update(partialContext);
 
     expect(mockKVClient.prototype.get).toHaveBeenCalledWith(
       expect.stringMatching(new RegExp(`${userReferenceId}$`))
@@ -73,7 +75,7 @@ describe("Context", () => {
   });
 
   it("should delete user context", async () => {
-    await context.deleteUserContext();
+    await context.delete();
 
     expect(mockKVClient.prototype.del).toHaveBeenCalledWith(
       expect.stringMatching(new RegExp(`${userReferenceId}$`))

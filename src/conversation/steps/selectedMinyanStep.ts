@@ -2,6 +2,7 @@ import { WhatsappClient } from "../../clients/WhatsappClient";
 import { getMinyanById } from "../../datasource/minyansRepository";
 import { getUserByPhone } from "../../datasource/usersRepository";
 import { UnexpectedUserInputError } from "../../errors";
+import { UserContext } from "../../handlers/types";
 import { noWords, yesWords } from "../consts";
 import { Context } from "../context";
 import { Step } from "../types";
@@ -14,10 +15,9 @@ export const selectedMinyanStep: Step = {
     userNum: number,
     waClient: WhatsappClient,
     userText: string,
-    context: Context
+    context: Context<UserContext>
   ) => {
-    const selectedMinyanId = (await context.getUserContext())?.context
-      ?.selectedMinyanId;
+    const selectedMinyanId = (await context.get())?.context?.selectedMinyanId;
     if (!selectedMinyanId) {
       throw new Error("selectedMinyan is not defined in context");
     }
@@ -40,21 +40,20 @@ export const selectedMinyanStep: Step = {
       ? "אתה כבר רשום למניין זה, האם אתה מעוניין להסיר את ההרשמה?"
       : "האם אתה רוצה להירשם למניין זה?";
     await waClient.sendTextMessage(userNum, responseText);
-    await context.updateUserContext({
+    await context.update({
       context: { isUserRegistered, userId: user.id, minyanId: minyan.id },
     });
   },
-  getNextStepId: async (userText: string, context: Context) => {
+  getNextStepId: async (userText: string, context: Context<UserContext>) => {
     if (yesWords.includes(userText.toLowerCase())) {
-      const isUserRegistered = (await context.getUserContext())?.context
-        ?.isUserRegistered;
+      const isUserRegistered = (await context.get())?.context?.isUserRegistered;
       if (isUserRegistered) {
         return unregisterMinyanStep.id;
       }
       return registerMinyanStep.id;
     }
     if (noWords.includes(userText.toLowerCase())) {
-      await context.deleteUserContext();
+      await context.delete();
       return undefined;
     }
     throw new UnexpectedUserInputError(userText);

@@ -1,6 +1,6 @@
 import { WhatsappClient } from "../clients/WhatsappClient";
 import { getHookStep, getInitialStep, getStep } from "../conversation";
-import { Context } from "../conversation/context";
+import { Context, ContextType } from "../conversation/context";
 import {
   sendSystemMessage,
   SystemMessages,
@@ -13,6 +13,7 @@ import {
   HandlerRequest,
   HandlerResponse,
   IHandler,
+  UserContext,
   WATextMessage,
 } from "./types";
 
@@ -55,10 +56,10 @@ export class MessageHandler implements IHandler {
 
     const recipientPhoneNum = message.recipient.phoneNum;
 
-    const context = new Context(recipientPhoneNum);
+    const context = new Context<UserContext>(recipientPhoneNum, ContextType.User);
 
     try {
-      const userContext = await context.getUserContext();
+      const userContext = await context.get();
 
       if (!userContext?.currentStepId) {
         return await this.initialMessage(+recipientPhoneNum, message, context);
@@ -104,7 +105,7 @@ export class MessageHandler implements IHandler {
         return await this.systemMessageUnexpected(+recipientPhoneNum);
       } else {
         console.log("unexpected error occurred, resetting user state", e);
-        await context.deleteUserContext();
+        await context.delete();
       }
     }
   }
@@ -112,7 +113,7 @@ export class MessageHandler implements IHandler {
   async initialMessage(
     phoneNum: number,
     message: WATextMessage,
-    context: Context
+    context: Context<UserContext>
   ) {
     const initialStep = getInitialStep();
     await initialStep.action(
@@ -128,14 +129,14 @@ export class MessageHandler implements IHandler {
 
   async nextMessage(
     step: Step,
-    context: Context,
+    context: Context<UserContext>,
     phoneNum: number,
     message: WATextMessage
   ) {
     const nextStepId = await step.getNextStepId(message.message!, context);
     if (!nextStepId) {
       console.log("next step not found - final step");
-      await context.deleteUserContext();
+      await context.delete();
       return;
     }
     const nextStep = getStep(nextStepId);
@@ -143,13 +144,13 @@ export class MessageHandler implements IHandler {
       throw new Error(`next step not found ${nextStepId}`); //unexpected error
     }
     await nextStep.action(phoneNum, this.waClient, message.message!, context);
-    await context.updateUserContext({ currentStepId: nextStepId });
+    await context.update({ currentStepId: nextStepId });
 
     return { status: "Message received" };
   }
 
   async hookMessage(
-    context: Context,
+    context: Context<UserContext>,
     phoneNum: number,
     message: WATextMessage
   ) {
@@ -157,7 +158,7 @@ export class MessageHandler implements IHandler {
     if (hookStep) {
       console.log("hook step found", hookStep.id);
       await hookStep.action(phoneNum, this.waClient, message.message!, context);
-      await context.updateUserContext({ currentStepId: hookStep.id });
+      await context.update({ currentStepId: hookStep.id });
       return { status: "Message received" };
     }
   }

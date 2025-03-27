@@ -1,5 +1,6 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { assignUserToAMinyan } from "../../datasource/usersRepository";
+import { UserContext } from "../../handlers/types";
 import { Context } from "../context";
 import { Step } from "../types";
 
@@ -9,9 +10,9 @@ export const registerMinyanStep: Step = {
     userNum: number,
     waClient: WhatsappClient,
     userText: string,
-    context: Context
+    context: Context<UserContext>
   ) => {
-    const userContext = (await context.getUserContext())?.context;
+    const userContext = (await context.get())?.context;
     if (isNaN(userContext?.userId) || isNaN(userContext?.minyanId)) {
       throw new Error("userId/minyanId is not defined in context");
     }
@@ -21,8 +22,8 @@ export const registerMinyanStep: Step = {
     let responseText = "ההרשמה למניין בוצעה בהצלחה";
 
     await waClient.sendTextMessage(userNum, responseText);
-    await context.deleteUserContext();
+    await context.delete();
   },
-  getNextStepId: async (userText: string, context: Context) =>
+  getNextStepId: async (userText: string, context: Context<UserContext>) =>
     Promise.resolve(undefined),
 };

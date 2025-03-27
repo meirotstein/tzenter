@@ -2,6 +2,7 @@ import { IncomingHttpHeaders } from "http";
 
 export enum Endpoint {
   ON_MESSAGE = "onMessage",
+  ON_SCHEDULE = "onSchedule",
 }
 
 export type HandlerRequest = {
