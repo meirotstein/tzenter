@@ -18,6 +18,7 @@ module.exports = async (req: VercelRequest, res: VercelResponse) => {
     const response = await handler.handle(req);
     return res.status(200).send(response);
   } catch (e: any) {
+    console.error("scheduled invocation failed", e);
     return res.status(errorToHttpStatusCode(e)).send(e.message);
   }
 };
