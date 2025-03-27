@@ -5,7 +5,7 @@ import {
   sendSystemMessage,
   SystemMessages,
 } from "../conversation/systemMessages";
-import { Step } from "../conversation/types";
+import { Step, UserContext } from "../conversation/types";
 import { UnexpectedUserInputError } from "../errors";
 import { WebhookObject } from "../external/whatsapp/types/webhooks";
 import { extractTextFromMessage } from "../utils";
@@ -13,7 +13,6 @@ import {
   HandlerRequest,
   HandlerResponse,
   IHandler,
-  UserContext,
   WATextMessage,
 } from "./types";
 
@@ -56,7 +55,10 @@ export class MessageHandler implements IHandler {
 
     const recipientPhoneNum = message.recipient.phoneNum;
 
-    const context = new Context<UserContext>(recipientPhoneNum, ContextType.User);
+    const context = new Context<UserContext>(
+      recipientPhoneNum,
+      ContextType.User
+    );
 
     try {
       const userContext = await context.get();

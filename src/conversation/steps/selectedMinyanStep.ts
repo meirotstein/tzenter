@@ -2,10 +2,9 @@ import { WhatsappClient } from "../../clients/WhatsappClient";
 import { getMinyanById } from "../../datasource/minyansRepository";
 import { getUserByPhone } from "../../datasource/usersRepository";
 import { UnexpectedUserInputError } from "../../errors";
-import { UserContext } from "../../handlers/types";
 import { noWords, yesWords } from "../consts";
 import { Context } from "../context";
-import { Step } from "../types";
+import { Step, UserContext } from "../types";
 import { registerMinyanStep } from "./registerMinyanStep";
 import { unregisterMinyanStep } from "./unregisterMinyanStep";
 

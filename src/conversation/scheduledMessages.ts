@@ -1,0 +1,62 @@
+import { getInitScheduleStep, getProcessingScheduleStep } from ".";
+import {
+  ScheduleContext,
+  UserContext,
+} from "../../.vercel/output/static/src/conversation/types";
+import { WhatsappClient } from "../clients/WhatsappClient";
+import { Schedule } from "../datasource/entities/Schedule";
+import { getMinyanById } from "../datasource/minyansRepository";
+import { Context, ContextType } from "./context";
+import { ScheduleStatus, Step } from "./types";
+
+export async function handleSchedule(
+  waClient: WhatsappClient,
+  schedule: Schedule,
+  context: Context<ScheduleContext>
+): Promise<string> {
+  const scheduleContext = await context.get();
+
+  const minyan = await getMinyanById(schedule.minyan.id);
+
+  if (!minyan) {
+    throw new Error(`Minyan with id ${schedule.minyan.id} not found`);
+  }
+
+  const scheduleActions: Array<Promise<void>> = [];
+
+  schedule.minyan.users?.forEach(async (user) => {
+    let scheduleStep: Step;
+
+    if (scheduleContext?.status === ScheduleStatus.initiated) {
+      // schedule is already initiated
+      scheduleStep = getProcessingScheduleStep();
+    } else {
+      // initiate the schedule
+      scheduleStep = getInitScheduleStep();
+    }
+
+    const userContext = new Context<UserContext>(
+      String(user.id),
+      ContextType.User
+    );
+    await userContext.set({
+      currentStepId: scheduleStep.id,
+      context: {
+        schedule: schedule,
+        minyan: minyan,
+      },
+    });
+    scheduleActions.push(scheduleStep.action(+user.phone, waClient, "", userContext));
+  });
+  await Promise.all(scheduleActions);
+
+  const status = scheduleContext?.status
+    ? ScheduleStatus.processing
+    : ScheduleStatus.initiated;
+
+  context.set({
+    status,
+  });
+
+  return status;
+}

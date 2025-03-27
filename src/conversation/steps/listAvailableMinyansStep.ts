@@ -2,9 +2,8 @@ import { WhatsappClient } from "../../clients/WhatsappClient";
 import { getAllMinyans } from "../../datasource/minyansRepository";
 import { getUserByPhone } from "../../datasource/usersRepository";
 import { UnexpectedUserInputError } from "../../errors";
-import { UserContext } from "../../handlers/types";
 import { Context } from "../context";
-import { Step } from "../types";
+import { Step, UserContext } from "../types";
 import { selectedMinyanStep } from "./selectedMinyanStep";
 
 export const listAvailableMinyansStep: Step = {

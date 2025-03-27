@@ -1,8 +1,7 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { removeUserFromMinyan } from "../../datasource/usersRepository";
-import { UserContext } from "../../handlers/types";
 import { Context } from "../context";
-import { Step } from "../types";
+import { Step, UserContext } from "../types";
 
 export const unregisterMinyanStep: Step = {
   id: "unregisterMinyanStep",

@@ -1,6 +1,6 @@
 import { Context, ContextType } from "../../src/conversation/context";
 import { KVClient } from "../../src/clients/KVClient";
-import { UserContext } from "../../src/handlers/types";
+import { UserContext } from '../../.vercel/output/static/src/conversation/types';
 
 jest.mock("../../src/clients/KVClient");
 

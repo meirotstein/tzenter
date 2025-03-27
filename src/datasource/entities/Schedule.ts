@@ -37,5 +37,5 @@ export class Schedule {
   @Column({ type: "time" })
   time!: string;
 
-  // TODO: refer schedule type: one-time, recurring
+  // TODO: refer schedule type: one-time (= initiatedByUserId), recurring
 }

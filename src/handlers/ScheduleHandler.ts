@@ -1,5 +1,11 @@
 import { WhatsappClient } from "../clients/WhatsappClient";
+import { Context, ContextType } from "../conversation/context";
+import { handleSchedule } from "../conversation/scheduledMessages";
+import { ScheduleContext } from "../conversation/types";
+import { getUpcomingSchedules } from "../datasource/scheduleRepository";
 import { HandlerRequest, HandlerResponse, IHandler } from "./types";
+
+const oneHourInMinutes = 60;
 
 export class ScheduleHandler implements IHandler {
   private waClient: WhatsappClient;
@@ -13,12 +19,26 @@ export class ScheduleHandler implements IHandler {
       time: new Date().toISOString(),
     });
 
-    // Impl
+    const nextSchedules = await getUpcomingSchedules(oneHourInMinutes);
+
+    console.log("next relevant schedules", nextSchedules.length);
+
+    const scheduleActions: Array<Promise<string>> = [];
+    for (const schedule of nextSchedules) {
+      const context: Context<ScheduleContext> = new Context<ScheduleContext>(
+        String(schedule.id),
+        ContextType.Schedule
+      );
+      scheduleActions.push(handleSchedule(this.waClient, schedule, context));
+    }
+
+    const statuses = await Promise.all(scheduleActions);
 
     console.log("schedule messages ended", {
+      statuses,
       time: new Date().toISOString(),
     });
 
-    return { status: "success" }; // TODO: return schedule stats
+    return { status: "done" };
   }
 }

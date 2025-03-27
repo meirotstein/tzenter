@@ -6,7 +6,7 @@ export enum Endpoint {
 }
 
 export type HandlerRequest = {
-  headers? : IncomingHttpHeaders;
+  headers?: IncomingHttpHeaders;
   query?: Record<string, string | string[]>;
   body?: Record<string, any>;
 };
@@ -18,7 +18,7 @@ export interface IHandler {
 }
 
 export type WATextMessage = {
-  type: WAMessageType,
+  type: WAMessageType;
   id: string;
   recipient: {
     phoneNum: string;
@@ -31,10 +31,4 @@ export type WATextMessage = {
 export enum WAMessageType {
   TEXT = "text",
   TEMPLATE = "template",
-}
-
-export type UserContext = {
-  currentStepId?: string;
-  context?: Record<string, any>;
-  retry?: boolean;
 }

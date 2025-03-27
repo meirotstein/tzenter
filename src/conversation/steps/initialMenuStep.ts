@@ -1,8 +1,7 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { UnexpectedUserInputError } from "../../errors";
-import { UserContext } from "../../handlers/types";
 import { Context } from "../context";
-import { Step } from "../types";
+import { Step, UserContext } from "../types";
 import { getUserMinyansStep } from "./getUserMinyansStep";
 import { listAvailableMinyansStep } from "./listAvailableMinyansStep";
 

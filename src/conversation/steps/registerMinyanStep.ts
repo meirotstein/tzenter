@@ -1,8 +1,7 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { assignUserToAMinyan } from "../../datasource/usersRepository";
-import { UserContext } from "../../handlers/types";
 import { Context } from "../context";
-import { Step } from "../types";
+import { Step, UserContext } from "../types";
 
 export const registerMinyanStep: Step = {
   id: "registerMinyanStep",

@@ -36,3 +36,9 @@ export function getInitialStep(): Step {
 export function getHookStep(userText: string): Step | undefined {
   return hooks[userText];
 }
+
+export function getInitScheduleStep(): Step {
+}
+
+export function getProcessingScheduleStep(): Step {
+}
