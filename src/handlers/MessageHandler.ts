@@ -123,7 +123,7 @@ export class MessageHandler implements IHandler {
       context
     );
     const newUserContext = { currentStepId: initialStep.id };
-    await context.setUserContext(newUserContext);
+    await context.set(newUserContext);
     return { status: "Message received - initial" };
   }
 
