@@ -23,7 +23,7 @@ export const initScheduleStep: Step = {
     const schedule: Schedule = userContext.schedule;
     const minyan: Minyan = userContext.minyan;
 
-    waClient.sendTemplateMessage(userNum, templates.schedule_by_system, {
+    await waClient.sendTemplateMessage(userNum, templates.schedule_by_system, {
       minyan_name: minyan.name,
       prayer: prayerHebName(schedule.prayer),
       time: DateTime.fromISO(schedule.time).toFormat("HH:mm"),

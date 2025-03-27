@@ -24,7 +24,7 @@ export async function handleSchedule(
 
   const scheduleActions: Array<Promise<void>> = [];
 
-  schedule.minyan.users?.forEach(async (user) => {
+  minyan.users?.forEach(async (user) => {
     let scheduleStep: Step;
 
     if (scheduleContext?.status === ScheduleStatus.initiated) {
