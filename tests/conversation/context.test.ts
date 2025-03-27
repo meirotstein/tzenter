@@ -29,7 +29,7 @@ describe("Context", () => {
     await context.setUserContext(mockUserContext);
 
     expect(mockKVClient.prototype.set).toHaveBeenCalledWith(
-      userReferenceId,
+      expect.stringMatching(new RegExp(`${userReferenceId}$`)),
       mockUserContext
     );
   });
@@ -39,7 +39,7 @@ describe("Context", () => {
 
     const result = await context.getUserContext();
 
-    expect(mockKVClient.prototype.get).toHaveBeenCalledWith(userReferenceId);
+    expect(mockKVClient.prototype.get).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`${userReferenceId}$`)));
     expect(result).toEqual(mockUserContext);
   });
 
@@ -48,7 +48,9 @@ describe("Context", () => {
 
     const result = await context.getUserContext();
 
-    expect(mockKVClient.prototype.get).toHaveBeenCalledWith(userReferenceId);
+    expect(mockKVClient.prototype.get).toHaveBeenCalledWith(
+      expect.stringMatching(new RegExp(`${userReferenceId}$`))
+    );
     expect(result).toBeNull();
   });
 
@@ -60,9 +62,11 @@ describe("Context", () => {
 
     const result = await context.updateUserContext(partialContext);
 
-    expect(mockKVClient.prototype.get).toHaveBeenCalledWith(userReferenceId);
+    expect(mockKVClient.prototype.get).toHaveBeenCalledWith(
+      expect.stringMatching(new RegExp(`${userReferenceId}$`))
+    );
     expect(mockKVClient.prototype.set).toHaveBeenCalledWith(
-      userReferenceId,
+      expect.stringMatching(new RegExp(`${userReferenceId}$`)),
       updatedContext
     );
     expect(result).toEqual(updatedContext);
@@ -71,6 +75,8 @@ describe("Context", () => {
   it("should delete user context", async () => {
     await context.deleteUserContext();
 
-    expect(mockKVClient.prototype.del).toHaveBeenCalledWith(userReferenceId);
+    expect(mockKVClient.prototype.del).toHaveBeenCalledWith(
+      expect.stringMatching(new RegExp(`${userReferenceId}$`))
+    );
   });
 });

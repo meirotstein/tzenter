@@ -14,7 +14,7 @@ const AppDataSource = new DataSource(
         database: ":memory:",
         entities: [User, Minyan, Schedule],
         synchronize: true,
-        logging: ["query", "error"],
+        // logging: ["query", "error"],
       }
     : {
         type: "postgres",
@@ -27,7 +27,7 @@ const AppDataSource = new DataSource(
           rejectUnauthorized: false,
         },
         synchronize: true,
-        logging: true,
+        // logging: true,
         entities: [User, Minyan, Schedule],
         migrations: [],
         subscribers: [],

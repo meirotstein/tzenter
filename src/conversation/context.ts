@@ -3,6 +3,9 @@ import { UserContext } from "../handlers/types";
 
 export class Context {
   private kvClient: KVClient;
+  private get userContextKey(): string {
+    return `user:${this.userReferenceId}`;
+  }
 
   constructor(private userReferenceId: string) {
     this.kvClient = new KVClient(
@@ -12,7 +15,7 @@ export class Context {
   }
 
   async setUserContext(context: UserContext) {
-    await this.kvClient.set(this.userReferenceId, context);
+    await this.kvClient.set(this.userContextKey, context);
   }
 
   async updateUserContext(context: Partial<UserContext>): Promise<UserContext> {
@@ -21,15 +24,15 @@ export class Context {
       ...existingContext,
       ...context,
     };
-    await this.kvClient.set(this.userReferenceId, updatedContext);
+    await this.kvClient.set(this.userContextKey, updatedContext);
     return updatedContext;
   }
 
   async getUserContext(): Promise<UserContext | null> {
-    return await this.kvClient.get(this.userReferenceId);
+    return await this.kvClient.get(this.userContextKey);
   }
 
   async deleteUserContext() {
-    await this.kvClient.del(this.userReferenceId);
+    await this.kvClient.del(this.userContextKey);
   }
 }
