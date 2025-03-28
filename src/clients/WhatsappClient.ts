@@ -3,12 +3,14 @@ import {
   ComponentTypesEnum,
   LanguagesEnum,
   ParametersTypesEnum,
+  WAConfigEnum,
 } from "whatsapp/build/types/enums";
 
 export class WhatsappClient {
   wa: WhatsApp;
   constructor(senderId: number) {
     this.wa = new WhatsApp(senderId);
+    this.wa.config[WAConfigEnum.Debug] = process.env.DEBUG === "true";
   }
 
   sendTextMessage = async (

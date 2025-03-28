@@ -2,10 +2,11 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { Minyan } from "./entities/Minyan";
-import { User } from "./entities/User";
 import { Schedule } from "./entities/Schedule";
+import { User } from "./entities/User";
 
 const isTestEnv = process.env.NODE_ENV === "test";
+const isDebugEnabled = process.env.DEBUG === "true";
 
 const AppDataSource = new DataSource(
   isTestEnv
@@ -14,7 +15,7 @@ const AppDataSource = new DataSource(
         database: ":memory:",
         entities: [User, Minyan, Schedule],
         synchronize: true,
-        // logging: ["query", "error"],
+        logging: isDebugEnabled ? ["query", "error"] : undefined,
       }
     : {
         type: "postgres",
@@ -27,7 +28,7 @@ const AppDataSource = new DataSource(
           rejectUnauthorized: false,
         },
         synchronize: true,
-        // logging: true,
+        logging: isDebugEnabled,
         entities: [User, Minyan, Schedule],
         migrations: [],
         subscribers: [],
