@@ -9,6 +9,7 @@ import {
 import { HandlerRequest, HandlerResponse, IHandler } from "./types";
 
 const oneHourInMinutes = 60;
+const oneHourInSeconds = 60 * oneHourInMinutes;
 
 export class ScheduleHandler implements IHandler {
   private waClient: WhatsappClient;
@@ -30,7 +31,8 @@ export class ScheduleHandler implements IHandler {
     for (const upcomingSchedule of nextSchedules) {
       const context: Context<ScheduleContext> = new Context<ScheduleContext>(
         String(upcomingSchedule.id),
-        ContextType.Schedule
+        ContextType.Schedule,
+        oneHourInSeconds
       );
       const schedule = await getScheduleById(upcomingSchedule.id);
       scheduleActions.push(handleSchedule(this.waClient, schedule!, context));

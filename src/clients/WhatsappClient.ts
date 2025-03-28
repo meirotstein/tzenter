@@ -32,8 +32,6 @@ export class WhatsappClient {
   ): Promise<Record<string, any>> => {
     console.log("sending template message", recipientPhoneNum, name, params);
 
-    // TODO: add support for params - map to components (https://whatsapp.github.io/WhatsApp-Nodejs-SDK/api-reference/messages/template)
-
     const parameters = [];
     for (const key in params) {
       parameters.push({

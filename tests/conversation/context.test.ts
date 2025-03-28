@@ -1,6 +1,6 @@
-import { Context, ContextType } from "../../src/conversation/context";
+import { UserContext } from "../../.vercel/output/static/src/conversation/types";
 import { KVClient } from "../../src/clients/KVClient";
-import { UserContext } from '../../.vercel/output/static/src/conversation/types';
+import { Context, ContextType } from "../../src/conversation/context";
 
 jest.mock("../../src/clients/KVClient");
 
@@ -30,7 +30,8 @@ describe("Context", () => {
 
     expect(mockKVClient.prototype.set).toHaveBeenCalledWith(
       expect.stringMatching(new RegExp(`${userReferenceId}$`)),
-      mockUserContext
+      mockUserContext,
+      1800
     );
   });
 
@@ -69,7 +70,8 @@ describe("Context", () => {
     );
     expect(mockKVClient.prototype.set).toHaveBeenCalledWith(
       expect.stringMatching(new RegExp(`${userReferenceId}$`)),
-      updatedContext
+      updatedContext,
+      1800
     );
     expect(result).toEqual(updatedContext);
   });

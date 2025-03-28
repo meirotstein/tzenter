@@ -10,7 +10,11 @@ export class Context<T> {
     return `${this.contextType}:${this.referenceId}`;
   }
 
-  constructor(private referenceId: string, private contextType: ContextType) {
+  constructor(
+    private referenceId: string,
+    private contextType: ContextType,
+    private expirationSecs: number = 60 * 30
+  ) {
     this.kvClient = new KVClient(
       process.env.KV_REST_API_TOKEN!,
       process.env.KV_REST_API_URL!
@@ -18,7 +22,7 @@ export class Context<T> {
   }
 
   async set(context: T) {
-    await this.kvClient.set(this.contextKey, context);
+    await this.kvClient.set(this.contextKey, context, this.expirationSecs);
   }
 
   async update(context: Partial<T>): Promise<T> {
@@ -27,7 +31,11 @@ export class Context<T> {
       ...existingContext,
       ...context,
     } as T;
-    await this.kvClient.set(this.contextKey, updatedContext);
+    await this.kvClient.set(
+      this.contextKey,
+      updatedContext,
+      this.expirationSecs
+    );
     return updatedContext;
   }
 
