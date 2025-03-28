@@ -28,7 +28,8 @@ export async function handleSchedule(
     minyanId: minyan.id,
     userLen: minyan.users?.length,
   });
-  minyan.users?.forEach(async (user) => {
+
+  for (const user of minyan.users ?? []) {
     let scheduleStep: Step;
 
     if (scheduleContext?.status === ScheduleStatus.initiated) {
@@ -53,7 +54,8 @@ export async function handleSchedule(
     scheduleActions.push(
       scheduleStep.action(+user.phone, waClient, "", userContext)
     );
-  });
+  }
+
   await Promise.all(scheduleActions);
 
   const status = scheduleContext?.status
