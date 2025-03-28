@@ -28,11 +28,17 @@ export const initScheduleStep: Step = {
       userNum,
     });
 
-    await waClient.sendTemplateMessage(userNum, templates.schedule_by_system, {
-      minyan_name: minyan.name,
-      prayer: prayerHebName(schedule.prayer),
-      time: DateTime.fromISO(schedule.time).toFormat("HH:mm"),
-    });
+    const res = await waClient.sendTemplateMessage(
+      userNum,
+      templates.schedule_by_system,
+      {
+        minyan_name: minyan.name,
+        prayer: prayerHebName(schedule.prayer),
+        time: DateTime.fromISO(schedule.time).toFormat("HH:mm"),
+      }
+    );
+
+    console.log("schedule by system sent", res);
   },
   getNextStepId: async (userText: string, context: Context<UserContext>) =>
     Promise.resolve(undefined),
