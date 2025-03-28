@@ -38,6 +38,7 @@ export class WhatsappClient {
     for (const key in params) {
       parameters.push({
         type: ParametersTypesEnum.Text,
+        parameter_name: key,
         text: String(params[key]),
       });
     }

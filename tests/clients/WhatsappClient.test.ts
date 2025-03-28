@@ -13,8 +13,12 @@ describe("WhatsappClient", () => {
       value: { text: jest.fn() },
       writable: true,
     });
+    Object.defineProperty(mockWhatsAppInstance, "config", {
+      value: {},
+      writable: true,
+    });
     (WhatsApp as jest.Mock).mockImplementation(() => mockWhatsAppInstance);
-    whatsappClient = new WhatsappClient("fakeAccessToken", 12345);
+    whatsappClient = new WhatsappClient(12345);
   });
 
   afterEach(() => {
