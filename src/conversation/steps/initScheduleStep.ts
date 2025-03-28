@@ -23,6 +23,11 @@ export const initScheduleStep: Step = {
     const schedule: Schedule = userContext.schedule;
     const minyan: Minyan = userContext.minyan;
 
+    console.log("sending schedule by system", {
+      minyanId: minyan.id,
+      userNum,
+    });
+
     await waClient.sendTemplateMessage(userNum, templates.schedule_by_system, {
       minyan_name: minyan.name,
       prayer: prayerHebName(schedule.prayer),

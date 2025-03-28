@@ -24,6 +24,10 @@ export async function handleSchedule(
 
   const scheduleActions: Array<Promise<void>> = [];
 
+  console.log("scheduling messages for minyan", {
+    minyanId: minyan.id,
+    userLen: minyan.users?.length,
+  });
   minyan.users?.forEach(async (user) => {
     let scheduleStep: Step;
 
@@ -46,7 +50,9 @@ export async function handleSchedule(
         minyan,
       },
     });
-    scheduleActions.push(scheduleStep.action(+user.phone, waClient, "", userContext));
+    scheduleActions.push(
+      scheduleStep.action(+user.phone, waClient, "", userContext)
+    );
   });
   await Promise.all(scheduleActions);
 
@@ -54,7 +60,7 @@ export async function handleSchedule(
     ? ScheduleStatus.processing
     : ScheduleStatus.initiated;
 
-  context.set({
+  await context.set({
     status,
   });
 
