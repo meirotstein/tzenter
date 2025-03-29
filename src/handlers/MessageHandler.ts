@@ -55,7 +55,7 @@ export class MessageHandler implements IHandler {
 
     const recipientPhoneNum = message.recipient.phoneNum;
 
-    const context = new Context<UserContext>(
+    const context = Context.getContext<UserContext>(
       recipientPhoneNum,
       ContextType.User
     );

@@ -40,7 +40,7 @@ export async function handleSchedule(
       scheduleStep = getInitScheduleStep();
     }
 
-    const userContext = new Context<UserContext>(
+    const userContext = Context.getContext<UserContext>(
       String(user.id),
       ContextType.User
     );

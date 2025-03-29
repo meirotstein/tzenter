@@ -46,4 +46,22 @@ export class Context<T> {
   async delete() {
     await this.kvClient.del(this.contextKey);
   }
+
+  static getContext<T>(
+    referenceId: string,
+    contextType: ContextType
+  ): Context<T> {
+    let expirationSecs; // default expiration time
+    switch (contextType) {
+      case ContextType.User:
+        expirationSecs = 60 * 60; // 1 hour
+        break;
+      case ContextType.Schedule:
+        expirationSecs = 60 * 60; // 1 hour
+        break;
+      default:
+        throw new Error(`Invalid context type: ${contextType}`);
+    }
+    return new Context<T>(referenceId, contextType, expirationSecs);
+  }
 }

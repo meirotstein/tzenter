@@ -9,7 +9,6 @@ import {
 import { HandlerRequest, HandlerResponse, IHandler } from "./types";
 
 const oneHourInMinutes = 60;
-const oneHourInSeconds = 60 * oneHourInMinutes;
 
 export class ScheduleHandler implements IHandler {
   private waClient: WhatsappClient;
@@ -29,11 +28,11 @@ export class ScheduleHandler implements IHandler {
 
     const scheduleActions: Array<Promise<string>> = [];
     for (const upcomingSchedule of nextSchedules) {
-      const context: Context<ScheduleContext> = new Context<ScheduleContext>(
-        String(upcomingSchedule.id),
-        ContextType.Schedule,
-        oneHourInSeconds
-      );
+      const context: Context<ScheduleContext> =
+        Context.getContext<ScheduleContext>(
+          String(upcomingSchedule.id),
+          ContextType.Schedule
+        );
       const schedule = await getScheduleById(upcomingSchedule.id);
       scheduleActions.push(handleSchedule(this.waClient, schedule!, context));
     }

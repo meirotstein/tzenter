@@ -19,7 +19,8 @@ jest.mock("../../src/conversation", () => ({
 describe("handleSchedule", () => {
   let waClient: WhatsappClient;
   let schedule: Schedule;
-  let context: Context<any>;
+  let userContext: Context<any>;
+  let scheduleContext: Context<any>;
 
   beforeEach(() => {
     waClient = {} as WhatsappClient;
@@ -30,9 +31,12 @@ describe("handleSchedule", () => {
       },
     } as Schedule;
 
-    context = new Context("1", ContextType.Schedule);
-    jest.spyOn(context, "get").mockResolvedValue(null);
-    jest.spyOn(context, "set").mockResolvedValue();
+    userContext = new Context("1", ContextType.Schedule);
+    scheduleContext = new Context("1", ContextType.User);
+    jest.spyOn(userContext, "get").mockResolvedValue(null);
+    jest.spyOn(userContext, "set").mockResolvedValue();
+    jest.spyOn(scheduleContext, "get").mockResolvedValue(null);
+    jest.spyOn(scheduleContext, "set").mockResolvedValue();
 
     (getMinyanById as jest.Mock).mockResolvedValue({
       id: 1,
@@ -48,13 +52,15 @@ describe("handleSchedule", () => {
       id: "processingStep",
       action: jest.fn().mockResolvedValue(void 0),
     });
+
+    Context.getContext = jest.fn().mockReturnValue(scheduleContext);
   });
 
   it("should initiate the schedule if no context exists", async () => {
-    const result = await handleSchedule(waClient, schedule, context);
+    const result = await handleSchedule(waClient, schedule, userContext);
 
     expect(getMinyanById).toHaveBeenCalledWith(1);
-    expect(context.set).toHaveBeenCalledWith({
+    expect(userContext.set).toHaveBeenCalledWith({
       status: ScheduleStatus.initiated,
     });
     expect(result).toBe(ScheduleStatus.initiated);
@@ -62,13 +68,13 @@ describe("handleSchedule", () => {
 
   it("should process the schedule if context status is initiated", async () => {
     jest
-      .spyOn(context, "get")
+      .spyOn(userContext, "get")
       .mockResolvedValue({ status: ScheduleStatus.initiated });
 
-    const result = await handleSchedule(waClient, schedule, context);
+    const result = await handleSchedule(waClient, schedule, userContext);
 
     expect(getMinyanById).toHaveBeenCalledWith(1);
-    expect(context.set).toHaveBeenCalledWith({
+    expect(userContext.set).toHaveBeenCalledWith({
       status: ScheduleStatus.processing,
     });
     expect(result).toBe(ScheduleStatus.processing);
@@ -77,9 +83,9 @@ describe("handleSchedule", () => {
   it("should throw an error if minyan is not found", async () => {
     (getMinyanById as jest.Mock).mockResolvedValue(null);
 
-    await expect(handleSchedule(waClient, schedule, context)).rejects.toThrow(
-      "Minyan with id 1 not found"
-    );
+    await expect(
+      handleSchedule(waClient, schedule, userContext)
+    ).rejects.toThrow("Minyan with id 1 not found");
   });
 
   it("should call the schedule step action for each user", async () => {
@@ -89,7 +95,7 @@ describe("handleSchedule", () => {
       action: mockAction,
     });
 
-    await handleSchedule(waClient, schedule, context);
+    await handleSchedule(waClient, schedule, userContext);
 
     expect(mockAction).toHaveBeenCalledWith(
       1234567890,
