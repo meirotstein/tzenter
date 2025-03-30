@@ -57,6 +57,6 @@ describe("ScheduleHandler", () => {
       mockScheduleByIdResult,
       expect.any(Context)
     );
-    expect(response).toEqual({ status: "done" });
+    expect(response).toEqual({ status: "done", schedules: 2 });
   });
 });
