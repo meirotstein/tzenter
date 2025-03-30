@@ -60,6 +60,7 @@ export const processScheduleStep: Step = {
       )} בשעה ${DateTime.fromISO(schedule.time).toFormat("HH:mm")} במניין ${
         minyan.name
       }
+
       נכון לרגע זה אשרו הגעה ${approved.size} מתפללים
       
       `;
@@ -86,10 +87,9 @@ export const processScheduleStep: Step = {
         )} בשעה ${DateTime.fromISO(schedule.time).toFormat("HH:mm")} במניין ${
           minyan.name
         }
+
         האם תגיע?
-        
-        1. אגיע
-        2. לא אגיע`
+        `
       );
       return;
     }
