@@ -32,12 +32,12 @@ export async function handleSchedule(
   for (const user of minyan.users ?? []) {
     let scheduleStep: Step;
 
-    if (scheduleContext?.status === ScheduleStatus.initiated) {
-      // schedule is already initiated
-      scheduleStep = getProcessScheduleStep();
-    } else {
+    if (!scheduleContext?.status) {
       // initiate the schedule
       scheduleStep = getInitScheduleStep();
+    } else {
+      // schedule is already initiated
+      scheduleStep = getProcessScheduleStep();
     }
 
     const userContext = Context.getContext<UserContext>(

@@ -40,6 +40,8 @@ export const snoozeScheduleStep: Step = {
 
     await waClient.sendTextMessage(userNum, "קיבלתי, אני אשאל אותך בהמשך");
 
+    await context.delete();
+
     console.log("user snoozed schedule", { userNum, scheduleId: schedule.id });
   },
   getNextStepId: async (userText: string, context: Context<UserContext>) =>

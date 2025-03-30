@@ -40,6 +40,8 @@ export const rejectScheduleStep: Step = {
 
     await waClient.sendTextMessage(userNum, "קיבלתי, תודה על העדכון!");
 
+    await context.delete();
+
     console.log("user rejected schedule", { userNum, scheduleId: schedule.id });
   },
   getNextStepId: async (userText: string, context: Context<UserContext>) =>
