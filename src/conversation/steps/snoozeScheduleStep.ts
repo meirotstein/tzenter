@@ -38,7 +38,7 @@ export const snoozeScheduleStep: Step = {
       snoozed: Array.from(snoozed),
     });
 
-    await waClient.sendTextMessage(userNum, "מעולה, אני אתזכר אותך בהמשך");
+    await waClient.sendTextMessage(userNum, "קיבלתי, אני אשאל אותך בהמשך");
 
     console.log("user snoozed schedule", { userNum, scheduleId: schedule.id });
   },
