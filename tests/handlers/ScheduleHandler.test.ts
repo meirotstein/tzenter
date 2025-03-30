@@ -26,7 +26,7 @@ describe("ScheduleHandler", () => {
     const response = await scheduleHandler.handle({});
 
     expect(getUpcomingSchedules).toHaveBeenCalledWith(60);
-    expect(response).toEqual({ status: "done" });
+    expect(response).toEqual({ status: "done", schedules: 0 });
   });
 
   it("should handle schedules and return statuses", async () => {
