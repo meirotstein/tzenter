@@ -41,7 +41,7 @@ export async function handleSchedule(
     }
 
     const userContext = Context.getContext<UserContext>(
-      String(user.id),
+      String(user.phone),
       ContextType.User
     );
     await userContext.set({
