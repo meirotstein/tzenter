@@ -62,7 +62,7 @@ export async function handleSchedule(
     ? ScheduleStatus.processing
     : ScheduleStatus.initiated;
 
-  await context.set({
+  await context.update({
     status,
   });
 
