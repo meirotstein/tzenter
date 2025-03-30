@@ -44,6 +44,6 @@ export class ScheduleHandler implements IHandler {
       time: new Date().toISOString(),
     });
 
-    return { status: "done" };
+    return { status: "done", schedules: scheduleActions.length };
   }
 }
