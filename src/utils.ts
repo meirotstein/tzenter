@@ -1,3 +1,4 @@
+import { Prayer } from "./datasource/entities/Schedule";
 import {
   BadInputError,
   InvalidInputError,
@@ -5,7 +6,6 @@ import {
 } from "./errors";
 import { WebhookObject } from "./external/whatsapp/types/webhooks";
 import { WAMessageType, WATextMessage } from "./handlers/types";
-import { Prayer } from "./datasource/entities/Schedule";
 
 export function errorToHttpStatusCode(error: Error) {
   if (error instanceof BadInputError) {

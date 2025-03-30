@@ -23,6 +23,9 @@ export type UserContext = {
 
 export type ScheduleContext = {
   status: ScheduleStatus;
+  approved?: Array<string>;
+  rejected?: Array<string>;
+  snoozed?: Array<string>;
   context?: Record<string, any>;
 };
 

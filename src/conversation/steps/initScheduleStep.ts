@@ -1,11 +1,21 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { Minyan } from "../../datasource/entities/Minyan";
 import { Schedule } from "../../datasource/entities/Schedule";
+import { UnexpectedUserInputError } from "../../errors";
 import { prayerHebName } from "../../utils";
 import { Context } from "../context";
 import { Step, UserContext } from "../types";
 import templates from "../waTemplates";
+import { approveScheduleStep } from "./approveScheduleStep";
+import { rejectScheduleStep } from "./rejectScheduleStep";
+import { snoozeScheduleStep } from "./snoozeScheduleStep";
 const { DateTime } = require("luxon");
+
+const expectedUserResponses = {
+  iWIllArrive: "אגיע",
+  iWillNotArrive: "לא אגיע",
+  snooze: "שאל אותי מאוחר יותר",
+};
 
 export const initScheduleStep: Step = {
   id: "initScheduleStep",
@@ -40,6 +50,16 @@ export const initScheduleStep: Step = {
 
     console.log("schedule by system sent", res);
   },
-  getNextStepId: async (userText: string, context: Context<UserContext>) =>
-    Promise.resolve(undefined),
+  getNextStepId: async (userText: string, context: Context<UserContext>) => {
+    switch (userText) {
+      case expectedUserResponses.iWIllArrive:
+        return approveScheduleStep.id;
+      case expectedUserResponses.iWillNotArrive:
+        return rejectScheduleStep.id;
+      case expectedUserResponses.snooze:
+        return snoozeScheduleStep.id;
+      default:
+        throw new UnexpectedUserInputError(userText);
+    }
+  },
 };

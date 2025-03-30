@@ -1,16 +1,18 @@
 import { restartWordHooks } from "./consts";
+import { approveScheduleStep } from "./steps/approveScheduleStep";
 import { getUserMinyansStep } from "./steps/getUserMinyansStep";
 import { initialMenuStep } from "./steps/initialMenuStep";
 import { initScheduleStep } from "./steps/initScheduleStep";
 import { listAvailableMinyansStep } from "./steps/listAvailableMinyansStep";
 import { processScheduleStep } from "./steps/processScheduleStep";
 import { registerMinyanStep } from "./steps/registerMinyanStep";
+import { rejectScheduleStep } from "./steps/rejectScheduleStep";
 import { selectedMinyanStep } from "./steps/selectedMinyanStep";
+import { snoozeScheduleStep } from "./steps/snoozeScheduleStep";
 import { unregisterMinyanStep } from "./steps/unregisterMinyanStep";
 import { Step } from "./types";
 
 const initialStep = initialMenuStep;
-
 
 const hooks: Record<string, Step> = {};
 
@@ -27,6 +29,9 @@ const steps = {
   [unregisterMinyanStep.id]: unregisterMinyanStep,
   [initScheduleStep.id]: initScheduleStep,
   [processScheduleStep.id]: processScheduleStep,
+  [approveScheduleStep.id]: approveScheduleStep,
+  [rejectScheduleStep.id]: rejectScheduleStep,
+  [snoozeScheduleStep.id]: snoozeScheduleStep,
 };
 
 export function getStep(stepId: string): Step | undefined {
