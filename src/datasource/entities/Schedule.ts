@@ -37,5 +37,8 @@ export class Schedule {
   @Column({ type: "time" })
   time!: string;
 
+  @Column({ type: "boolean", default: true })
+  enabled!: boolean;
+
   // TODO: refer schedule type: one-time (= initiatedByUserId), recurring
 }

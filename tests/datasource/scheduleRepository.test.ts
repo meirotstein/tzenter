@@ -248,4 +248,96 @@ describe("scheduleRepository", () => {
     expect(upcomingSchedules[0].name).toBe("Overlap Prayer 1");
     expect(upcomingSchedules[1].name).toBe("Overlap Prayer 2");
   });
+
+  it("should only fetch schedules that are enabled", async () => {
+    const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+
+    const savedMinyan = await saveMinyan(minyan);
+
+    const schedules = [
+      {
+        name: "Enabled Prayer",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+        enabled: true,
+      },
+      {
+        name: "Disabled Prayer",
+        prayer: Prayer.Mincha,
+        time: "13:00:00",
+        minyan: savedMinyan,
+        enabled: false,
+      },
+    ];
+
+    for (const schedule of schedules) {
+      await addSchedule(schedule);
+    }
+
+    const fromDate = new Date("2023-01-01T07:00:00");
+    const upcomingSchedules = await getUpcomingSchedules(360, fromDate); // 360 minutes = 6 hours
+
+    expect(upcomingSchedules).toHaveLength(1);
+    expect(upcomingSchedules[0].name).toBe("Enabled Prayer");
+  });
+
+  it("should return an empty array if all schedules are disabled", async () => {
+    const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+
+    const savedMinyan = await saveMinyan(minyan);
+
+    const schedules = [
+      {
+        name: "Disabled Prayer 1",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+        enabled: false,
+      },
+      {
+        name: "Disabled Prayer 2",
+        prayer: Prayer.Mincha,
+        time: "13:00:00",
+        minyan: savedMinyan,
+        enabled: false,
+      },
+    ];
+
+    for (const schedule of schedules) {
+      await addSchedule(schedule);
+    }
+
+    const fromDate = new Date("2023-01-01T07:00:00");
+    const upcomingSchedules = await getUpcomingSchedules(360, fromDate); // 360 minutes = 6 hours
+
+    expect(upcomingSchedules).toHaveLength(0);
+  });
+
+  it("should update the enabled status of a schedule", async () => {
+    const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+
+    const savedMinyan = await saveMinyan(minyan);
+
+    const schedule = {
+      name: "Morning Prayer",
+      prayer: Prayer.Shacharit,
+      time: "08:00:00",
+      minyan: savedMinyan,
+      enabled: true,
+    };
+
+    const savedSchedule = await addSchedule(schedule);
+
+    const updatedData = {
+      enabled: false,
+    };
+
+    const updatedSchedule = await updateSchedule(savedSchedule.id, updatedData);
+
+    const fetchedSchedule = await getScheduleById(savedSchedule.id);
+
+    expect(fetchedSchedule).toBeDefined();
+    expect(fetchedSchedule?.enabled).toBe(false);
+  });
 });

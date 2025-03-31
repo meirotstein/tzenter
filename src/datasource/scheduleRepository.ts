@@ -42,7 +42,8 @@ export async function updateSchedule(
 export async function getUpcomingSchedules(
   minutes: number,
   from: Date = new Date(),
-  timezone: string = "Asia/Jerusalem"
+  timezone: string = "Asia/Jerusalem",
+  enabled: boolean = true
 ): Promise<Schedule[]> {
   const repo = await getRepo();
 
@@ -59,18 +60,26 @@ export async function getUpcomingSchedules(
   if (isWrappingMidnight) {
     return repo
       .createQueryBuilder("schedule")
-      .where("schedule.time >= :fromTime OR schedule.time <= :futureTime", {
-        fromTime,
-        futureTime,
-      })
+      .where(
+        "(schedule.time >= :fromTime OR schedule.time <= :futureTime) AND schedule.enabled = :enabled",
+        {
+          fromTime,
+          futureTime,
+          enabled,
+        }
+      )
       .getMany();
   } else {
     return repo
       .createQueryBuilder("schedule")
-      .where("schedule.time >= :fromTime AND schedule.time <= :futureTime", {
-        fromTime,
-        futureTime,
-      })
+      .where(
+        "schedule.time >= :fromTime AND schedule.time <= :futureTime AND schedule.enabled = :enabled",
+        {
+          fromTime,
+          futureTime,
+          enabled,
+        }
+      )
       .getMany();
   }
 }
