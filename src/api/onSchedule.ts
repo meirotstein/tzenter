@@ -2,10 +2,10 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { HandlerFactory } from "../handlers/HandlerFactory";
 import { Endpoint } from "../handlers/types";
 import { errorToHttpStatusCode } from "../utils";
-import { verifyWhatsappMessage } from "../verifiers";
+import { verifyValidScheduleExecuter } from "../verifiers";
 
 module.exports = async (req: VercelRequest, res: VercelResponse) => {
-  // await verifyWhatsappMessage(req);  // TODO: verify cron message
+  await verifyValidScheduleExecuter(req);
 
   const factory = new HandlerFactory();
   const handler = factory.getHandler(Endpoint.ON_SCHEDULE, req.method);

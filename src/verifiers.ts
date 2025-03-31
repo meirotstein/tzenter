@@ -34,3 +34,14 @@ export async function verifyWhatsappMessage(
     console.log("Signature match!");
   }
 }
+
+export async function verifyValidScheduleExecuter(
+  req: IncomingMessage & { headers: any }
+) {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (typeof forwarded === "string") {
+    return forwarded.split(",")[0].trim(); // First IP in the list
+  }
+  const ip = req.socket?.remoteAddress || "unknown";
+  console.log("IP address", ip);
+}
