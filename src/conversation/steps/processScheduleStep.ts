@@ -55,11 +55,11 @@ export const processScheduleStep: Step = {
     }
 
     if (approved.has(String(userNum))) {
-      let msg = `קבל עדכון לתפילת ${prayerHebName(
+      let msg = ` עדכון לתפילת ${prayerHebName(
         schedule.prayer
       )} בשעה ${DateTime.fromISO(schedule.time).toFormat("HH:mm")} במניין ${
         minyan.name
-      }\n`;
+      }\n\n`;
 
       msg += ` נכון לרגע זה אשרו הגעה ${approved.size} מתפללים\n\n`;
 
