@@ -55,15 +55,13 @@ export const processScheduleStep: Step = {
     }
 
     if (approved.has(String(userNum))) {
-      let msg = `זוהי תזכורת לתפילת ${prayerHebName(
+      let msg = `קבל עדכון לתפילת ${prayerHebName(
         schedule.prayer
       )} בשעה ${DateTime.fromISO(schedule.time).toFormat("HH:mm")} במניין ${
         minyan.name
-      }
+      }\n`;
 
-      נכון לרגע זה אשרו הגעה ${approved.size} מתפללים
-      
-      `;
+      msg += ` נכון לרגע זה אשרו הגעה ${approved.size} מתפללים\n\n`;
 
       let count = 0;
       for (const phoneNum of approved) {
@@ -80,17 +78,13 @@ export const processScheduleStep: Step = {
       await context.update({
         context: { ...userContext, processSnoozed: true },
       });
-      await waClient.sendTextMessage(
-        userNum,
-        `זוהי תזכורת לתפילת ${prayerHebName(
-          schedule.prayer
-        )} בשעה ${DateTime.fromISO(schedule.time).toFormat("HH:mm")} במניין ${
-          minyan.name
-        }
-
-        האם תגיע?
-        `
-      );
+      let msg = `זוהי תזכורת לתפילת ${prayerHebName(
+        schedule.prayer
+      )} בשעה ${DateTime.fromISO(schedule.time).toFormat("HH:mm")} במניין ${
+        minyan.name
+      }\n\n`;
+      msg += "האם תגיע?";
+      await waClient.sendTextMessage(userNum, msg);
       return;
     }
 
