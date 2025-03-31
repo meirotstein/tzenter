@@ -5,6 +5,7 @@ import { WAMessageType } from "../src/handlers/types";
 import {
   errorToHttpStatusCode,
   extractTextFromMessage,
+  isAtLeastMinApart,
   prayerHebName,
 } from "../src/utils";
 
@@ -225,6 +226,36 @@ describe("utils tests", () => {
     it("should return 'ערבית' for any other prayer", () => {
       const result = prayerHebName(Prayer.Arvit);
       expect(result).toBe("ערבית");
+    });
+  });
+
+  describe("isAtLeastMinApart", () => {
+    it("should return true if the timestamps are at least the given minutes apart", () => {
+      const timestamp1 = 1677664800000; // 2023-03-01T10:00:00
+      const timestamp2 = 1677666600000; // 2023-03-01T10:30:00
+      const result = isAtLeastMinApart(timestamp2, timestamp1, 30);
+      expect(result).toBe(true);
+    });
+
+    it("should return false if the timestamps are less than the given minutes apart", () => {
+      const timestamp1 = 1677664800000; // 2023-03-01T10:00:00
+      const timestamp2 = 1677665700000; // 2023-03-01T10:15:00
+      const result = isAtLeastMinApart(timestamp1, timestamp2, 30);
+      expect(result).toBe(false);
+    });
+
+    it("should return true if the timestamps are exactly the given minutes apart", () => {
+      const timestamp1 = 1677664800000; // 2023-03-01T10:00:00
+      const timestamp2 = 1677666600000; // 2023-03-01T10:30:00
+      const result = isAtLeastMinApart(timestamp1, timestamp2, 30);
+      expect(result).toBe(true);
+    });
+
+    it("should return false if one of the timestamps is invalid", () => {
+      const timestamp1 = NaN;
+      const timestamp2 = 1677666600000; // 2023-03-01T10:30:00
+      const result = isAtLeastMinApart(timestamp1, timestamp2, 30);
+      expect(result).toBe(false);
     });
   });
 });

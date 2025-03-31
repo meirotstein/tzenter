@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { Prayer } from "./datasource/entities/Schedule";
 import {
   BadInputError,
@@ -74,4 +75,16 @@ export function prayerHebName(prayer: Prayer): string {
     default:
       return "ערבית";
   }
+}
+
+export function isAtLeastMinApart(
+  a: number | Date,
+  b: number | Date,
+  intervalMinutes: number
+): boolean {
+  const ts1 = DateTime.fromJSDate(new Date(a), { zone: "Asia/Jerusalem" });
+  const ts2 = DateTime.fromJSDate(new Date(b), { zone: "Asia/Jerusalem" });
+
+  const diff = Math.abs(ts1.diff(ts2, "minutes").minutes);
+  return diff >= intervalMinutes;
 }

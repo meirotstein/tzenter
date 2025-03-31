@@ -1,14 +1,17 @@
 import { WhatsappClient } from "../clients/WhatsappClient";
 import { Context, ContextType } from "../conversation/context";
-import { handleSchedule } from "../conversation/scheduledMessages";
 import { ScheduleContext } from "../conversation/types";
 import {
   getScheduleById,
   getUpcomingSchedules,
 } from "../datasource/scheduleRepository";
+import { invokeSchedule } from "../schedule/invokeSchedule";
 import { HandlerRequest, HandlerResponse, IHandler } from "./types";
 
 const oneHourInMinutes = 60;
+const schedulePeriod = +(
+  process.env.SCHEDULE_INVOCATION_START_MIN || oneHourInMinutes
+);
 
 export class ScheduleHandler implements IHandler {
   private waClient: WhatsappClient;
@@ -22,11 +25,11 @@ export class ScheduleHandler implements IHandler {
       time: new Date().toISOString(),
     });
 
-    const nextSchedules = await getUpcomingSchedules(oneHourInMinutes);
+    const nextSchedules = await getUpcomingSchedules(schedulePeriod);
 
     console.log("next relevant schedules", nextSchedules.length);
 
-    const scheduleActions: Array<Promise<string>> = [];
+    const scheduleInvocations: Array<Promise<string>> = [];
     for (const upcomingSchedule of nextSchedules) {
       const context: Context<ScheduleContext> =
         Context.getContext<ScheduleContext>(
@@ -34,16 +37,18 @@ export class ScheduleHandler implements IHandler {
           ContextType.Schedule
         );
       const schedule = await getScheduleById(upcomingSchedule.id);
-      scheduleActions.push(handleSchedule(this.waClient, schedule!, context));
+      scheduleInvocations.push(
+        invokeSchedule(this.waClient, schedule!, context)
+      );
     }
 
-    const statuses = await Promise.all(scheduleActions);
+    const statuses = await Promise.all(scheduleInvocations);
 
     console.log("schedule messages ended", {
       statuses,
       time: new Date().toISOString(),
     });
 
-    return { status: "done", schedules: scheduleActions.length };
+    return { status: "done", schedules: scheduleInvocations.length };
   }
 }

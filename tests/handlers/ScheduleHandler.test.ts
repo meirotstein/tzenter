@@ -1,21 +1,20 @@
 import { WhatsappClient } from "../../src/clients/WhatsappClient";
 import { Context } from "../../src/conversation/context";
-import { handleSchedule } from "../../src/conversation/scheduledMessages";
 import {
   getScheduleById,
   getUpcomingSchedules,
 } from "../../src/datasource/scheduleRepository";
 import { ScheduleHandler } from "../../src/handlers/ScheduleHandler";
+import { invokeSchedule } from "../../src/schedule/invokeSchedule";
 
 jest.mock("../../src/clients/WhatsappClient");
 jest.mock("../../src/datasource/scheduleRepository");
-jest.mock("../../src/conversation/scheduledMessages");
+jest.mock("../../src/schedule/invokeSchedule");
 
 describe("ScheduleHandler", () => {
   let scheduleHandler: ScheduleHandler;
 
   beforeEach(() => {
-    jest.clearAllMocks();
     process.env.WA_PHONE_NUMBER_ID = "12345";
     scheduleHandler = new ScheduleHandler();
   });
@@ -39,20 +38,20 @@ describe("ScheduleHandler", () => {
     (getScheduleById as jest.Mock).mockResolvedValueOnce(
       mockScheduleByIdResult
     );
-    (handleSchedule as jest.Mock)
+    (invokeSchedule as jest.Mock)
       .mockResolvedValueOnce("success-101")
       .mockResolvedValueOnce("success-102");
 
     const response = await scheduleHandler.handle({});
 
     expect(getUpcomingSchedules).toHaveBeenCalledWith(60);
-    expect(handleSchedule).toHaveBeenCalledTimes(2);
-    expect(handleSchedule).toHaveBeenCalledWith(
+    expect(invokeSchedule).toHaveBeenCalledTimes(2);
+    expect(invokeSchedule).toHaveBeenCalledWith(
       expect.any(WhatsappClient),
       mockScheduleByIdResult,
       expect.any(Context)
     );
-    expect(handleSchedule).toHaveBeenCalledWith(
+    expect(invokeSchedule).toHaveBeenCalledWith(
       expect.any(WhatsappClient),
       mockScheduleByIdResult,
       expect.any(Context)

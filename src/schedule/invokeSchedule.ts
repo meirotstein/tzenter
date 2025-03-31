@@ -1,20 +1,37 @@
-import { getInitScheduleStep, getProcessScheduleStep } from ".";
 import {
   ScheduleContext,
   UserContext,
 } from "../../.vercel/output/static/src/conversation/types";
 import { WhatsappClient } from "../clients/WhatsappClient";
+import { getInitScheduleStep, getProcessScheduleStep } from "../conversation";
+import { Context, ContextType } from "../conversation/context";
+import { ScheduleStatus, Step } from "../conversation/types";
 import { Schedule } from "../datasource/entities/Schedule";
 import { getMinyanById } from "../datasource/minyansRepository";
-import { Context, ContextType } from "./context";
-import { ScheduleStatus, Step } from "./types";
+import { isAtLeastMinApart } from "../utils";
 
-export async function handleSchedule(
+export async function invokeSchedule(
   waClient: WhatsappClient,
   schedule: Schedule,
   context: Context<ScheduleContext>
 ): Promise<string> {
+  const scheduleInterval = +(
+    process.env.SCHEDULE_INVOCATION_INTERVAL_MIN || 15
+  );
   const scheduleContext = await context.get();
+  const startedAt = Date.now();
+
+  if (
+    scheduleContext?.startedAt &&
+    !isAtLeastMinApart(scheduleContext.startedAt, startedAt, scheduleInterval)
+  ) {
+    console.log("skipping schedule - didnt pass last process interval time", {
+      startedAt,
+      lastInterval: scheduleContext.startedAt,
+      scheduleInterval,
+    });
+    return "skipped";
+  }
 
   const minyan = await getMinyanById(schedule.minyan.id);
 
@@ -64,6 +81,7 @@ export async function handleSchedule(
 
   await context.update({
     status,
+    startedAt,
   });
 
   return status;

@@ -4,10 +4,11 @@ import {
   getProcessScheduleStep,
 } from "../../src/conversation";
 import { Context, ContextType } from "../../src/conversation/context";
-import { handleSchedule } from "../../src/conversation/scheduledMessages";
+
 import { ScheduleStatus } from "../../src/conversation/types";
 import { Schedule } from "../../src/datasource/entities/Schedule";
 import { getMinyanById } from "../../src/datasource/minyansRepository";
+import { invokeSchedule } from "../../src/schedule/invokeSchedule";
 
 jest.mock("../../src/datasource/minyansRepository");
 jest.mock("../../src/conversation/context");
@@ -16,11 +17,11 @@ jest.mock("../../src/conversation", () => ({
   getProcessScheduleStep: jest.fn(),
 }));
 
-describe("handleSchedule", () => {
+describe("invokeSchedule", () => {
   let waClient: WhatsappClient;
   let schedule: Schedule;
-  let userContext: Context<any>;
   let scheduleContext: Context<any>;
+  let userContext: Context<any>;
 
   beforeEach(() => {
     waClient = {} as WhatsappClient;
@@ -31,12 +32,12 @@ describe("handleSchedule", () => {
       },
     } as Schedule;
 
-    userContext = new Context("1", ContextType.Schedule);
-    scheduleContext = new Context("1", ContextType.User);
-    jest.spyOn(userContext, "get").mockResolvedValue(null);
-    jest.spyOn(userContext, "set").mockResolvedValue();
+    scheduleContext = new Context("1", ContextType.Schedule);
+    userContext = new Context("1", ContextType.User);
     jest.spyOn(scheduleContext, "get").mockResolvedValue(null);
     jest.spyOn(scheduleContext, "set").mockResolvedValue();
+    jest.spyOn(userContext, "get").mockResolvedValue(null);
+    jest.spyOn(userContext, "set").mockResolvedValue();
 
     (getMinyanById as jest.Mock).mockResolvedValue({
       id: 1,
@@ -53,14 +54,15 @@ describe("handleSchedule", () => {
       action: jest.fn().mockResolvedValue(void 0),
     });
 
-    Context.getContext = jest.fn().mockReturnValue(scheduleContext);
+    Context.getContext = jest.fn().mockReturnValue(userContext);
   });
 
   it("should initiate the schedule if no context exists", async () => {
-    const result = await handleSchedule(waClient, schedule, userContext);
+    const result = await invokeSchedule(waClient, schedule, scheduleContext);
 
     expect(getMinyanById).toHaveBeenCalledWith(1);
-    expect(userContext.set).toHaveBeenCalledWith({
+    expect(scheduleContext.update).toHaveBeenCalledWith({
+      startedAt: expect.any(Number),
       status: ScheduleStatus.initiated,
     });
     expect(result).toBe(ScheduleStatus.initiated);
@@ -68,13 +70,14 @@ describe("handleSchedule", () => {
 
   it("should process the schedule if context status is initiated", async () => {
     jest
-      .spyOn(userContext, "get")
+      .spyOn(scheduleContext, "get")
       .mockResolvedValue({ status: ScheduleStatus.initiated });
 
-    const result = await handleSchedule(waClient, schedule, userContext);
+    const result = await invokeSchedule(waClient, schedule, scheduleContext);
 
     expect(getMinyanById).toHaveBeenCalledWith(1);
-    expect(userContext.set).toHaveBeenCalledWith({
+    expect(scheduleContext.update).toHaveBeenCalledWith({
+      startedAt: expect.any(Number),
       status: ScheduleStatus.processing,
     });
     expect(result).toBe(ScheduleStatus.processing);
@@ -84,7 +87,7 @@ describe("handleSchedule", () => {
     (getMinyanById as jest.Mock).mockResolvedValue(null);
 
     await expect(
-      handleSchedule(waClient, schedule, userContext)
+      invokeSchedule(waClient, schedule, scheduleContext)
     ).rejects.toThrow("Minyan with id 1 not found");
   });
 
@@ -95,7 +98,7 @@ describe("handleSchedule", () => {
       action: mockAction,
     });
 
-    await handleSchedule(waClient, schedule, userContext);
+    await invokeSchedule(waClient, schedule, scheduleContext);
 
     expect(mockAction).toHaveBeenCalledWith(
       1234567890,
@@ -103,5 +106,34 @@ describe("handleSchedule", () => {
       "",
       expect.any(Context)
     );
+  });
+
+  it("should skip the schedule if the last process interval time has not passed", async () => {
+    const mockStartedAt = Date.now() - 5 * 60 * 1000; // 5 minutes ago
+    jest.spyOn(scheduleContext, "get").mockResolvedValue({
+      startedAt: mockStartedAt,
+    });
+
+    const result = await invokeSchedule(waClient, schedule, scheduleContext);
+
+    expect(result).toBe("skipped");
+    expect(getMinyanById).not.toHaveBeenCalled();
+    expect(scheduleContext.update).not.toHaveBeenCalled();
+  });
+
+  it("should proceed with the schedule if the last process interval time has passed", async () => {
+    const mockStartedAt = Date.now() - 20 * 60 * 1000; // 20 minutes ago
+    jest.spyOn(scheduleContext, "get").mockResolvedValue({
+      startedAt: mockStartedAt,
+    });
+
+    const result = await invokeSchedule(waClient, schedule, scheduleContext);
+
+    expect(result).toBe(ScheduleStatus.initiated);
+    expect(getMinyanById).toHaveBeenCalledWith(1);
+    expect(scheduleContext.update).toHaveBeenCalledWith({
+      startedAt: expect.any(Number),
+      status: ScheduleStatus.initiated,
+    });
   });
 });
