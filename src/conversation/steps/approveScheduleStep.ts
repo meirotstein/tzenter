@@ -31,14 +31,25 @@ export const approveScheduleStep: Step = {
     const scheduleContextData = await scheduleContext.get();
 
     const approved = new Set(scheduleContextData?.approved || []);
+    const snoozed = new Set(scheduleContextData?.snoozed || []);
 
     approved.add(String(userNum));
+    const isDeleted = snoozed.delete(String(userNum));
 
-    await scheduleContext.update({
+    const forUpdate: Partial<ScheduleContext> = {
       approved: Array.from(approved),
-    });
+    };
 
-    await waClient.sendTextMessage(userNum, "קיבלתי, תודה על העדכון!\nאני אמשיך לעדכן אותך לגבי המניין.");
+    if (isDeleted) {
+      forUpdate.snoozed = Array.from(snoozed);
+    }
+
+    await scheduleContext.update(forUpdate);
+
+    await waClient.sendTextMessage(
+      userNum,
+      "קיבלתי, תודה על העדכון!\nאני אמשיך לעדכן אותך לגבי המניין."
+    );
 
     await context.delete();
 
