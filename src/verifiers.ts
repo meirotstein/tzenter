@@ -1,7 +1,6 @@
-import { HandlerRequest } from "./handlers/types";
 import crypto from "crypto";
-import getRawBody from "raw-body";
 import { IncomingMessage } from "http";
+import getRawBody from "raw-body";
 import { UnauthorizedMessageError } from "./errors";
 
 export async function verifyWhatsappMessage(
@@ -39,9 +38,11 @@ export async function verifyValidScheduleExecuter(
   req: IncomingMessage & { headers: any }
 ) {
   const forwarded = req.headers["x-forwarded-for"];
+  let ip: string;
   if (typeof forwarded === "string") {
-    return forwarded.split(",")[0].trim(); // First IP in the list
+    ip = forwarded.split(",")[0].trim(); // First IP in the list
+  } else {
+    ip = req.socket?.remoteAddress || "unknown";
   }
-  const ip = req.socket?.remoteAddress || "unknown";
   console.log("IP address", ip);
 }
