@@ -2,12 +2,14 @@ import { WhatsappClient } from "../../clients/WhatsappClient";
 import { UnexpectedUserInputError } from "../../errors";
 import { Context } from "../context";
 import { Step, UserContext } from "../types";
+import { dadJokeStep } from "./dadJokeStep";
 import { getUserMinyansStep } from "./getUserMinyansStep";
 import { listAvailableMinyansStep } from "./listAvailableMinyansStep";
 
 const expectedUserResponses = {
   MyMinyans: "1",
   JoinMinyan: "2",
+  DadJoke: "3",
 };
 
 const MESSAGE = `שלום, כאן צענטר 🤖 - התפילבוט שלך.
@@ -16,6 +18,7 @@ const MESSAGE = `שלום, כאן צענטר 🤖 - התפילבוט שלך.
 
 1. המניינים שלי
 2. הצטרפות למניין
+3. ספר לי בדיחת אבא
 
 [בכל שלב - רק תכתוב צענטר ונחזור לכאן]
 `;
@@ -40,6 +43,8 @@ export const initialMenuStep: Step = {
       return Promise.resolve(getUserMinyansStep.id);
     } else if (userText === expectedUserResponses.JoinMinyan) {
       return Promise.resolve(listAvailableMinyansStep.id);
+    } else if (userText === expectedUserResponses.DadJoke) {
+      return Promise.resolve(dadJokeStep.id);
     }
     throw new UnexpectedUserInputError(userText);
   },
