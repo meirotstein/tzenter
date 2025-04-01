@@ -48,6 +48,7 @@ export const getUserMinyansStep: Step = {
         return listAvailableMinyansStep.id;
       }
       if (noWords.includes(userText.toLowerCase())) {
+        await context.delete();
         return undefined;
       }
       console.log("userText is not a valid selection", userText);

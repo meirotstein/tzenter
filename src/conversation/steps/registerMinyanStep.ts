@@ -19,6 +19,8 @@ export const registerMinyanStep: Step = {
     await assignUserToAMinyan(userContext!.userId, userContext!.minyanId);
 
     let responseText = "ההרשמה למניין בוצעה בהצלחה";
+    responseText += "\n\n";
+    responseText += "מעכשיו, אני אעדכן אותך לגבי תפילות שמתקיימות ושינויים שנוגעים למניין זה.";
 
     await waClient.sendTextMessage(userNum, responseText);
     await context.delete();
