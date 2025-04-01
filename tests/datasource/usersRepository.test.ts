@@ -22,13 +22,11 @@ describe("usersRepository", () => {
     user = new User();
     user.name = "John Doe";
     user.phone = "123456789";
-    user.minyans = [];
     await saveUser(user);
 
     minyan = new Minyan();
     minyan.name = "Minyan A";
     minyan.city = "New York";
-    minyan.users = [];
     await saveMinyan(minyan);
   });
 

@@ -1,5 +1,4 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
-import { User } from "../../datasource/entities/User";
 import { getMinyanById } from "../../datasource/minyansRepository";
 import { getUserByPhone } from "../../datasource/usersRepository";
 import { UnexpectedUserInputError } from "../../errors";
@@ -23,12 +22,7 @@ export const selectedMinyanStep: Step = {
       throw new Error("selectedMinyan is not defined in context");
     }
     const user = await getUserByPhone(userNum.toString());
-    if (!user) {
-      console.log("user is not defined - creating new user");
-      const newUser = new User();
-      newUser.phone = userNum.toString();
-      newUser.name;
-    }
+
     const minyan = await getMinyanById(selectedMinyanId);
     if (!minyan) {
       throw new Error("minyan is not defined");
@@ -45,7 +39,12 @@ export const selectedMinyanStep: Step = {
       : "האם אתה רוצה להירשם למניין זה?";
     await waClient.sendTextMessage(userNum, responseText);
     await context.update({
-      context: { isUserRegistered, userId: user.id, minyanId: minyan.id },
+      context: {
+        isUserRegistered,
+        isUserExists: !!user,
+        userId: user?.id,
+        minyanId: minyan.id,
+      },
     });
   },
   getNextStepId: async (userText: string, context: Context<UserContext>) => {
