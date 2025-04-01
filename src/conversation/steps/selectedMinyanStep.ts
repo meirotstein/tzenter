@@ -36,7 +36,7 @@ export const selectedMinyanStep: Step = {
     let responseText = `בחרת במניין ${minyan.name}\n\n`;
 
     responseText += isUserRegistered
-      ? "אתה כבר רשום למניין זה, האם אתה מעוניין להסיר את ההרשמה?"
+      ? "אתה רשום למניין זה, האם אתה מעוניין להסיר את ההרשמה?"
       : "האם אתה רוצה להירשם למניין זה?";
     await waClient.sendTextMessage(userNum, responseText);
     await context.update({
