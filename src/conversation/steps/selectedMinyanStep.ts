@@ -1,7 +1,9 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
+import { User } from "../../datasource/entities/User";
 import { getMinyanById } from "../../datasource/minyansRepository";
 import { getUserByPhone } from "../../datasource/usersRepository";
 import { UnexpectedUserInputError } from "../../errors";
+import { WATextMessage } from "../../handlers/types";
 import { noWords, yesWords } from "../consts";
 import { Context } from "../context";
 import { Step, UserContext } from "../types";
@@ -13,7 +15,7 @@ export const selectedMinyanStep: Step = {
   action: async (
     userNum: number,
     waClient: WhatsappClient,
-    userText: string,
+    message: WATextMessage,
     context: Context<UserContext>
   ) => {
     const selectedMinyanId = (await context.get())?.context?.selectedMinyanId;
@@ -22,7 +24,10 @@ export const selectedMinyanStep: Step = {
     }
     const user = await getUserByPhone(userNum.toString());
     if (!user) {
-      throw new Error("user is not defined");
+      console.log("user is not defined - creating new user");
+      const newUser = new User();
+      newUser.phone = userNum.toString();
+      newUser.name;
     }
     const minyan = await getMinyanById(selectedMinyanId);
     if (!minyan) {

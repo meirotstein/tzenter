@@ -2,6 +2,7 @@ import { WhatsappClient } from "../../clients/WhatsappClient";
 import { getAllMinyans } from "../../datasource/minyansRepository";
 import { getUserByPhone } from "../../datasource/usersRepository";
 import { UnexpectedUserInputError } from "../../errors";
+import { WATextMessage } from "../../handlers/types";
 import { Context } from "../context";
 import { Step, UserContext } from "../types";
 import { selectedMinyanStep } from "./selectedMinyanStep";
@@ -11,7 +12,7 @@ export const listAvailableMinyansStep: Step = {
   action: async (
     userNum: number,
     waClient: WhatsappClient,
-    userText: string,
+    message: WATextMessage,
     context: Context<UserContext>
   ) => {
     let user = await getUserByPhone(userNum.toString());

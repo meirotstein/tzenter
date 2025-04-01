@@ -1,6 +1,7 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { getUserByPhone } from "../../datasource/usersRepository";
 import { UnexpectedUserInputError } from "../../errors";
+import { WATextMessage } from "../../handlers/types";
 import { noWords, yesWords } from "../consts";
 import { Context } from "../context";
 import { Step, UserContext } from "../types";
@@ -12,7 +13,7 @@ export const getUserMinyansStep: Step = {
   action: async (
     userNum: number,
     waClient: WhatsappClient,
-    userText: string,
+    message: WATextMessage,
     context: Context<UserContext>
   ) => {
     let user = await getUserByPhone(userNum.toString());

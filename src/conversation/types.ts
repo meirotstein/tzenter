@@ -1,4 +1,5 @@
 import { WhatsappClient } from "../clients/WhatsappClient";
+import { WATextMessage } from "../handlers/types";
 import { Context } from "./context";
 
 export type Step = {
@@ -6,7 +7,7 @@ export type Step = {
   action: (
     userNum: number,
     waClient: WhatsappClient,
-    userText: string,
+    message: WATextMessage,
     context: Context<UserContext>
   ) => Promise<void>;
   getNextStepId: (
@@ -19,6 +20,7 @@ export type UserContext = {
   currentStepId?: string;
   context?: Record<string, any>;
   retry?: boolean;
+  userName?: string;
 };
 
 export type ScheduleContext = {

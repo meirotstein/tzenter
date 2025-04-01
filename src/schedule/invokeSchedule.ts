@@ -8,6 +8,7 @@ import { Context, ContextType } from "../conversation/context";
 import { ScheduleStatus, Step } from "../conversation/types";
 import { Schedule } from "../datasource/entities/Schedule";
 import { getMinyanById } from "../datasource/minyansRepository";
+import { WATextMessage } from "../handlers/types";
 import { isAtLeastMinApart } from "../utils";
 
 export async function invokeSchedule(
@@ -69,7 +70,12 @@ export async function invokeSchedule(
       },
     });
     scheduleActions.push(
-      scheduleStep.action(+user.phone, waClient, "", userContext)
+      scheduleStep.action(
+        +user.phone,
+        waClient,
+        {} as WATextMessage,
+        userContext
+      )
     );
   }
 

@@ -1,6 +1,7 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { dadJokes } from "../../dadJokes";
 import { UnexpectedUserInputError } from "../../errors";
+import { WATextMessage } from "../../handlers/types";
 import { noWords, yesWords } from "../consts";
 import { Context } from "../context";
 import { Step, UserContext } from "../types";
@@ -10,7 +11,7 @@ export const dadJokeStep: Step = {
   action: async (
     userNum: number,
     waClient: WhatsappClient,
-    userText: string,
+    massage: WATextMessage,
     context: Context<UserContext>
   ) => {
     const index = Math.floor(Math.random() * dadJokes.length);

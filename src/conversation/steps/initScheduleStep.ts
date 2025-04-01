@@ -2,6 +2,7 @@ import { WhatsappClient } from "../../clients/WhatsappClient";
 import { Minyan } from "../../datasource/entities/Minyan";
 import { Schedule } from "../../datasource/entities/Schedule";
 import { UnexpectedUserInputError } from "../../errors";
+import { WATextMessage } from "../../handlers/types";
 import { prayerHebName } from "../../utils";
 import { Context } from "../context";
 import { Step, UserContext } from "../types";
@@ -22,7 +23,7 @@ export const initScheduleStep: Step = {
   action: async (
     userNum: number,
     waClient: WhatsappClient,
-    userText: string,
+    message: WATextMessage,
     context: Context<UserContext>
   ) => {
     const userContext = (await context.get())?.context;

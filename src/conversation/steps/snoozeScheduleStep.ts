@@ -1,5 +1,6 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { Schedule } from "../../datasource/entities/Schedule";
+import { WATextMessage } from "../../handlers/types";
 import { Context, ContextType } from "../context";
 import { ScheduleContext, Step, UserContext } from "../types";
 
@@ -8,7 +9,7 @@ export const snoozeScheduleStep: Step = {
   action: async (
     userNum: number,
     waClient: WhatsappClient,
-    userText: string,
+    message: WATextMessage,
     context: Context<UserContext>
   ) => {
     const userContext = (await context.get())?.context;

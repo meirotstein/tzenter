@@ -1,5 +1,6 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { UnexpectedUserInputError } from "../../errors";
+import { WATextMessage } from "../../handlers/types";
 import { Context } from "../context";
 import { Step, UserContext } from "../types";
 import { dadJokeStep } from "./dadJokeStep";
@@ -28,7 +29,7 @@ export const initialMenuStep: Step = {
   action: async (
     userNum: number,
     waClient: WhatsappClient,
-    userText: string,
+    message: WATextMessage,
     context: Context<UserContext>
   ) => {
     const resp = await waClient.sendTextMessage(userNum, MESSAGE);

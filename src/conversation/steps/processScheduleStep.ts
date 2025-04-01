@@ -4,6 +4,7 @@ import { Minyan } from "../../datasource/entities/Minyan";
 import { Schedule } from "../../datasource/entities/Schedule";
 import { getUserByPhone } from "../../datasource/usersRepository";
 import { UnexpectedUserInputError } from "../../errors";
+import { WATextMessage } from "../../handlers/types";
 import { prayerHebName } from "../../utils";
 import { noWords, yesWords } from "../consts";
 import { Context, ContextType } from "../context";
@@ -21,7 +22,7 @@ export const processScheduleStep: Step = {
   action: async (
     userNum: number,
     waClient: WhatsappClient,
-    userText: string,
+    message: WATextMessage,
     context: Context<UserContext>
   ) => {
     const userContext = (await context.get())?.context;

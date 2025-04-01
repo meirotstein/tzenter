@@ -1,5 +1,6 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { removeUserFromMinyan } from "../../datasource/usersRepository";
+import { WATextMessage } from "../../handlers/types";
 import { Context } from "../context";
 import { Step, UserContext } from "../types";
 
@@ -8,7 +9,7 @@ export const unregisterMinyanStep: Step = {
   action: async (
     userNum: number,
     waClient: WhatsappClient,
-    userText: string,
+    message: WATextMessage,
     context: Context<UserContext>
   ) => {
     const userContext = (await context.get())?.context;

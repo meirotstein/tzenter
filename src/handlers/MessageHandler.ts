@@ -54,10 +54,11 @@ export class MessageHandler implements IHandler {
     }
 
     const recipientPhoneNum = message.recipient.phoneNum;
+    const recipientName = message.recipient.name;
 
     const context = Context.getContext<UserContext>(
       recipientPhoneNum,
-      ContextType.User
+      ContextType.User,
     );
 
     try {
@@ -121,7 +122,7 @@ export class MessageHandler implements IHandler {
     await initialStep.action(
       phoneNum,
       this.waClient,
-      message.message!,
+      message,
       context
     );
     const newUserContext = { currentStepId: initialStep.id };
@@ -145,7 +146,7 @@ export class MessageHandler implements IHandler {
     if (!nextStep) {
       throw new Error(`next step not found ${nextStepId}`); //unexpected error
     }
-    await nextStep.action(phoneNum, this.waClient, message.message!, context);
+    await nextStep.action(phoneNum, this.waClient, message, context);
     await context.update({ currentStepId: nextStepId });
 
     return { status: "Message received" };
@@ -159,7 +160,7 @@ export class MessageHandler implements IHandler {
     const hookStep = getHookStep(message.message!);
     if (hookStep) {
       console.log("hook step found", hookStep.id);
-      await hookStep.action(phoneNum, this.waClient, message.message!, context);
+      await hookStep.action(phoneNum, this.waClient, message, context);
       await context.update({ currentStepId: hookStep.id });
       return { status: "Message received" };
     }

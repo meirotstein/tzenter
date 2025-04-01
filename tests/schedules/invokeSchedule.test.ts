@@ -107,7 +107,7 @@ describe("invokeSchedule", () => {
     expect(mockAction).toHaveBeenCalledWith(
       1234567890,
       waClient,
-      "",
+      {},
       expect.any(Context)
     );
   });
