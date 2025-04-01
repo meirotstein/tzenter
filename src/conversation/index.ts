@@ -1,5 +1,6 @@
 import { restartWordHooks } from "./consts";
 import { approveScheduleStep } from "./steps/approveScheduleStep";
+import { dadJokeStep } from "./steps/dadJokeStep";
 import { getUserMinyansStep } from "./steps/getUserMinyansStep";
 import { initialMenuStep } from "./steps/initialMenuStep";
 import { initScheduleStep } from "./steps/initScheduleStep";
@@ -32,6 +33,7 @@ const steps = {
   [approveScheduleStep.id]: approveScheduleStep,
   [rejectScheduleStep.id]: rejectScheduleStep,
   [snoozeScheduleStep.id]: snoozeScheduleStep,
+  [dadJokeStep.id]: dadJokeStep,
 };
 
 export function getStep(stepId: string): Step | undefined {
