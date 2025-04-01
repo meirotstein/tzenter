@@ -5,7 +5,12 @@ import { errorToHttpStatusCode } from "../utils";
 import { verifyValidScheduleExecuter } from "../verifiers";
 
 module.exports = async (req: VercelRequest, res: VercelResponse) => {
-  await verifyValidScheduleExecuter(req);
+  try {
+    await verifyValidScheduleExecuter(req);
+  } catch (e) {
+    console.error("Failed to verify schedule message", e);
+    return res.status(401).send("Unauthorized");
+  }
 
   const factory = new HandlerFactory();
   const handler = factory.getHandler(Endpoint.ON_SCHEDULE, req.method);

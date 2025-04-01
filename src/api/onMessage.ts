@@ -5,7 +5,12 @@ import { errorToHttpStatusCode } from "../utils";
 import { verifyWhatsappMessage } from "../verifiers";
 
 module.exports = async (req: VercelRequest, res: VercelResponse) => {
-  await verifyWhatsappMessage(req);
+  try {
+    await verifyWhatsappMessage(req);
+  } catch (e) {
+    console.error("Failed to verify WhatsApp message", e);
+    return res.status(401).send("Unauthorized");
+  }
 
   const factory = new HandlerFactory();
   const handler = factory.getHandler(Endpoint.ON_MESSAGE, req.method);
