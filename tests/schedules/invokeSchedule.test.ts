@@ -57,6 +57,10 @@ describe("invokeSchedule", () => {
     Context.getContext = jest.fn().mockReturnValue(userContext);
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it("should initiate the schedule if no context exists", async () => {
     const result = await invokeSchedule(waClient, schedule, scheduleContext);
 
