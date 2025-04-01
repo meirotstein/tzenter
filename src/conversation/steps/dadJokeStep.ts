@@ -20,7 +20,7 @@ export const dadJokeStep: Step = {
     jokeText += "\n\n";
     jokeText += "עוד בדיחה?";
 
-    await waClient.sendTextMessage(userNum, dadJokes[index].joke);
+    await waClient.sendTextMessage(userNum, jokeText);
     await context.delete();
   },
   getNextStepId: async (userText: string, context: Context<UserContext>) => {
