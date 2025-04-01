@@ -16,7 +16,7 @@ export async function invokeSchedule(
   context: Context<ScheduleContext>
 ): Promise<string> {
   const scheduleInterval = +(
-    process.env.SCHEDULE_INVOCATION_INTERVAL_MIN || 15
+    process.env.SCHEDULE_INVOCATION_INTERVAL_MIN || 14
   );
   const scheduleContext = await context.get();
   const startedAt = Date.now();

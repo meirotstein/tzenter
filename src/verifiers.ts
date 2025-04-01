@@ -44,5 +44,11 @@ export async function verifyValidScheduleExecuter(
   } else {
     ip = req.socket?.remoteAddress || "unknown";
   }
-  console.log("IP address", ip);
+  console.log("Request IP address", ip);
+
+  const allowedIps = (process.env.SCHEDULE_ALLOWED_IPS || "")?.split(",") || [];
+
+  if (!allowedIps.includes(ip)) {
+    throw new UnauthorizedMessageError("Invalid schedule request IP address");
+  }
 }
