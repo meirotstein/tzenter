@@ -24,5 +24,5 @@ export async function getMinyanById(id: number): Promise<Minyan | null> {
 
 export async function getAllMinyans(): Promise<Minyan[]> {
   const repo = await getRepo();
-  return repo.find();
+  return repo.find({ where: { hidden: false } });
 }

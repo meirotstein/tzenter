@@ -26,4 +26,7 @@ export class Minyan {
 
   @OneToMany(() => Schedule, (schedule) => schedule.minyan)
   schedules?: Schedule[]; // Optional: a minyan may have no schedules
+
+  @Column({ type: "boolean", nullable: true, default: false })
+  hidden?: boolean;
 }
