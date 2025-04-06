@@ -1,6 +1,7 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { Schedule } from "../../datasource/entities/Schedule";
 import { WATextMessage } from "../../handlers/types";
+import { notifyIfMinyanReached } from "../../schedule/notifyIfMinyanReached";
 import { Context, ContextType } from "../context";
 import { ScheduleContext, Step, UserContext } from "../types";
 import { updateAdditionalMinyanAttendeesStep } from "./updateAdditionalMinyanAttendeesStep";
@@ -54,6 +55,12 @@ export const approveScheduleStep: Step = {
       "במידה ותגיעו יותר מאדם אחד, בבקשה הזן את מספר הבאים (כולל אותך) עכשיו";
 
     await waClient.sendTextMessage(userNum, responseText);
+    await notifyIfMinyanReached(
+      waClient,
+      schedule,
+      scheduleContext,
+      String(userNum)
+    );
 
     console.log("user approved schedule", { userNum, scheduleId: schedule.id });
   },

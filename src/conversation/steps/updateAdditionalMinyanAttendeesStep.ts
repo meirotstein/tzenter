@@ -1,6 +1,7 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { Schedule } from "../../datasource/entities/Schedule";
 import { WATextMessage } from "../../handlers/types";
+import { notifyIfMinyanReached } from "../../schedule/notifyIfMinyanReached";
 import { Context, ContextType } from "../context";
 import { ScheduleContext, Step, UserContext } from "../types";
 
@@ -52,6 +53,12 @@ export const updateAdditionalMinyanAttendeesStep: Step = {
     let responseText = "קיבלתי, תודה על העדכון!\n";
 
     await waClient.sendTextMessage(userNum, responseText);
+    await notifyIfMinyanReached(
+      waClient,
+      schedule,
+      scheduleContext,
+      String(userNum)
+    );
 
     await context.delete();
 

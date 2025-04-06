@@ -7,7 +7,7 @@ import { getUserById } from "../datasource/usersRepository";
 import { WATextMessage } from "../handlers/types";
 import { calculatedAttendees } from "../utils";
 
-export async function notifyAllIfNeeded(
+export async function notifyIfMinyanReached(
   waClient: WhatsappClient,
   schedule: Schedule,
   context: Context<ScheduleContext>,
