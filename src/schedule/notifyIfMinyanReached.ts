@@ -1,9 +1,9 @@
 import { WhatsappClient } from "../clients/WhatsappClient";
 import { Context, ContextType } from "../conversation/context";
 import { notifyMinyanHasReachedStep } from "../conversation/steps/notifyMinyanHasReachedStep";
-import { ScheduleContext, Step, UserContext } from "../conversation/types";
+import { ScheduleContext, UserContext } from "../conversation/types";
 import { Schedule } from "../datasource/entities/Schedule";
-import { getUserById } from "../datasource/usersRepository";
+import { getUserById, getUserByPhone } from "../datasource/usersRepository";
 import { WATextMessage } from "../handlers/types";
 import { calculatedAttendees } from "../utils";
 
@@ -11,14 +11,14 @@ export async function notifyIfMinyanReached(
   waClient: WhatsappClient,
   schedule: Schedule,
   context: Context<ScheduleContext>,
-  initiatedByUserId?: string
+  initiatedByUserNum?: string
 ): Promise<string> {
   const scheduleContext = await context.get();
 
   if (!scheduleContext) {
     console.log("skipping schedule - no context", {
       scheduleId: schedule.id,
-      userId: initiatedByUserId,
+      userNum: initiatedByUserNum,
     });
     return "skipped";
   }
@@ -34,11 +34,11 @@ export async function notifyIfMinyanReached(
 
   if (amountOfApproved >= 10) {
     if (scheduleContext.notified) {
-      if (initiatedByUserId) {
-        const user = await getUserById(+initiatedByUserId);
+      if (initiatedByUserNum) {
+        const user = await getUserByPhone(initiatedByUserNum);
 
         if (!user) {
-          throw new Error(`User with id ${initiatedByUserId} not found`);
+          throw new Error(`User with id ${initiatedByUserNum} not found`);
         }
 
         const userContext = Context.getContext<UserContext>(
