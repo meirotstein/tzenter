@@ -62,18 +62,25 @@ export const processScheduleStep: Step = {
         minyan.name
       }\n\n`;
 
-      msg += ` נכון לרגע זה אשרו הגעה ${approved.size} מתפללים\n\n`;
-
       let count = 0;
+      let prayerList = "";
       for (const phoneNum in approved) {
         const user = await getUserByPhone(phoneNum);
-        msg += `${++count}. ${user?.name || phoneNum}\n`;
+        prayerList += `${++count}. ${user?.name || phoneNum}\n`;
 
         if (approved[String(userNum)] > 1) {
           for (let i = 1; i < approved[String(userNum)]; i++) {
-            msg += `\n${++count}. ${user?.name || phoneNum} (${i + 1})\n`;
+            prayerList += `\n${++count}. ${user?.name || phoneNum} (${
+              i + 1
+            })\n`;
           }
         }
+      }
+
+      msg += ` נכון לרגע זה אשרו הגעה ${count} מתפללים\n\n`;
+
+      if (prayerList) {
+        msg += prayerList;
       }
 
       await waClient.sendTextMessage(userNum, msg);
