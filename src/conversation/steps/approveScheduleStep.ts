@@ -55,8 +55,6 @@ export const approveScheduleStep: Step = {
 
     await waClient.sendTextMessage(userNum, responseText);
 
-    await context.delete();
-
     console.log("user approved schedule", { userNum, scheduleId: schedule.id });
   },
   getNextStepId: async (userText: string, context: Context<UserContext>) => {
