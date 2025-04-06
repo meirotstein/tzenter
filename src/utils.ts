@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { Prayer } from "./datasource/entities/Schedule";
+import { Prayer, Schedule } from "./datasource/entities/Schedule";
 import {
   BadInputError,
   InvalidInputError,
@@ -7,6 +7,7 @@ import {
 } from "./errors";
 import { WebhookObject } from "./external/whatsapp/types/webhooks";
 import { WAMessageType, WATextMessage } from "./handlers/types";
+import { ScheduleContext } from "./conversation/types";
 
 export function errorToHttpStatusCode(error: Error) {
   if (error instanceof BadInputError) {
@@ -87,4 +88,9 @@ export function isAtLeastMinApart(
 
   const diff = Math.abs(ts1.diff(ts2, "minutes").minutes);
   return diff >= intervalMinutes;
+}
+
+export function calculatedAttendees(scheduleContext: ScheduleContext): number {
+  const approved = scheduleContext.approved || {};
+  return Object.values(approved).reduce((acc, curr) => acc + curr, 0);
 }

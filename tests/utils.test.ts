@@ -1,8 +1,10 @@
+import { ScheduleStatus } from "../src/conversation/types";
 import { Prayer } from "../src/datasource/entities/Schedule";
 import { BadInputError, InvalidInputError } from "../src/errors";
 import { WebhookObject } from "../src/external/whatsapp/types/webhooks";
 import { WAMessageType } from "../src/handlers/types";
 import {
+  calculatedAttendees,
   errorToHttpStatusCode,
   extractTextFromMessage,
   isAtLeastMinApart,
@@ -256,6 +258,33 @@ describe("utils tests", () => {
       const timestamp2 = 1677666600000; // 2023-03-01T10:30:00
       const result = isAtLeastMinApart(timestamp1, timestamp2, 30);
       expect(result).toBe(false);
+    });
+  });
+
+  describe("calculatedAttendees", () => {
+    it("should return 0 if there are no approved attendees", () => {
+      const scheduleContext = {
+        status: ScheduleStatus.processing,
+        approved: {},
+      };
+      const result = calculatedAttendees(scheduleContext);
+      expect(result).toBe(0);
+    });
+
+    it("should return the correct count of approved attendees", () => {
+      const scheduleContext = {
+        status: ScheduleStatus.processing,
+        approved: { user1: 1, user2: 2, user3: 8 },
+      };
+      1;
+      const result = calculatedAttendees(scheduleContext);
+      expect(result).toBe(11);
+    });
+
+    it("should return 0 if approved is undefined", () => {
+      const scheduleContext = {};
+      const result = calculatedAttendees(scheduleContext as any);
+      expect(result).toBe(0);
     });
   });
 });

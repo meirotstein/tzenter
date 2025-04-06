@@ -29,6 +29,7 @@ export type ScheduleContext = {
   approved?: Record<string, number>;
   rejected?: Array<string>;
   snoozed?: Array<string>;
+  notified?: boolean;
   context?: Record<string, any>;
 };
 
