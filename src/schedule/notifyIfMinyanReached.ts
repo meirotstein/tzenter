@@ -72,10 +72,10 @@ export async function notifyIfMinyanReached(
         notified: true,
       });
 
-      for (const userId in approved) {
-        const user = await getUserById(+userId);
+      for (const userNum in approved) {
+        const user = await getUserByPhone(userNum);
         if (!user) {
-          console.log("user not found, skipping", { userId });
+          console.log("user not found, skipping", { userId: userNum });
           continue;
         }
 
