@@ -11,6 +11,7 @@ import { rejectScheduleStep } from "./steps/rejectScheduleStep";
 import { selectedMinyanStep } from "./steps/selectedMinyanStep";
 import { snoozeScheduleStep } from "./steps/snoozeScheduleStep";
 import { unregisterMinyanStep } from "./steps/unregisterMinyanStep";
+import { updateAdditionalMinyanAttendeesStep } from "./steps/updateAdditionalMinyanAttendeesStep";
 import { Step } from "./types";
 
 const initialStep = initialMenuStep;
@@ -33,6 +34,7 @@ const steps = {
   [approveScheduleStep.id]: approveScheduleStep,
   [rejectScheduleStep.id]: rejectScheduleStep,
   [snoozeScheduleStep.id]: snoozeScheduleStep,
+  [updateAdditionalMinyanAttendeesStep.id]: updateAdditionalMinyanAttendeesStep,
   [dadJokeStep.id]: dadJokeStep,
 };
 

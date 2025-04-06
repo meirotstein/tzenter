@@ -3,10 +3,9 @@ import { Schedule } from "../../datasource/entities/Schedule";
 import { WATextMessage } from "../../handlers/types";
 import { Context, ContextType } from "../context";
 import { ScheduleContext, Step, UserContext } from "../types";
-import { updateAdditionalMinyanAttendeesStep } from "./updateAdditionalMinyanAttendeesStep";
 
-export const approveScheduleStep: Step = {
-  id: "approveScheduleStep",
+export const updateAdditionalMinyanAttendeesStep: Step = {
+  id: "updateAdditionalMinyanAttendeesStep",
   action: async (
     userNum: number,
     waClient: WhatsappClient,
@@ -29,46 +28,35 @@ export const approveScheduleStep: Step = {
       throw new Error("Schedule context not found");
     }
 
+    const expectedSelection = Number(message.message);
+    if (isNaN(expectedSelection)) {
+      console.log(
+        "updateAdditionalMinyanAttendeesStep: userText is not a unexpected"
+      );
+      throw new Error(`userText is not a unexpected: ${message.message}`);
+    }
+
     // TODO: might need to use a mutex-like functions for that kind of update
     const scheduleContextData = await scheduleContext.get();
 
     const approved = scheduleContextData?.approved || {};
-    const snoozed = new Set(scheduleContextData?.snoozed || []);
 
-    approved[String(userNum)] = 1;
-    const isDeleted = snoozed.delete(String(userNum));
+    approved[String(userNum)] = expectedSelection;
 
     const forUpdate: Partial<ScheduleContext> = {
       approved,
     };
 
-    if (isDeleted) {
-      forUpdate.snoozed = Array.from(snoozed);
-    }
-
     await scheduleContext.update(forUpdate);
 
     let responseText = "קיבלתי, תודה על העדכון!\n";
-    responseText += "אני אמשיך לעדכן אותך לגבי המניין.\n\n";
-    responseText +=
-      "במידה ותגיעו יותר מאדם אחד, בבקשה הזן את מספר הבאים (כולל אותך) עכשיו";
 
     await waClient.sendTextMessage(userNum, responseText);
 
     await context.delete();
 
-    console.log("user approved schedule", { userNum, scheduleId: schedule.id });
+    console.log("user updated schedule", { userNum, scheduleId: schedule.id });
   },
-  getNextStepId: async (userText: string, context: Context<UserContext>) => {
-    const expectedSelection = Number(userText);
-    if (isNaN(expectedSelection)) {
-      console.log(
-        "approveScheduleStep: userText is not a number - aborting",
-        userText
-      );
-      await context.delete();
-      return undefined;
-    }
-    return updateAdditionalMinyanAttendeesStep.id;
-  },
+  getNextStepId: async (userText: string, context: Context<UserContext>) =>
+    Promise.resolve(undefined),
 };

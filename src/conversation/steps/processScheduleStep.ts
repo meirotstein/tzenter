@@ -47,7 +47,7 @@ export const processScheduleStep: Step = {
 
     const scheduleContextData = await scheduleContext.get();
 
-    const approved = new Set(scheduleContextData?.approved || []);
+    const approved = scheduleContextData?.approved || {};
     const snoozed = new Set(scheduleContextData?.snoozed || []);
     const rejected = new Set(scheduleContextData?.rejected || []);
 
@@ -55,7 +55,7 @@ export const processScheduleStep: Step = {
       return;
     }
 
-    if (approved.has(String(userNum))) {
+    if (!!approved[String(userNum)]) {
       let msg = ` עדכון לתפילת ${prayerHebName(
         schedule.prayer
       )} בשעה ${DateTime.fromISO(schedule.time).toFormat("HH:mm")} במניין ${
@@ -65,9 +65,15 @@ export const processScheduleStep: Step = {
       msg += ` נכון לרגע זה אשרו הגעה ${approved.size} מתפללים\n\n`;
 
       let count = 0;
-      for (const phoneNum of approved) {
+      for (const phoneNum in approved) {
         const user = await getUserByPhone(phoneNum);
         msg += `${++count}. ${user?.name || phoneNum}\n`;
+
+        if (approved[String(userNum)] > 1) {
+          for (let i = 1; i < approved[String(userNum)]; i++) {
+            msg += `\n${++count}. ${user?.name || phoneNum} (${i + 1})\n`;
+          }
+        }
       }
 
       await waClient.sendTextMessage(userNum, msg);
