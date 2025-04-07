@@ -1,7 +1,12 @@
 import { WhatsappClient } from "../clients/WhatsappClient";
 import { getInitScheduleStep, getProcessScheduleStep } from "../conversation";
 import { Context, ContextType } from "../conversation/context";
-import { ScheduleContext, ScheduleStatus, Step } from "../conversation/types";
+import {
+  ScheduleContext,
+  ScheduleStatus,
+  Step,
+  UserContext,
+} from "../conversation/types";
 import { Schedule } from "../datasource/entities/Schedule";
 import { getMinyanById } from "../datasource/minyansRepository";
 import { WATextMessage } from "../handlers/types";
