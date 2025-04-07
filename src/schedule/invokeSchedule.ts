@@ -1,11 +1,7 @@
-import {
-  ScheduleContext,
-  UserContext,
-} from "../../.vercel/output/static/src/conversation/types";
 import { WhatsappClient } from "../clients/WhatsappClient";
 import { getInitScheduleStep, getProcessScheduleStep } from "../conversation";
 import { Context, ContextType } from "../conversation/context";
-import { ScheduleStatus, Step } from "../conversation/types";
+import { ScheduleContext, ScheduleStatus, Step } from "../conversation/types";
 import { Schedule } from "../datasource/entities/Schedule";
 import { getMinyanById } from "../datasource/minyansRepository";
 import { WATextMessage } from "../handlers/types";
