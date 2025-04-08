@@ -19,7 +19,7 @@ export const dadJokeStep: Step = {
     let jokeText = dadJokes[index].joke;
 
     jokeText += "\n\n";
-    jokeText += "עוד בדיחה?";
+    jokeText += "עוד בדיחת אבא?";
 
     await waClient.sendTextMessage(userNum, jokeText);
     await context.delete();
