@@ -69,7 +69,7 @@ export const processScheduleStep: Step = {
         prayerList += `${++count}. ${user?.name || phoneNum}\n`;
 
         if (approved[String(phoneNum)] > 1) {
-          for (let i = 1; i < approved[String(userNum)]; i++) {
+          for (let i = 1; i < approved[String(phoneNum)]; i++) {
             prayerList += `${++count}. ${user?.name || phoneNum} (${i + 1})\n`;
           }
         }
