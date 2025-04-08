@@ -47,6 +47,6 @@ export const initialMenuStep: Step = {
     } else if (userText === expectedUserResponses.DadJoke) {
       return Promise.resolve(dadJokeStep.id);
     }
-    throw new UnexpectedUserInputError(userText);
+    return Promise.reject(new UnexpectedUserInputError(userText));
   },
 };
