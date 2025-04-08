@@ -68,11 +68,9 @@ export const processScheduleStep: Step = {
         const user = await getUserByPhone(phoneNum);
         prayerList += `${++count}. ${user?.name || phoneNum}\n`;
 
-        if (approved[String(userNum)] > 1) {
+        if (approved[String(phoneNum)] > 1) {
           for (let i = 1; i < approved[String(userNum)]; i++) {
-            prayerList += `\n${++count}. ${user?.name || phoneNum} (${
-              i + 1
-            })\n`;
+            prayerList += `${++count}. ${user?.name || phoneNum} (${i + 1})\n`;
           }
         }
       }

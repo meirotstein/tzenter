@@ -47,11 +47,9 @@ export const notifyMinyanHasReachedStep: Step = {
       const user = await getUserByPhone(phoneNum);
       responseText += `${++count}. ${user?.name || phoneNum}\n`;
 
-      if (approved[String(userNum)] > 1) {
-        for (let i = 1; i < approved[String(userNum)]; i++) {
-          responseText += `\n${++count}. ${user?.name || phoneNum} (${
-            i + 1
-          })\n`;
+      if (approved[String(phoneNum)] > 1) {
+        for (let i = 1; i < approved[String(phoneNum)]; i++) {
+          responseText += `${++count}. ${user?.name || phoneNum} (${i + 1})\n`;
         }
       }
     }
