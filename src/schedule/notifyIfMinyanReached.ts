@@ -3,7 +3,7 @@ import { Context, ContextType } from "../conversation/context";
 import { notifyMinyanHasReachedStep } from "../conversation/steps/notifyMinyanHasReachedStep";
 import { ScheduleContext, UserContext } from "../conversation/types";
 import { Schedule } from "../datasource/entities/Schedule";
-import { getUserById, getUserByPhone } from "../datasource/usersRepository";
+import { getUserByPhone } from "../datasource/usersRepository";
 import { WATextMessage } from "../handlers/types";
 import { calculatedAttendees } from "../utils";
 
@@ -26,7 +26,7 @@ export async function notifyIfMinyanReached(
   const minyan = schedule.minyan;
 
   if (!minyan) {
-    throw new Error(`Minyan with id ${schedule.minyan.id} not found`);
+    throw new Error("Minyan with not found");
   }
 
   const approved = scheduleContext?.approved || {};
