@@ -5,7 +5,7 @@ import { Schedule } from "../../datasource/entities/Schedule";
 import { getUserByPhone } from "../../datasource/usersRepository";
 import { UnexpectedUserInputError } from "../../errors";
 import { WATextMessage } from "../../handlers/types";
-import { prayerHebName } from "../../utils";
+import { isLastExecution, prayerHebName } from "../../utils";
 import { noWords, yesWords } from "../consts";
 import { Context, ContextType } from "../context";
 import { ScheduleContext, Step, UserContext } from "../types";
@@ -47,15 +47,33 @@ export const processScheduleStep: Step = {
 
     const scheduleContextData = await scheduleContext.get();
 
-    const approved = scheduleContextData?.approved || {};
-    const snoozed = new Set(scheduleContextData?.snoozed || []);
-    const rejected = new Set(scheduleContextData?.rejected || []);
+    if (!scheduleContextData) {
+      console.log("Schedule context not found");
+      return;
+    }
+
+    const approved = scheduleContextData.approved || {};
+    const snoozed = new Set(scheduleContextData.snoozed || []);
+    const rejected = new Set(scheduleContextData.rejected || []);
 
     if (rejected.has(String(userNum))) {
       return;
     }
 
     if (!!approved[String(userNum)]) {
+      const scheduleInterval = +(
+        process.env.SCHEDULE_INVOCATION_INTERVAL_MIN || 14
+      );
+      if (
+        scheduleContextData.notified &&
+        !isLastExecution(schedule.time, scheduleInterval)
+      ) {
+        console.log("skipping schedule - already notified", {
+          scheduleId: schedule.id,
+          userNum,
+        });
+        return;
+      }
       let msg = ` עדכון לתפילת ${prayerHebName(
         schedule.prayer
       )} בשעה ${DateTime.fromISO(schedule.time).toFormat("HH:mm")} במניין ${

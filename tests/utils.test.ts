@@ -292,13 +292,13 @@ describe("utils tests", () => {
 
   describe("isLastExecution", () => {
     it("should return true if the current time is within the execution interval", () => {
-      const hourStr = "10:00:00";
+      const hourStr = "09:00:00";
       const executionIntervalMin = 30;
 
       jest.spyOn(DateTime, "now").mockReturnValue(
         //@ts-ignore
         DateTime.fromObject(
-          { hour: 9, minute: 45, second: 0 },
+          { hour: 8, minute: 45, second: 0 },
           { zone: "Asia/Jerusalem" }
         )
       );
