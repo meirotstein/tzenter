@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { ScheduleStatus } from "../src/conversation/types";
 import { Prayer } from "../src/datasource/entities/Schedule";
 import { BadInputError, InvalidInputError } from "../src/errors";
@@ -8,6 +9,7 @@ import {
   errorToHttpStatusCode,
   extractTextFromMessage,
   isAtLeastMinApart,
+  isLastExecution,
   prayerHebName,
 } from "../src/utils";
 
@@ -285,6 +287,104 @@ describe("utils tests", () => {
       const scheduleContext = {};
       const result = calculatedAttendees(scheduleContext as any);
       expect(result).toBe(0);
+    });
+  });
+
+  describe("isLastExecution", () => {
+    it("should return true if the current time is within the execution interval", () => {
+      const hourStr = "10:00:00";
+      const executionIntervalMin = 30;
+
+      jest.spyOn(DateTime, "now").mockReturnValue(
+        //@ts-ignore
+        DateTime.fromObject(
+          { hour: 9, minute: 45, second: 0 },
+          { zone: "Asia/Jerusalem" }
+        )
+      );
+
+      const result = isLastExecution(hourStr, executionIntervalMin);
+      expect(result).toBe(true);
+    });
+
+    it("should return false if the current time is after the given time", () => {
+      const hourStr = "10:00:00";
+      const executionIntervalMin = 30;
+
+      jest.spyOn(DateTime, "now").mockReturnValue(
+        //@ts-ignore
+        DateTime.fromObject(
+          { hour: 10, minute: 15, second: 0 },
+          { zone: "Asia/Jerusalem" }
+        )
+      );
+
+      const result = isLastExecution(hourStr, executionIntervalMin);
+      expect(result).toBe(false);
+    });
+
+    it("should return false if the current time is before the execution interval", () => {
+      const hourStr = "10:00:00";
+      const executionIntervalMin = 30;
+
+      jest.spyOn(DateTime, "now").mockReturnValue(
+        //@ts-ignore
+        DateTime.fromObject(
+          { hour: 9, minute: 15, second: 0 },
+          { zone: "Asia/Jerusalem" }
+        )
+      );
+
+      const result = isLastExecution(hourStr, executionIntervalMin);
+      expect(result).toBe(false);
+    });
+
+    it("should handle cases where seconds are not provided in hourStr", () => {
+      const hourStr = "10:00";
+      const executionIntervalMin = 30;
+
+      jest.spyOn(DateTime, "now").mockReturnValue(
+        //@ts-ignore
+        DateTime.fromObject(
+          { hour: 9, minute: 45, second: 0 },
+          { zone: "Asia/Jerusalem" }
+        )
+      );
+
+      const result = isLastExecution(hourStr, executionIntervalMin);
+      expect(result).toBe(true);
+    });
+
+    it("should use the default zone if none is provided", () => {
+      const hourStr = "10:00:00";
+      const executionIntervalMin = 30;
+
+      jest.spyOn(DateTime, "now").mockReturnValue(
+        //@ts-ignore
+        DateTime.fromObject(
+          { hour: 9, minute: 45, second: 0 },
+          { zone: "Asia/Jerusalem" }
+        )
+      );
+
+      const result = isLastExecution(hourStr, executionIntervalMin);
+      expect(result).toBe(true);
+    });
+
+    it("should return false if hourStr is invalid", () => {
+      const hourStr = "invalid-time";
+      const executionIntervalMin = 30;
+
+      jest.spyOn(DateTime, "now").mockReturnValue(
+        //@ts-ignore
+        DateTime.fromObject(
+          { hour: 10, minute: 15, second: 0 },
+          { zone: "Asia/Jerusalem" }
+        )
+      );
+
+      const result = isLastExecution(hourStr, executionIntervalMin);
+      expect(result).toBe(false);
     });
   });
 });

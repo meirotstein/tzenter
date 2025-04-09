@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
-import { Prayer, Schedule } from "./datasource/entities/Schedule";
+import { ScheduleContext } from "./conversation/types";
+import { Prayer } from "./datasource/entities/Schedule";
 import {
   BadInputError,
   InvalidInputError,
@@ -7,7 +8,6 @@ import {
 } from "./errors";
 import { WebhookObject } from "./external/whatsapp/types/webhooks";
 import { WAMessageType, WATextMessage } from "./handlers/types";
-import { ScheduleContext } from "./conversation/types";
 
 export function errorToHttpStatusCode(error: Error) {
   if (error instanceof BadInputError) {
@@ -93,4 +93,29 @@ export function isAtLeastMinApart(
 export function calculatedAttendees(scheduleContext: ScheduleContext): number {
   const approved = scheduleContext.approved || {};
   return Object.values(approved).reduce((acc, curr) => acc + curr, 0);
+}
+
+export function isLastExecution(
+  scheduleHourStr: string,
+  executionIntervalMin: number,
+  zone = "Asia/Jerusalem"
+): boolean {
+  try {
+    const now = DateTime.now().setZone(zone);
+
+    const [hour, minute, second] = scheduleHourStr.split(":").map(Number);
+
+    const todayAtGivenTime = now.set({ hour, minute, second: second || 0 });
+
+    const diff = now.diff(todayAtGivenTime, "minutes").minutes;
+
+    if (diff > 0) {
+      return false;
+    }
+
+    return Math.abs(diff) < executionIntervalMin;
+  } catch (error) {
+    console.error("Error in isLastExecution:", error);
+    return false;
+  }
 }
