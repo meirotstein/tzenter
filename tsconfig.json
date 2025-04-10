@@ -1,18 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",                       
-    "moduleResolution": "node",         
-    "strict": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,  
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "emitDecoratorMetadata": true,
-    "resolveJsonModule": true,
-    "noEmit": true,
-    "experimentalDecorators": true,
-    "outDir": "./dist"
+      "target": "ESNext",
+      "module": "CommonJS",
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "outDir": "./dist"
   },
   "include": ["src/**/*"]
 }

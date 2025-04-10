@@ -1,8 +1,9 @@
 import WhatsApp from "whatsapp";
 import {
   ComponentTypesEnum,
+  LanguagesEnum,
   ParametersTypesEnum,
-} from "../external/whatsapp/types/enums";
+} from "whatsapp/build/types/enums";
 
 export class WhatsappClient {
   wa: WhatsApp;
@@ -47,7 +48,6 @@ export class WhatsappClient {
         language: { code: LanguagesEnum.Hebrew },
         components: [
           {
-            // @ts-ignore
             type: ComponentTypesEnum.Body,
             // @ts-ignore
             parameters,
