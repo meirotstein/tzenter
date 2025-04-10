@@ -11,6 +11,7 @@ import {
   isAtLeastMinApart,
   isLastExecution,
   prayerHebName,
+  shouldSkipScheduleToday,
 } from "../src/utils";
 
 describe("utils tests", () => {
@@ -384,6 +385,43 @@ describe("utils tests", () => {
       );
 
       const result = isLastExecution(hourStr, executionIntervalMin);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("shouldSkipScheduleToday", () => {
+    it("should return true if there is a major holiday today", () => {
+      const date = new Date(2025, 3, 13); // Passover
+
+      const result = shouldSkipScheduleToday(date);
+      expect(result).toBe(true);
+    });
+
+    it("should return true if there is a major holiday eve today", () => {
+      const date = new Date(2025, 5, 1); // Shavuot eve
+
+      const result = shouldSkipScheduleToday(date);
+      expect(result).toBe(true);
+    });
+
+    it("should return false if there is a minor holiday", () => {
+      const date = new Date(2025, 4, 16); // Lag BaOmer
+
+      const result = shouldSkipScheduleToday(date);
+      expect(result).toBe(false);
+    });
+
+    it("should return false if there is a minor holiday eve", () => {
+      const date = new Date(2025, 4, 15); // Lag BaOmer eve
+
+      const result = shouldSkipScheduleToday(date);
+      expect(result).toBe(false);
+    });
+
+    it("should return false if there is nothing in this day", () => {
+      const date = new Date(2025, 4, 13); // No holiday
+
+      const result = shouldSkipScheduleToday(date);
       expect(result).toBe(false);
     });
   });
