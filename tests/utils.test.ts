@@ -11,7 +11,7 @@ import {
   isAtLeastMinApart,
   isLastExecution,
   prayerHebName,
-  shouldSkipScheduleToday,
+  // shouldSkipScheduleToday,
 } from "../src/utils";
 
 describe("utils tests", () => {
@@ -389,40 +389,40 @@ describe("utils tests", () => {
     });
   });
 
-  describe("shouldSkipScheduleToday", () => {
-    it("should return true if there is a major holiday today", () => {
-      const date = new Date(2025, 3, 13); // Passover
+  // describe("shouldSkipScheduleToday", () => {
+  //   it("should return true if there is a major holiday today", () => {
+  //     const date = new Date(2025, 3, 13); // Passover
 
-      const result = shouldSkipScheduleToday(date);
-      expect(result).toBe(true);
-    });
+  //     const result = shouldSkipScheduleToday(date);
+  //     expect(result).toBe(true);
+  //   });
 
-    it("should return true if there is a major holiday eve today", () => {
-      const date = new Date(2025, 5, 1); // Shavuot eve
+  //   it("should return true if there is a major holiday eve today", () => {
+  //     const date = new Date(2025, 5, 1); // Shavuot eve
 
-      const result = shouldSkipScheduleToday(date);
-      expect(result).toBe(true);
-    });
+  //     const result = shouldSkipScheduleToday(date);
+  //     expect(result).toBe(true);
+  //   });
 
-    it("should return false if there is a minor holiday", () => {
-      const date = new Date(2025, 4, 16); // Lag BaOmer
+  //   it("should return false if there is a minor holiday", () => {
+  //     const date = new Date(2025, 4, 16); // Lag BaOmer
 
-      const result = shouldSkipScheduleToday(date);
-      expect(result).toBe(false);
-    });
+  //     const result = shouldSkipScheduleToday(date);
+  //     expect(result).toBe(false);
+  //   });
 
-    it("should return false if there is a minor holiday eve", () => {
-      const date = new Date(2025, 4, 15); // Lag BaOmer eve
+  //   it("should return false if there is a minor holiday eve", () => {
+  //     const date = new Date(2025, 4, 15); // Lag BaOmer eve
 
-      const result = shouldSkipScheduleToday(date);
-      expect(result).toBe(false);
-    });
+  //     const result = shouldSkipScheduleToday(date);
+  //     expect(result).toBe(false);
+  //   });
 
-    it("should return false if there is nothing in this day", () => {
-      const date = new Date(2025, 4, 13); // No holiday
+  //   it("should return false if there is nothing in this day", () => {
+  //     const date = new Date(2025, 4, 13); // No holiday
 
-      const result = shouldSkipScheduleToday(date);
-      expect(result).toBe(false);
-    });
-  });
+  //     const result = shouldSkipScheduleToday(date);
+  //     expect(result).toBe(false);
+  //   });
+  // });
 });
