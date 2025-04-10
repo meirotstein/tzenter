@@ -4,7 +4,7 @@ import { Endpoint } from "../handlers/types";
 import { errorToHttpStatusCode } from "../utils";
 import { verifyValidScheduleExecuter } from "../verifiers";
 
-module.exports = async (req: VercelRequest, res: VercelResponse) => {
+export default async (req: VercelRequest, res: VercelResponse) => {
   try {
     await verifyValidScheduleExecuter(req);
   } catch (e) {
