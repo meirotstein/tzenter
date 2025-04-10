@@ -1,6 +1,6 @@
 {
   "buildCommand": "yarn build",
-  "outputDirectory": ".",
+  "outputDirectory": "public",
   "functions": {
     "api/**/*.ts": {
       "runtime": "nodejs22.x"
