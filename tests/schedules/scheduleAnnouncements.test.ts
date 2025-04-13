@@ -1,6 +1,5 @@
-import { scheduleAnnouncements } from "../../src/schedule/scheduleAnnouncements";
 import { Prayer, Schedule } from "../../src/datasource/entities/Schedule";
-import { DateTime } from "luxon";
+import { scheduleAnnouncements } from "../../src/schedule/scheduleAnnouncements";
 
 describe("scheduleAnnouncements", () => {
   describe("Omer Count Messages", () => {
