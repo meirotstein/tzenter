@@ -3,6 +3,7 @@ import { Minyan } from "../../datasource/entities/Minyan";
 import { Schedule } from "../../datasource/entities/Schedule";
 import { UnexpectedUserInputError } from "../../errors";
 import { WATextMessage } from "../../handlers/types";
+import { scheduleAnnouncements } from "../../schedule/scheduleAnnouncements";
 import { prayerHebName } from "../../utils";
 import { Context } from "../context";
 import { Step, UserContext } from "../types";
@@ -39,14 +40,26 @@ export const initScheduleStep: Step = {
       userNum,
     });
 
+    const scheduleMessages = scheduleAnnouncements(schedule, new Date());
+
+    let scheduleTemplate = scheduleMessages.length
+      ? templates.schedule_by_system_with_announcements
+      : templates.schedule_by_system;
+
+    let params: Record<string, string> = {
+      minyan_name: minyan.name,
+      prayer: prayerHebName(schedule.prayer),
+      time: DateTime.fromISO(schedule.time).toFormat("HH:mm"),
+    };
+
+    if (scheduleMessages.length) {
+      params.custom_msg = `[${scheduleMessages.join(" | ")}]`;
+    }
+
     const res = await waClient.sendTemplateMessage(
       userNum,
-      templates.schedule_by_system,
-      {
-        minyan_name: minyan.name,
-        prayer: prayerHebName(schedule.prayer),
-        time: DateTime.fromISO(schedule.time).toFormat("HH:mm"),
-      }
+      scheduleTemplate,
+      params
     );
 
     console.log("schedule by system sent", res);
