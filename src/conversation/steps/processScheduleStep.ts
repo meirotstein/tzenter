@@ -11,10 +11,12 @@ import { Context, ContextType } from "../context";
 import { ScheduleContext, Step, UserContext } from "../types";
 import { approveScheduleStep } from "./approveScheduleStep";
 import { rejectScheduleStep } from "./rejectScheduleStep";
+import { snoozeScheduleStep } from "./snoozeScheduleStep";
 
 const expectedUserResponses = {
   iWIllArrive: "אגיע",
   iWillNotArrive: "לא אגיע",
+  snooze: "שאל אותי מאוחר יותר",
 };
 
 export const processScheduleStep: Step = {
@@ -117,8 +119,6 @@ export const processScheduleStep: Step = {
       await waClient.sendTextMessage(userNum, msg);
       return;
     }
-
-    await context.delete();
   },
   getNextStepId: async (userText: string, context: Context<UserContext>) => {
     const userContext = (await context.get())?.context;
@@ -138,6 +138,9 @@ export const processScheduleStep: Step = {
         noWords.includes(userText)
       ) {
         return rejectScheduleStep.id;
+      }
+      if (userText === expectedUserResponses.snooze) {
+        return snoozeScheduleStep.id;
       }
     }
 
