@@ -8,7 +8,9 @@ module.exports = async (req: VercelRequest, res: VercelResponse) => {
   }
 
   try {
-    return res.status(200).send(getHebrewHolidays(new Date()));
+    const hebHolidays = await getHebrewHolidays(new Date())
+    console.log("Hebrew holidays", hebHolidays);
+    return res.status(200).send(hebHolidays?.length);
   } catch (e: any) {
     console.error("scheduled invocation failed", e);
     return res.status(500).send(e.message);
