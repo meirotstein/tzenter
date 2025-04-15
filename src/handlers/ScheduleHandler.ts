@@ -6,7 +6,7 @@ import {
   getUpcomingSchedules,
 } from "../datasource/scheduleRepository";
 import { invokeSchedule } from "../schedule/invokeSchedule";
-// import { shouldSkipScheduleToday } from "../utils";
+import { shouldSkipScheduleToday } from "../utils";
 import { HandlerRequest, HandlerResponse, IHandler } from "./types";
 
 const oneHourInMinutes = 60;
@@ -27,10 +27,10 @@ export class ScheduleHandler implements IHandler {
       time: today.toISOString(),
     });
 
-    // if (shouldSkipScheduleToday(today)) {
-    //   console.log("skipping schedule today");
-    //   return { status: "skipped" };
-    // }
+    if (await shouldSkipScheduleToday(today)) {
+      console.log("skipping schedule today");
+      return { status: "skipped" };
+    }
 
     const nextSchedules = await getUpcomingSchedules(schedulePeriod);
 
