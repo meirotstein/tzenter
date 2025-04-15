@@ -1,14 +1,18 @@
 import { Prayer, Schedule } from "../datasource/entities/Schedule";
+import { getDailyEvents } from "../utils";
 const { DateTime } = require("luxon");
-export function scheduleAnnouncements(
+export async function scheduleAnnouncements(
   schedule: Schedule,
   currentDate: Date
-): string[] {
+): Promise<string[]> {
   if (schedule.prayer === Prayer.Arvit) {
-    const firstOmerDate = DateTime.fromISO("2025-04-13"); // first omer date
-    const today = DateTime.fromJSDate(currentDate);
-    const daysPassed = Math.floor(today.diff(firstOmerDate, "days").days);
-    const omerDay = daysPassed + 1;
+    const events = await getDailyEvents(currentDate);
+
+    if (typeof events?.omerCount !== "number") {
+      return [];
+    }
+
+    const omerDay = events.omerCount + 1;
     let omerWeeks = 0;
     let omerDays = 0;
 

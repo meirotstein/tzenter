@@ -40,7 +40,7 @@ export const initScheduleStep: Step = {
       userNum,
     });
 
-    const scheduleMessages = scheduleAnnouncements(schedule, new Date());
+    const scheduleMessages = await scheduleAnnouncements(schedule, new Date());
 
     let scheduleTemplate = scheduleMessages.length
       ? templates.schedule_by_system_with_announcements
