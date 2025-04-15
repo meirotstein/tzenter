@@ -3,7 +3,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 module.exports = async (req: VercelRequest, res: VercelResponse) => {
   async function getHebrewHolidays(date: Date, il = true) {
-    const { getHolidaysOnDate } = await import("@hebcal/core");
+    const { getHolidaysOnDate } = await import("@hebcal/core/dist/esm/holidays.js");
     return getHolidaysOnDate(date, il);
   }
 
