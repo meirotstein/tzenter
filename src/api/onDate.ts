@@ -6,9 +6,9 @@ import path from "path";
 // const { execFile } = require("child_process");
 // const path = require("path");
 
-function getHolidaysOnDateWrapper(date: Date): any {
+function getJewishEventsOnDateWrapper(date: Date): any {
   return new Promise((resolve, reject) => {
-    const scriptPath = path.join(__dirname, "../../scripts/get-holidays.mjs");
+    const scriptPath = path.join(__dirname, "../../scripts/get-daily-jewish-events.mjs");
     execFile(
       "node",
       [scriptPath, date.toISOString()],
@@ -28,7 +28,7 @@ function getHolidaysOnDateWrapper(date: Date): any {
 
 module.exports = async (req: VercelRequest, res: VercelResponse) => {
   try {
-    const hebHolidays = await getHolidaysOnDateWrapper(new Date());
+    const hebHolidays = await getJewishEventsOnDateWrapper(new Date());
     console.log("Hebrew holidays", hebHolidays);
     return res.status(200).send(hebHolidays?.length);
   } catch (e: any) {
