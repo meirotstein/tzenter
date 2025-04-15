@@ -9,7 +9,7 @@ import {
 import { WebhookObject } from "./external/whatsapp/types/webhooks";
 import { WAMessageType, WATextMessage } from "./handlers/types";
 import { getJewishEventsOnDateWrapper } from "./external/hebcal/getJewishEventsOnDateWrapper";
-import { flags } from "@hebcal/core";
+import { flags } from "./external/hebcal/flags";
 
 export function errorToHttpStatusCode(error: Error) {
   if (error instanceof BadInputError) {
