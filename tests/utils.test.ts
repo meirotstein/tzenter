@@ -8,6 +8,7 @@ import {
   calculatedAttendees,
   errorToHttpStatusCode,
   extractTextFromMessage,
+  getDailyEvents,
   isAtLeastMinApart,
   isLastExecution,
   prayerHebName,
@@ -423,6 +424,30 @@ describe("utils tests", () => {
 
       let result = await shouldSkipScheduleToday(date);
       expect(result).toBe(false);
+    });
+  });
+
+  describe("getDailyEvents", () => {
+    it("should return an object with the date and omerCount if omer is present", async () => {
+      const date = new Date(2025, 4, 16); // Lag BaOmer
+
+      const result = await getDailyEvents(date);
+
+      expect(result).toEqual({ date, omerCount: 33 });
+    });
+
+    it("should return an object with only the date if no omer is present", async () => {
+      const date = new Date(2025, 9, 3); // holiday, but not omer
+
+      const result = await getDailyEvents(date);
+      expect(result).toEqual({ date });
+    });
+
+    it("should return an object with only the date if no events are present", async () => {
+      const date = new Date(2025, 6, 12); // No holiday
+
+      const result = await getDailyEvents(date);
+      expect(result).toEqual({ date });
     });
   });
 });

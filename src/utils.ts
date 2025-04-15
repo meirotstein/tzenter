@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import { DailyEvents } from "../types";
 import { ScheduleContext } from "./conversation/types";
 import { Prayer } from "./datasource/entities/Schedule";
 import {
@@ -6,10 +7,10 @@ import {
   InvalidInputError,
   UnauthorizedMessageError,
 } from "./errors";
+import { flags } from "./external/hebcal/flags";
+import { getJewishEventsOnDateWrapper } from "./external/hebcal/getJewishEventsOnDateWrapper";
 import { WebhookObject } from "./external/whatsapp/types/webhooks";
 import { WAMessageType, WATextMessage } from "./handlers/types";
-import { getJewishEventsOnDateWrapper } from "./external/hebcal/getJewishEventsOnDateWrapper";
-import { flags } from "./external/hebcal/flags";
 
 export function errorToHttpStatusCode(error: Error) {
   if (error instanceof BadInputError) {
@@ -123,10 +124,10 @@ export function isLastExecution(
 }
 
 export async function shouldSkipScheduleToday(date: Date): Promise<boolean> {
-  const holidaysToday = await getJewishEventsOnDateWrapper(date);
-  if (holidaysToday?.length) {
-    for (const holiday of holidaysToday) {
-      const flagsBitmask = holiday.mask;
+  const eventsToday = await getJewishEventsOnDateWrapper(date);
+  if (eventsToday?.length) {
+    for (const event of eventsToday) {
+      const flagsBitmask = event.mask;
       const isChag = (flagsBitmask & flags.CHAG) === flags.CHAG;
       const isErevChag = (flagsBitmask & flags.EREV) === flags.EREV;
       const isMinorChag =
@@ -136,4 +137,15 @@ export async function shouldSkipScheduleToday(date: Date): Promise<boolean> {
     }
   }
   return false;
+}
+
+export async function getDailyEvents(date: Date): Promise<DailyEvents> {
+  const eventsToday = await getJewishEventsOnDateWrapper(date);
+  const events: DailyEvents = { date };
+  for (const event of eventsToday || []) {
+    if ((event as any)["omer"]) {
+      events.omerCount = (event as any)["omer"];
+    }
+  }
+  return events;
 }
