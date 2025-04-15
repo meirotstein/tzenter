@@ -8,8 +8,8 @@ import {
 } from "./errors";
 import { WebhookObject } from "./external/whatsapp/types/webhooks";
 import { WAMessageType, WATextMessage } from "./handlers/types";
-// import { getHolidaysOnDate } from "@hebcal/core";
-// import { flags } from "@hebcal/core";
+import { getJewishEventsOnDateWrapper } from "./external/hebcal/getJewishEventsOnDateWrapper";
+import { flags } from "@hebcal/core";
 
 export function errorToHttpStatusCode(error: Error) {
   if (error instanceof BadInputError) {
@@ -122,18 +122,18 @@ export function isLastExecution(
   }
 }
 
-// export function shouldSkipScheduleToday(date: Date): boolean {
-//   const holidaysToday = getHolidaysOnDate(date, true);
-//   if (holidaysToday?.length) {
-//     for (const holiday of holidaysToday) {
-//       const flagsBitmask = holiday.getFlags();
-//       const isChag = (flagsBitmask & flags.CHAG) === flags.CHAG;
-//       const isErevChag = (flagsBitmask & flags.EREV) === flags.EREV;
-//       const isMinorChag =
-//         (flagsBitmask & flags.MINOR_HOLIDAY) === flags.MINOR_HOLIDAY;
+export async function shouldSkipScheduleToday(date: Date): Promise<boolean> {
+  const holidaysToday = await getJewishEventsOnDateWrapper(date);
+  if (holidaysToday?.length) {
+    for (const holiday of holidaysToday) {
+      const flagsBitmask = holiday.mask;
+      const isChag = (flagsBitmask & flags.CHAG) === flags.CHAG;
+      const isErevChag = (flagsBitmask & flags.EREV) === flags.EREV;
+      const isMinorChag =
+        (flagsBitmask & flags.MINOR_HOLIDAY) === flags.MINOR_HOLIDAY;
 
-//       return (isChag || isErevChag) && !isMinorChag;
-//     }
-//   }
-//   return false;
-// }
+      return (isChag || isErevChag) && !isMinorChag;
+    }
+  }
+  return false;
+}
