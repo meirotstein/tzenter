@@ -126,22 +126,20 @@ export const processScheduleStep: Step = {
       throw new Error("User context not found");
     }
 
-    if (userContext.processSnoozed) {
-      if (
-        userText === expectedUserResponses.iWIllArrive ||
-        yesWords.includes(userText)
-      ) {
-        return approveScheduleStep.id;
-      }
-      if (
-        userText === expectedUserResponses.iWillNotArrive ||
-        noWords.includes(userText)
-      ) {
-        return rejectScheduleStep.id;
-      }
-      if (userText === expectedUserResponses.snooze) {
-        return snoozeScheduleStep.id;
-      }
+    if (
+      userText === expectedUserResponses.iWIllArrive ||
+      yesWords.includes(userText)
+    ) {
+      return approveScheduleStep.id;
+    }
+    if (
+      userText === expectedUserResponses.iWillNotArrive ||
+      noWords.includes(userText)
+    ) {
+      return rejectScheduleStep.id;
+    }
+    if (userText === expectedUserResponses.snooze) {
+      return snoozeScheduleStep.id;
     }
 
     throw new UnexpectedUserInputError(userText);
