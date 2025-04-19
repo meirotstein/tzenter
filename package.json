@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "./dev.sh",
     "test": "jest --config jest.config.ts --runInBand",
+    "unit": "jest --config jest.config.ts --runInBand unit",
+    "integration": "jest --config jest.config.ts --runInBand integration",
     "typeorm:sync": "ts-node ./node_modules/typeorm/cli schema:sync"
   },
   "devDependencies": {
