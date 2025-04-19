@@ -1,16 +1,16 @@
-import { Minyan } from "../../src/datasource/entities/Minyan";
-import { User } from "../../src/datasource/entities/User";
+import { Minyan } from "../../../src/datasource/entities/Minyan";
+import { User } from "../../../src/datasource/entities/User";
 import {
   getMinyanById,
   getMinyanByName,
   getRepo as getMinyanRepo,
   saveMinyan,
-} from "../../src/datasource/minyansRepository";
+} from "../../../src/datasource/minyansRepository";
 import {
   assignUserToAMinyan,
   getRepo as getUserRepo,
   saveUser,
-} from "../../src/datasource/usersRepository";
+} from "../../../src/datasource/usersRepository";
 
 describe("minyansRepository", () => {
   let user: User;

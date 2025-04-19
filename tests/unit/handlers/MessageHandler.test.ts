@@ -1,4 +1,4 @@
-import { MessageHandler } from "../../src/handlers/MessageHandler";
+import { MessageHandler } from "../../../src/handlers/MessageHandler";
 
 describe("MessageHandler", () => {
   it.skip("handle should return a message received response", () => {

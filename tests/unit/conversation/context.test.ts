@@ -1,8 +1,8 @@
-import { KVClient } from "../../src/clients/KVClient";
-import { Context, ContextType } from "../../src/conversation/context";
-import { UserContext } from "../../src/conversation/types";
+import { KVClient } from "../../../src/clients/KVClient";
+import { Context, ContextType } from "../../../src/conversation/context";
+import { UserContext } from "../../../src/conversation/types";
 
-jest.mock("../../src/clients/KVClient");
+jest.mock("../../../src/clients/KVClient");
 
 describe("Context", () => {
   const mockKVClient = KVClient as jest.MockedClass<typeof KVClient>;

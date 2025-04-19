@@ -1,4 +1,4 @@
-import { WhatsappClient } from "../../src/clients/WhatsappClient";
+import { WhatsappClient } from "../../../src/clients/WhatsappClient";
 import WhatsApp from "whatsapp";
 
 jest.mock("whatsapp");

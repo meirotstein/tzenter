@@ -1,14 +1,12 @@
-import { Prayer } from "../../src/datasource/entities/Schedule";
-import {
-  saveMinyan
-} from "../../src/datasource/minyansRepository";
+import { Prayer } from "../../../src/datasource/entities/Schedule";
+import { saveMinyan } from "../../../src/datasource/minyansRepository";
 import {
   addSchedule,
   getScheduleById,
   getRepo as getScheduleRepo,
   getUpcomingSchedules,
   updateSchedule,
-} from "../../src/datasource/scheduleRepository";
+} from "../../../src/datasource/scheduleRepository";
 
 describe("scheduleRepository", () => {
   beforeEach(async () => {});
@@ -143,7 +141,11 @@ describe("scheduleRepository", () => {
 
     const fromDate = new Date("2023-01-01T07:00:00Z"); // UTC time
     const timezone = "America/New_York"; // Different timezone to consider
-    const upcomingSchedules = await getUpcomingSchedules(360, fromDate, timezone); // 360 minutes = 6 hours
+    const upcomingSchedules = await getUpcomingSchedules(
+      360,
+      fromDate,
+      timezone
+    ); // 360 minutes = 6 hours
 
     expect(upcomingSchedules).toHaveLength(1);
     expect(upcomingSchedules[0].name).toBe("Morning Prayer");

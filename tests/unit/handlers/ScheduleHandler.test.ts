@@ -1,15 +1,17 @@
-import { WhatsappClient } from "../../src/clients/WhatsappClient";
-import { Context } from "../../src/conversation/context";
+import { WhatsappClient } from "../../../src/clients/WhatsappClient";
+import { Context } from "../../../src/conversation/context";
 import {
   getScheduleById,
   getUpcomingSchedules,
-} from "../../src/datasource/scheduleRepository";
-import { ScheduleHandler } from "../../src/handlers/ScheduleHandler";
-import { invokeSchedule } from "../../src/schedule/invokeSchedule";
+} from "../../../src/datasource/scheduleRepository";
+import { ScheduleHandler } from "../../../src/handlers/ScheduleHandler";
+import { invokeSchedule } from "../../../src/schedule/invokeSchedule";
+import { shouldSkipScheduleToday } from "../../../src/utils";
 
-jest.mock("../../src/clients/WhatsappClient");
-jest.mock("../../src/datasource/scheduleRepository");
-jest.mock("../../src/schedule/invokeSchedule");
+jest.mock("../../../src/clients/WhatsappClient");
+jest.mock("../../../src/datasource/scheduleRepository");
+jest.mock("../../../src/schedule/invokeSchedule");
+jest.mock("../../../src/utils");
 
 describe("ScheduleHandler", () => {
   let scheduleHandler: ScheduleHandler;
@@ -17,10 +19,12 @@ describe("ScheduleHandler", () => {
   beforeEach(() => {
     process.env.WA_PHONE_NUMBER_ID = "12345";
     scheduleHandler = new ScheduleHandler();
+    jest.clearAllMocks();
   });
 
   it("should return status 'done' when no schedules are found", async () => {
     (getUpcomingSchedules as jest.Mock).mockResolvedValue([]);
+    (shouldSkipScheduleToday as jest.Mock).mockResolvedValue(false);
 
     const response = await scheduleHandler.handle({});
 
@@ -57,5 +61,15 @@ describe("ScheduleHandler", () => {
       expect.any(Context)
     );
     expect(response).toEqual({ status: "done", schedules: 2 });
+  });
+
+  it("should not search for schedule if schedules should be skipped today", async () => {
+    (getUpcomingSchedules as jest.Mock).mockResolvedValue([]);
+    (shouldSkipScheduleToday as jest.Mock).mockResolvedValue(true);
+
+    const response = await scheduleHandler.handle({});
+
+    expect(getUpcomingSchedules).not.toHaveBeenCalled();
+    expect(response).toEqual({ status: "skipped" });
   });
 });

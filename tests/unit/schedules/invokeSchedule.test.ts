@@ -1,18 +1,18 @@
-import { WhatsappClient } from "../../src/clients/WhatsappClient";
+import { WhatsappClient } from "../../../src/clients/WhatsappClient";
 import {
   getInitScheduleStep,
   getProcessScheduleStep,
-} from "../../src/conversation";
-import { Context, ContextType } from "../../src/conversation/context";
+} from "../../../src/conversation";
+import { Context, ContextType } from "../../../src/conversation/context";
 
-import { ScheduleStatus } from "../../src/conversation/types";
-import { Schedule } from "../../src/datasource/entities/Schedule";
-import { getMinyanById } from "../../src/datasource/minyansRepository";
-import { invokeSchedule } from "../../src/schedule/invokeSchedule";
+import { ScheduleStatus } from "../../../src/conversation/types";
+import { Schedule } from "../../../src/datasource/entities/Schedule";
+import { getMinyanById } from "../../../src/datasource/minyansRepository";
+import { invokeSchedule } from "../../../src/schedule/invokeSchedule";
 
-jest.mock("../../src/datasource/minyansRepository");
-jest.mock("../../src/conversation/context");
-jest.mock("../../src/conversation", () => ({
+jest.mock("../../../src/datasource/minyansRepository");
+jest.mock("../../../src/conversation/context");
+jest.mock("../../../src/conversation", () => ({
   getInitScheduleStep: jest.fn(),
   getProcessScheduleStep: jest.fn(),
 }));

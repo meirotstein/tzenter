@@ -1,11 +1,11 @@
 import crypto from "crypto";
 import { IncomingMessage } from "http";
 import getRawBody from "raw-body";
-import { UnauthorizedMessageError } from "../src/errors";
+import { UnauthorizedMessageError } from "../../src/errors";
 import {
   verifyValidScheduleExecuter,
   verifyWhatsappMessage,
-} from "../src/verifiers";
+} from "../../src/verifiers";
 
 jest.mock("crypto");
 jest.mock("raw-body");

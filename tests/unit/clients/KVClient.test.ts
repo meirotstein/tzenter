@@ -1,10 +1,10 @@
 import { Redis } from "@upstash/redis";
-import { KVClient } from "../../src/clients/KVClient";
+import { KVClient } from "../../../src/clients/KVClient";
 
 jest.mock("@upstash/redis");
 
 describe("KVClient", () => {
-  let kvClient: KVClient;
+  let kvClient: KVClient<any>;
   let redisMock: jest.Mocked<Redis>;
 
   beforeEach(() => {

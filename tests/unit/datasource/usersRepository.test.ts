@@ -1,9 +1,9 @@
-import { Minyan } from "../../src/datasource/entities/Minyan";
-import { User } from "../../src/datasource/entities/User";
+import { Minyan } from "../../../src/datasource/entities/Minyan";
+import { User } from "../../../src/datasource/entities/User";
 import {
   getRepo as getMinyanRepo,
   saveMinyan,
-} from "../../src/datasource/minyansRepository";
+} from "../../../src/datasource/minyansRepository";
 import {
   assignUserToAMinyan,
   getUserById,
@@ -11,8 +11,8 @@ import {
   getRepo as getUserRepo,
   removeUserFromMinyan,
   saveUser,
-} from "../../src/datasource/usersRepository";
-import { MinyanNotFoundError, UserNotFoundError } from "../../src/errors";
+} from "../../../src/datasource/usersRepository";
+import { MinyanNotFoundError, UserNotFoundError } from "../../../src/errors";
 
 describe("usersRepository", () => {
   let user: User;
@@ -115,7 +115,9 @@ describe("usersRepository", () => {
   });
 
   it("should not throw an error if user is not part of the minyan when removing", async () => {
-    await expect(removeUserFromMinyan(user.id, minyan.id)).resolves.not.toThrow();
+    await expect(
+      removeUserFromMinyan(user.id, minyan.id)
+    ).resolves.not.toThrow();
 
     const _user = await getUserByPhone("123456789");
     expect(_user).toBeDefined();

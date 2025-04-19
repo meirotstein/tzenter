@@ -1,9 +1,9 @@
 import { DateTime } from "luxon";
-import { ScheduleStatus } from "../src/conversation/types";
-import { Prayer } from "../src/datasource/entities/Schedule";
-import { BadInputError, InvalidInputError } from "../src/errors";
-import { WebhookObject } from "../src/external/whatsapp/types/webhooks";
-import { WAMessageType } from "../src/handlers/types";
+import { ScheduleStatus } from "../../src/conversation/types";
+import { Prayer } from "../../src/datasource/entities/Schedule";
+import { BadInputError, InvalidInputError } from "../../src/errors";
+import { WebhookObject } from "../../src/external/whatsapp/types/webhooks";
+import { WAMessageType } from "../../src/handlers/types";
 import {
   calculatedAttendees,
   errorToHttpStatusCode,
@@ -13,7 +13,7 @@ import {
   isLastExecution,
   prayerHebName,
   shouldSkipScheduleToday,
-} from "../src/utils";
+} from "../../src/utils";
 
 describe("utils tests", () => {
   describe("errorToHttpStatusCode", () => {

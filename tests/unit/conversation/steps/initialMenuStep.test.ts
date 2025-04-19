@@ -1,14 +1,14 @@
-import { initialMenuStep } from "../../../src/conversation/steps/initialMenuStep";
-import { WhatsappClient } from "../../../src/clients/WhatsappClient";
-import { Context } from "../../../src/conversation/context";
-import { UnexpectedUserInputError } from "../../../src/errors";
-import { dadJokeStep } from "../../../src/conversation/steps/dadJokeStep";
-import { getUserMinyansStep } from "../../../src/conversation/steps/getUserMinyansStep";
-import { listAvailableMinyansStep } from "../../../src/conversation/steps/listAvailableMinyansStep";
-import { UserContext } from "../../../src/conversation/types";
-import { WATextMessage } from "../../../src/handlers/types";
+import { initialMenuStep } from "../../../../src/conversation/steps/initialMenuStep";
+import { WhatsappClient } from "../../../../src/clients/WhatsappClient";
+import { Context } from "../../../../src/conversation/context";
+import { UnexpectedUserInputError } from "../../../../src/errors";
+import { dadJokeStep } from "../../../../src/conversation/steps/dadJokeStep";
+import { getUserMinyansStep } from "../../../../src/conversation/steps/getUserMinyansStep";
+import { listAvailableMinyansStep } from "../../../../src/conversation/steps/listAvailableMinyansStep";
+import { UserContext } from "../../../../src/conversation/types";
+import { WATextMessage } from "../../../../src/handlers/types";
 
-jest.mock("../../../src/clients/WhatsappClient");
+jest.mock("../../../../src/clients/WhatsappClient");
 
 describe("initialMenuStep", () => {
   let waClient: WhatsappClient;

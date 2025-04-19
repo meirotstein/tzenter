@@ -1,16 +1,16 @@
-import { WhatsappClient } from "../../src/clients/WhatsappClient";
-import { Context } from "../../src/conversation/context";
-import { notifyMinyanHasReachedStep } from "../../src/conversation/steps/notifyMinyanHasReachedStep";
-import { Prayer, Schedule } from "../../src/datasource/entities/Schedule";
-import { getUserByPhone } from "../../src/datasource/usersRepository";
-import { notifyIfMinyanReached } from "../../src/schedule/notifyIfMinyanReached";
-import { calculatedAttendees } from "../../src/utils";
+import { WhatsappClient } from "../../../src/clients/WhatsappClient";
+import { Context } from "../../../src/conversation/context";
+import { notifyMinyanHasReachedStep } from "../../../src/conversation/steps/notifyMinyanHasReachedStep";
+import { Prayer, Schedule } from "../../../src/datasource/entities/Schedule";
+import { getUserByPhone } from "../../../src/datasource/usersRepository";
+import { notifyIfMinyanReached } from "../../../src/schedule/notifyIfMinyanReached";
+import { calculatedAttendees } from "../../../src/utils";
 
-jest.mock("../../src/clients/WhatsappClient");
-jest.mock("../../src/conversation/context");
-jest.mock("../../src/datasource/usersRepository");
-jest.mock("../../src/conversation/steps/notifyMinyanHasReachedStep");
-jest.mock("../../src/utils");
+jest.mock("../../../src/clients/WhatsappClient");
+jest.mock("../../../src/conversation/context");
+jest.mock("../../../src/datasource/usersRepository");
+jest.mock("../../../src/conversation/steps/notifyMinyanHasReachedStep");
+jest.mock("../../../src/utils");
 
 describe("notifyIfMinyanReached", () => {
   let waClient: WhatsappClient;
