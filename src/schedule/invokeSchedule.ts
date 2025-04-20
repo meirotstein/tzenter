@@ -8,9 +8,15 @@ import {
   UserContext,
 } from "../conversation/types";
 import { Schedule } from "../datasource/entities/Schedule";
+import { ScheduleOccurrence } from "../datasource/entities/ScheduleOccurrence";
 import { getMinyanById } from "../datasource/minyansRepository";
+import { addScheduleOccurrence } from "../datasource/scheduleOccurrencesRepository";
 import { WATextMessage } from "../handlers/types";
-import { isAtLeastMinApart } from "../utils";
+import {
+  calculatedAttendees,
+  isAtLeastMinApart,
+  isLastExecution,
+} from "../utils";
 
 export async function invokeSchedule(
   waClient: WhatsappClient,
@@ -90,6 +96,17 @@ export async function invokeSchedule(
     status,
     startedAt,
   });
+
+  if (isLastExecution(schedule.time, scheduleInterval) && scheduleContext) {
+    const occurrence = new ScheduleOccurrence();
+
+    occurrence.datetime = new Date();
+    occurrence.scheduleId = schedule.id;
+    occurrence.approved = calculatedAttendees(scheduleContext);
+    occurrence.rejected = (scheduleContext.rejected || []).length;
+    occurrence.snoozed = (scheduleContext.snoozed || []).length;
+    await addScheduleOccurrence(occurrence);
+  }
 
   return status;
 }
