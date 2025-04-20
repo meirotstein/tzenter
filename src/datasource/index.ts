@@ -3,6 +3,7 @@ import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { Minyan } from "./entities/Minyan";
 import { Schedule } from "./entities/Schedule";
+import { ScheduleOccurrence } from "./entities/ScheduleOccurrence";
 import { User } from "./entities/User";
 
 const isTestEnv = process.env.NODE_ENV === "test";
@@ -13,7 +14,7 @@ const AppDataSource = new DataSource(
     ? {
         type: "sqlite",
         database: ":memory:",
-        entities: [User, Minyan, Schedule],
+        entities: [User, Minyan, Schedule, ScheduleOccurrence],
         synchronize: true,
         logging: isDebugEnabled ? ["query", "error"] : undefined,
       }
@@ -29,7 +30,7 @@ const AppDataSource = new DataSource(
         },
         synchronize: true,
         logging: isDebugEnabled,
-        entities: [User, Minyan, Schedule],
+        entities: [User, Minyan, Schedule, ScheduleOccurrence],
         migrations: [],
         subscribers: [],
       }
