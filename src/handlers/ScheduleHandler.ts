@@ -1,6 +1,8 @@
 import { WhatsappClient } from "../clients/WhatsappClient";
 import { Context, ContextType } from "../conversation/context";
 import { ScheduleContext } from "../conversation/types";
+import { ScheduleOccurrence } from "../datasource/entities/ScheduleOccurrence";
+import { addScheduleOccurrence } from "../datasource/scheduleOccurrencesRepository";
 import {
   getScheduleById,
   getUpcomingSchedules,
@@ -55,6 +57,15 @@ export class ScheduleHandler implements IHandler {
       statuses,
       time: new Date().toISOString(),
     });
+
+    const occurrence = new ScheduleOccurrence();
+
+    occurrence.datetime = new Date();
+    occurrence.scheduleId = 1;
+    occurrence.approved = 19;
+    occurrence.rejected = 3;
+    occurrence.snoozed = 5;
+    await addScheduleOccurrence(occurrence);
 
     return { status: "done", schedules: scheduleInvocations.length };
   }

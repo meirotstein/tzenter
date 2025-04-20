@@ -6,7 +6,7 @@ export class ScheduleOccurrence {
   id!: number;
 
   @Column()
-  scheduleId!: string;
+  scheduleId!: number;
 
   @Column()
   datetime!: Date;
