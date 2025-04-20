@@ -133,6 +133,13 @@ export async function shouldSkipScheduleToday(date: Date): Promise<boolean> {
       const isMinorChag =
         (flagsBitmask & flags.MINOR_HOLIDAY) === flags.MINOR_HOLIDAY;
 
+      console.log("Events today", {
+        isChag,
+        isErevChag,
+        isMinorChag,
+        eventsToday,
+      });
+
       return (isChag || isErevChag) && !isMinorChag;
     }
   }
