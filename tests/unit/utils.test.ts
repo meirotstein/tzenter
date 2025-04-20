@@ -412,6 +412,14 @@ describe("utils tests", () => {
       expect(result).toBe(false);
     });
 
+    it("should return false if there is no holiday in IL but it is holiday on another aboard", async () => {
+      const date = new Date(2025, 4, 20); // Isru Hag Pesach
+      console.log("date", date);
+
+      const result = await shouldSkipScheduleToday(date);
+      expect(result).toBe(false);
+    });
+
     it("should return false if there is a minor holiday eve", async () => {
       const date = new Date(2025, 4, 15); // Lag BaOmer eve
 

@@ -4,7 +4,7 @@ const date = new Date(process.argv[2]);
 
 const options = {
   omer: true,
-  it: true,
+  il: true,
   start: date,
   end: date,
 };
