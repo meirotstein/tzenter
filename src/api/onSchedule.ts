@@ -4,7 +4,7 @@ import { Endpoint } from "../handlers/types";
 import { errorToHttpStatusCode } from "../utils";
 import { verifyValidScheduleExecuter } from "../verifiers";
 
-module.exports = async (req: VercelRequest, res: VercelResponse) => {
+const onSchedule = async (req: VercelRequest, res: VercelResponse) => {
   try {
     await verifyValidScheduleExecuter(req);
   } catch (e) {
@@ -27,3 +27,6 @@ module.exports = async (req: VercelRequest, res: VercelResponse) => {
     return res.status(errorToHttpStatusCode(e)).send(e.message);
   }
 };
+
+module.exports = onSchedule;
+export default onSchedule;
