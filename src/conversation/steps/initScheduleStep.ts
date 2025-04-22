@@ -56,6 +56,20 @@ export const initScheduleStep: Step = {
       params.custom_msg = `[${scheduleMessages.join(" | ")}]`;
     }
 
+    // TODO: for testing purposes only
+    if (userNum === 972547488557) {
+      scheduleTemplate = templates.minyan_appointment_reminder;
+
+      params = {
+        "1": minyan.name,
+        "2": prayerHebName(schedule.prayer),
+        "3": DateTime.fromISO(schedule.time).toFormat("HH:mm"),
+        "4": scheduleMessages.length
+          ? `[${scheduleMessages.join(" | ")}]`
+          : "-",
+      };
+    }
+
     const res = await waClient.sendTemplateMessage(
       userNum,
       scheduleTemplate,
