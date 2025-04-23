@@ -1,31 +1,12 @@
-# Node.js Hello World
+# Tzenter
 
-Simple Node.js + Vercel example that returns a "Hello World" response.
+<img src="https://github.com/user-attachments/assets/0dea7dec-be8e-4f6f-90c8-fbf33d160b6d" alt="tzenter-logo" width="300"/>
 
-## How to Use
 
-You can choose from one of the following two methods to use this repository:
+A Whatsapp bot for arranging and tracking attendees on registered Minyans
 
-### One-Click Deploy
+Deployed on Vercel as serverless functions apps
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples):
+Using managed Postgres and Redis services for permanent and volatile storage 
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/vercel/examples/tree/main/solutions/node-hello-world&project-name=node-hello-world&repository-name=node-hello-world)
 
-### Clone and Deploy
-
-```bash
-git clone https://github.com/vercel/examples/tree/main/solutions/node-hello-world
-```
-
-Install the Vercel CLI:
-
-```bash
-npm i -g vercel
-```
-
-Then run the app at the root of the repository:
-
-```bash
-vercel dev
-```
