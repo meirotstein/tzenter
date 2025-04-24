@@ -7,6 +7,6 @@ A Whatsapp bot for arranging and tracking attendees on registered Minyans
 
 Deployed on Vercel as serverless functions apps
 
-Using managed Postgres and Redis services for permanent and volatile storage 
+Uses managed Postgres and Redis services for permanent and volatile storage 
 
 
