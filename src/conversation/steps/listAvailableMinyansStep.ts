@@ -4,6 +4,7 @@ import { getUserByPhone } from "../../datasource/usersRepository";
 import { UnexpectedUserInputError } from "../../errors";
 import { WATextMessage } from "../../handlers/types";
 import { Context } from "../context";
+import { getMessage, messages } from "../messageTemplates";
 import { Step, UserContext } from "../types";
 import { selectedMinyanStep } from "./selectedMinyanStep";
 
@@ -20,20 +21,23 @@ export const listAvailableMinyansStep: Step = {
     const availableMinyans: Array<{ minyanId: number; minyanIndex: number }> =
       [];
     if (!minyans?.length) {
-      await waClient.sendTextMessage(userNum, "אין מניינים זמינים כרגע");
+      await waClient.sendTextMessage(userNum, messages.NO_AVAILABLE_MINYANS);
     } else {
-      let minyansText = "המניינים הזמינים: \n\n";
       minyans.forEach((minyan, index) => {
-        const currentMinyan = { minyanId: minyan.id, minyanIndex: index + 1 };
         const isUserRegistered = !!user?.minyans?.find(
           (userMinyan) => userMinyan.id === minyan.id
         );
-        minyansText += `${currentMinyan.minyanIndex}. ${minyan.name}${
-          isUserRegistered ? " *" : ""
-        }\n`;
+        const currentMinyan = {
+          name: minyan.name,
+          minyanId: minyan.id,
+          minyanIndex: index + 1,
+          isUserRegistered,
+        };
         availableMinyans.push(currentMinyan);
       });
-      minyansText += `\n\n כדי להמשיך יש להזין את מספר המניין הרצוי`;
+      let minyansText = getMessage(messages.AVAILABLE_MINYANS_LIST, {
+        availableMinyans,
+      });
       await waClient.sendTextMessage(userNum, minyansText);
       await context.update({ context: { availableMinyans } });
     }
