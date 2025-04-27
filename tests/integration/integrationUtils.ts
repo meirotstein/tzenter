@@ -10,7 +10,7 @@ import { KVClientMock } from "./mocks/kvClientMock";
 import { Minyan } from "../../src/datasource/entities/Minyan";
 import {
   getRepo as getMinyanRepo,
-  saveMinyan
+  saveMinyan,
 } from "../../src/datasource/minyansRepository";
 
 jest.mock("../../src/clients/WhatsappClient");
@@ -28,7 +28,7 @@ export interface IntegrationTestData {
   }>;
 }
 
-export async function initMocksAndDate(data: IntegrationTestData) {
+export async function initMocksAndData(data: IntegrationTestData) {
   sendTextMessageMock.mockClear();
   sendTemplateMessageMock.mockClear();
 
