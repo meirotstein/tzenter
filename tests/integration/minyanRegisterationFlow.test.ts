@@ -54,8 +54,9 @@ describe("register a minyan flow", () => {
     await userMessage(user.phoneNum, user.name, "כן");
     await expectTzenterTextMessage(
       user.phoneNum,
-      "ההרשמה למניין בוצעה בהצלחה!",
-      true
+      `ההרשמה למניין בוצעה בהצלחה!
+
+מעכשיו, אני אעדכן אותך לגבי תפילות שמתקיימות ושינויים שנוגעים למניין זה.`
     );
   });
 
@@ -107,11 +108,7 @@ describe("register a minyan flow", () => {
 
   it("user confirm un-registration -> gets a confirmation message for the-registration", async () => {
     await userMessage(user.phoneNum, user.name, "כן");
-    await expectTzenterTextMessage(
-      user.phoneNum,
-      "ההרשמה למניין הוסרה בהצלחה",
-      true
-    );
+    await expectTzenterTextMessage(user.phoneNum, "ההרשמה למניין הוסרה בהצלחה");
   });
 
   it("user reset conversation using hook work", async () => {

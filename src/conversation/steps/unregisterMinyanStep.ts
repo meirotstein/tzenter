@@ -2,6 +2,7 @@ import { WhatsappClient } from "../../clients/WhatsappClient";
 import { removeUserFromMinyan } from "../../datasource/usersRepository";
 import { WATextMessage } from "../../handlers/types";
 import { Context } from "../context";
+import { messages } from "../messageTemplates";
 import { Step, UserContext } from "../types";
 
 export const unregisterMinyanStep: Step = {
@@ -19,9 +20,7 @@ export const unregisterMinyanStep: Step = {
 
     await removeUserFromMinyan(userContext!.userId, userContext!.minyanId);
 
-    let responseText = "ההרשמה למניין הוסרה בהצלחה";
-
-    await waClient.sendTextMessage(userNum, responseText);
+    await waClient.sendTextMessage(userNum, messages.UNREGISTER_MINYAN_SUCCESS);
     await context.delete();
   },
   getNextStepId: async (userText: string, context: Context<UserContext>) =>

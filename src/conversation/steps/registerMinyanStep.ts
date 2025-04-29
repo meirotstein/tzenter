@@ -6,6 +6,7 @@ import {
 } from "../../datasource/usersRepository";
 import { WATextMessage } from "../../handlers/types";
 import { Context } from "../context";
+import { messages } from "../messageTemplates";
 import { Step, UserContext } from "../types";
 
 export const registerMinyanStep: Step = {
@@ -42,12 +43,7 @@ export const registerMinyanStep: Step = {
 
     await assignUserToAMinyan(userContext.userId, userContext.minyanId);
 
-    let responseText = "ההרשמה למניין בוצעה בהצלחה!";
-    responseText += "\n\n";
-    responseText +=
-      "מעכשיו, אני אעדכן אותך לגבי תפילות שמתקיימות ושינויים שנוגעים למניין זה.";
-
-    await waClient.sendTextMessage(userNum, responseText);
+    await waClient.sendTextMessage(userNum, messages.REGISTER_MINYAN_SUCCESS);
     await context.delete();
   },
   getNextStepId: async (userText: string, context: Context<UserContext>) =>

@@ -4,6 +4,7 @@ import { UnexpectedUserInputError } from "../../errors";
 import { WATextMessage } from "../../handlers/types";
 import { noWords, yesWords } from "../consts";
 import { Context } from "../context";
+import { getMessage, messages } from "../messageTemplates";
 import { Step, UserContext } from "../types";
 import { listAvailableMinyansStep } from "./listAvailableMinyansStep";
 import { selectedMinyanStep } from "./selectedMinyanStep";
@@ -18,19 +19,25 @@ export const getUserMinyansStep: Step = {
   ) => {
     let user = await getUserByPhone(userNum.toString());
     if (!user || !user.minyans?.length) {
-      let minyansText = "אתה לא רשום כרגע לאף מניין\n\n";
-      minyansText += "האם אתה מעוניין להירשם?";
-      await waClient.sendTextMessage(userNum, minyansText);
+      await waClient.sendTextMessage(userNum, messages.NO_REGISTERED_MINYANS);
       await context.update({ context: { userMinyans: [] } });
     } else {
-      let minyansText = "המניינים שלך: \n\n";
-      let userMinyans: Array<{ minyanId: number; minyanIndex: number }> = [];
+      let userMinyans: Array<{
+        minyanId: number;
+        minyanIndex: number;
+        name: string;
+      }> = [];
       user.minyans.forEach((minyan, index) => {
-        userMinyans.push({ minyanId: minyan.id, minyanIndex: index + 1 });
-        minyansText += `${index + 1}. ${minyan.name}\n`;
+        userMinyans.push({
+          minyanId: minyan.id,
+          minyanIndex: index + 1,
+          name: minyan.name,
+        });
       });
-      minyansText += `\n\n כדי להמשיך יש להזין את מספר המניין הרצוי`;
-      await waClient.sendTextMessage(userNum, minyansText);
+      await waClient.sendTextMessage(
+        userNum,
+        getMessage(messages.REGISTERED_MINYANS_LIST, { userMinyans })
+      );
       await context.update({ context: { userMinyans } });
     }
   },

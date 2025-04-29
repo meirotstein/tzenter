@@ -20,12 +20,27 @@ export const messages = {
 <% } %>
 
  כדי להמשיך יש להזין את מספר המניין הרצוי`,
- REGISTER_MINYAN_CONFIRMATION: `בחרת במניין <%= minyanName %>
+  REGISTER_MINYAN_CONFIRMATION: `בחרת במניין <%= minyanName %>
 
 האם אתה רוצה להירשם למניין זה?`,
- UNREGISTER_MINYAN_CONFIRMATION: `בחרת במניין <%= minyanName %>
+  UNREGISTER_MINYAN_CONFIRMATION: `בחרת במניין <%= minyanName %>
 
-אתה רשום למניין זה, האם אתה מעוניין להסיר את ההרשמה?`
+אתה רשום למניין זה, האם אתה מעוניין להסיר את ההרשמה?`,
+  REGISTER_MINYAN_SUCCESS: `ההרשמה למניין בוצעה בהצלחה!
+
+מעכשיו, אני אעדכן אותך לגבי תפילות שמתקיימות ושינויים שנוגעים למניין זה.`,
+  UNREGISTER_MINYAN_SUCCESS: `ההרשמה למניין הוסרה בהצלחה`,
+  NO_REGISTERED_MINYANS: `אתה לא רשום כרגע לאף מניין
+
+האם אתה מעוניין להירשם?`,
+  REGISTERED_MINYANS_LIST: `המניינים שלך: 
+
+<% for (let i = 0; i < userMinyans.length; i++) { 
+     const minyan = userMinyans[i]; 
+%>\<%= minyan.minyanIndex + '. ' + minyan.name %>
+<% } %>
+
+ כדי להמשיך יש להזין את מספר המניין הרצוי`,
 };
 
 export function getMessage(message: string, data: Record<string, any>): string {
