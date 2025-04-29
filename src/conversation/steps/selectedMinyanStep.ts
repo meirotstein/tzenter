@@ -5,6 +5,7 @@ import { UnexpectedUserInputError } from "../../errors";
 import { WATextMessage } from "../../handlers/types";
 import { noWords, yesWords } from "../consts";
 import { Context } from "../context";
+import { getMessage, messages } from "../messageTemplates";
 import { Step, UserContext } from "../types";
 import { registerMinyanStep } from "./registerMinyanStep";
 import { unregisterMinyanStep } from "./unregisterMinyanStep";
@@ -32,11 +33,12 @@ export const selectedMinyanStep: Step = {
       (userMinyan) => userMinyan.id === selectedMinyanId
     );
 
-    let responseText = `בחרת במניין ${minyan.name}\n\n`;
-
-    responseText += isUserRegistered
-      ? "אתה רשום למניין זה, האם אתה מעוניין להסיר את ההרשמה?"
-      : "האם אתה רוצה להירשם למניין זה?";
+    const responseText = getMessage(
+      isUserRegistered
+        ? messages.UNREGISTER_MINYAN_CONFIRMATION
+        : messages.REGISTER_MINYAN_CONFIRMATION,
+      { minyanName: minyan.name }
+    );
     await waClient.sendTextMessage(userNum, responseText);
     await context.update({
       context: {
