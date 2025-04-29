@@ -1,6 +1,5 @@
 import { Prayer, Schedule } from "../datasource/entities/Schedule";
 import { getDailyEvents } from "../utils";
-const { DateTime } = require("luxon");
 export async function scheduleAnnouncements(
   schedule: Schedule,
   currentDate: Date

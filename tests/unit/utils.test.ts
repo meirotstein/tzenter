@@ -433,6 +433,20 @@ describe("utils tests", () => {
       let result = await shouldSkipScheduleToday(date);
       expect(result).toBe(false);
     });
+
+    it("should return false on rosh hodesh", async () => {
+      const date = new Date(2025, 3, 28); // Rosh Hodesh Iyar
+
+      let result = await shouldSkipScheduleToday(date);
+      expect(result).toBe(false);
+    });
+
+    it("should return false on national holiday", async () => {
+      const date = new Date(2025, 4, 1); // Yom Ha'atzmaut
+
+      let result = await shouldSkipScheduleToday(date);
+      expect(result).toBe(false);
+    });
   });
 
   describe("getDailyEvents", () => {
