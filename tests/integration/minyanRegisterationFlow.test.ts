@@ -60,7 +60,7 @@ describe("register a minyan flow", () => {
     );
   });
 
-  it("user reset conversation using hook work", async () => {
+  it("user reset conversation using hook word", async () => {
     await userMessage(user.phoneNum, user.name, "צענטר");
     await expectTzenterTextMessage(user.phoneNum, messages.INITIAL);
   });
@@ -78,7 +78,7 @@ describe("register a minyan flow", () => {
     );
   });
 
-  it("user reset conversation using hook work", async () => {
+  it("user reset conversation using hook word", async () => {
     await userMessage(user.phoneNum, user.name, "צענטר");
     await expectTzenterTextMessage(user.phoneNum, messages.INITIAL);
   });
@@ -111,7 +111,7 @@ describe("register a minyan flow", () => {
     await expectTzenterTextMessage(user.phoneNum, "ההרשמה למניין הוסרה בהצלחה");
   });
 
-  it("user reset conversation using hook work", async () => {
+  it("user reset conversation using hook word", async () => {
     await userMessage(user.phoneNum, user.name, "צענטר");
     await expectTzenterTextMessage(user.phoneNum, messages.INITIAL);
   });
