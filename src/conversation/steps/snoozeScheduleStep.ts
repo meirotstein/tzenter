@@ -2,6 +2,7 @@ import { WhatsappClient } from "../../clients/WhatsappClient";
 import { Schedule } from "../../datasource/entities/Schedule";
 import { WATextMessage } from "../../handlers/types";
 import { Context, ContextType } from "../context";
+import { messages } from "../messageTemplates";
 import { ScheduleContext, Step, UserContext } from "../types";
 
 export const snoozeScheduleStep: Step = {
@@ -39,7 +40,7 @@ export const snoozeScheduleStep: Step = {
       snoozed: Array.from(snoozed),
     });
 
-    await waClient.sendTextMessage(userNum, "קיבלתי, אני אשאל אותך בהמשך");
+    await waClient.sendTextMessage(userNum, messages.SNOOZED_ACCEPTED);
 
     await context.delete();
 

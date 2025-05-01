@@ -41,6 +41,20 @@ export const messages = {
 <% } %>
 
  כדי להמשיך יש להזין את מספר המניין הרצוי`,
+  APPROVAL_ACCEPTED: `קיבלתי, תודה על העדכון!
+אני אמשיך לעדכן אותך לגבי המניין.
+
+במידה ותגיעו יותר מאדם אחד, בבקשה הזן את מספר הבאים (כולל אותך) עכשיו`,
+  SNOOZED_ACCEPTED: `קיבלתי, אני אשאל אותך בהמשך`,
+  ATTENDEES_AMOUNT_UPDATE_ACCEPTED: "קיבלתי, תודה על העדכון!",
+  MINYAN_REACHED_WITH_LIST: `יש מניין!
+
+המתפללים הבאים אשרו הגעה לתפילת <%= pray %> במניין <%= minyanName %> בשעה <%= hour %>
+<% for (let i = 0; i < prayers.length; i++) { %>
+<%=(i + 1) + '. ' + prayers[i]%><% } %>
+
+
+בבקשה להגיע בזמן`,
 };
 
 export function getMessage(message: string, data: Record<string, any>): string {

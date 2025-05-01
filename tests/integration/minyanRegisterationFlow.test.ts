@@ -2,6 +2,7 @@ import { messages } from "../../src/conversation/messageTemplates";
 import {
   expectTzenterTextMessage,
   initMocksAndData,
+  resetAll,
   userMessage,
 } from "./integrationUtils";
 
@@ -20,6 +21,10 @@ describe("register a minyan flow", () => {
         },
       ],
     });
+  });
+
+  afterAll(async () => {
+    await resetAll();
   });
 
   it("user trigger initial conversation", async () => {

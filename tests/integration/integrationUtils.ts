@@ -4,18 +4,38 @@ import { KVClient } from "../../src/clients/KVClient";
 import { WhatsappClient } from "../../src/clients/WhatsappClient";
 import { WebhookTypesEnum } from "../../src/external/whatsapp/types/enums";
 import { WebhookObject } from "../../src/external/whatsapp/types/webhooks";
-import { verifyWhatsappMessage } from "../../src/verifiers";
+import {
+  verifyValidScheduleExecuter,
+  verifyWhatsappMessage,
+} from "../../src/verifiers";
 import { KVClientMock } from "./mocks/kvClientMock";
 
+import onSchedule from "../../src/api/onSchedule";
 import { Minyan } from "../../src/datasource/entities/Minyan";
+import { Prayer, Schedule } from "../../src/datasource/entities/Schedule";
+import { User } from "../../src/datasource/entities/User";
 import {
+  getMinyanByName,
   getRepo as getMinyanRepo,
   saveMinyan,
 } from "../../src/datasource/minyansRepository";
+import {
+  addSchedule,
+  getRepo as getScheduleRepo,
+} from "../../src/datasource/scheduleRepository";
+import {
+  assignUserToAMinyan,
+  saveUser,
+  getRepo as getUsersRepo,
+} from "../../src/datasource/usersRepository";
+import { getJewishEventsOnDateWrapper } from "../../src/external/hebcal/getJewishEventsOnDateWrapper";
+import { DateTime } from "luxon";
+import exp from "constants";
 
 jest.mock("../../src/clients/WhatsappClient");
 jest.mock("../../src/verifiers");
 jest.mock("../../src/clients/KVClient");
+jest.mock("../../src/external/hebcal/getJewishEventsOnDateWrapper");
 
 const sendTextMessageMock = jest.fn();
 const sendTemplateMessageMock = jest.fn();
@@ -26,13 +46,23 @@ export interface IntegrationTestData {
     name: string;
     city: string;
   }>;
+  schedules?: Array<{
+    name: string;
+    prayer: Prayer;
+    time: string;
+    minyanName: string;
+  }>;
+  users?: Array<{
+    phoneNum: number;
+    name: string;
+    minyanNames: Array<string>;
+  }>;
 }
 
 export async function initMocksAndData(data: IntegrationTestData) {
-  sendTextMessageMock.mockClear();
-  sendTemplateMessageMock.mockClear();
-
   (verifyWhatsappMessage as jest.Mock).mockResolvedValue(true);
+  (verifyValidScheduleExecuter as jest.Mock).mockResolvedValue(true);
+  (getJewishEventsOnDateWrapper as jest.Mock).mockResolvedValue([]);
 
   (KVClient as jest.Mock).mockImplementation(() => kvMock);
 
@@ -40,8 +70,6 @@ export async function initMocksAndData(data: IntegrationTestData) {
     sendTextMessage: sendTextMessageMock,
     sendTemplateMessage: sendTemplateMessageMock,
   }));
-
-  (await getMinyanRepo()).clear();
 
   if (data.minyans?.length) {
     for (const minyanData of data.minyans) {
@@ -51,6 +79,55 @@ export async function initMocksAndData(data: IntegrationTestData) {
       await saveMinyan(minyan);
     }
   }
+
+  if (data.schedules?.length) {
+    for (const scheduleData of data.schedules) {
+      const schedule = new Schedule();
+      schedule.name = scheduleData.name;
+      schedule.prayer = scheduleData.prayer;
+      schedule.time = scheduleData.time;
+      const minyan = await getMinyanByName(scheduleData.minyanName);
+      schedule.minyan = minyan!;
+
+      await addSchedule(schedule);
+    }
+  }
+
+  if (data.users?.length) {
+    for (const userData of data.users) {
+      const user = new User();
+      user.phone = userData.phoneNum.toString();
+      user.name = userData.name;
+
+      await saveUser(user);
+
+      if (userData.minyanNames.length) {
+        for (const minyanName of userData.minyanNames) {
+          const minyan = await getMinyanByName(minyanName);
+          await assignUserToAMinyan(user.id, minyan!.id);
+        }
+      }
+    }
+  }
+}
+
+export async function resetAll() {
+  sendTextMessageMock.mockClear();
+  sendTemplateMessageMock.mockClear();
+  (verifyWhatsappMessage as jest.Mock).mockClear();
+  (verifyValidScheduleExecuter as jest.Mock).mockClear();
+  (getJewishEventsOnDateWrapper as jest.Mock).mockClear();
+
+  (await getMinyanRepo()).clear();
+  (await getScheduleRepo()).clear();
+  (await getUsersRepo()).clear();
+
+  jest.useRealTimers();
+  jest.clearAllMocks();
+}
+
+export function timeTravelTo(date: Date) {
+  jest.useFakeTimers().setSystemTime(date);
 }
 
 export async function userMessage(
@@ -104,6 +181,34 @@ export async function userMessage(
   await onMessage(req, res);
 }
 
+export async function scheduleExecution(time: string) {
+  const [hour, minute] = time.split(":").map(Number);
+
+  const dt = DateTime.fromObject(
+    {
+      hour,
+      minute,
+    },
+    {
+      zone: "Asia/Jerusalem",
+    }
+  );
+
+  timeTravelTo(dt.toJSDate());
+
+  const req = {
+    method: "GET",
+    body: {},
+  } as unknown as VercelRequest;
+
+  const res = {
+    status: jest.fn().mockReturnThis(),
+    send: jest.fn(),
+  } as unknown as VercelResponse;
+
+  await onSchedule(req, res);
+}
+
 export async function expectTzenterTextMessage(
   phoneNum: number,
   message: string,
@@ -115,4 +220,35 @@ export async function expectTzenterTextMessage(
     phoneNum,
     isContains ? expect.stringContaining(message) : message,
   ]);
+}
+
+export async function expectTzenterTextOnLastMessages(
+  phoneNum: number,
+  message: string,
+  isContains: boolean = false
+) {
+  const expectedPhone = phoneNum;
+  const expectedMessage = isContains
+    ? (actualMessage: string) =>
+        typeof actualMessage === "string" && actualMessage.includes(message)
+    : (actualMessage: string) => actualMessage === message;
+
+  const matched = sendTextMessageMock.mock.calls.some(
+    ([actualPhone, actualMessage]) =>
+      actualPhone === expectedPhone && expectedMessage(actualMessage)
+  );
+
+  expect(matched).toBe(true);
+}
+
+export async function expectTzenterTemplateMessage(
+  phoneNum: number,
+  template: string,
+  params: Record<string, any> = {}
+) {
+  const lastCallArgs =
+    sendTemplateMessageMock.mock.calls[
+      sendTemplateMessageMock.mock.calls.length - 1
+    ];
+  expect(lastCallArgs).toEqual([phoneNum, template, params]);
 }

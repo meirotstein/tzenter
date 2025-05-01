@@ -3,6 +3,7 @@ import { Schedule } from "../../datasource/entities/Schedule";
 import { WATextMessage } from "../../handlers/types";
 import { notifyIfMinyanReached } from "../../schedule/notifyIfMinyanReached";
 import { Context, ContextType } from "../context";
+import { messages } from "../messageTemplates";
 import { ScheduleContext, Step, UserContext } from "../types";
 
 export const updateAdditionalMinyanAttendeesStep: Step = {
@@ -50,9 +51,10 @@ export const updateAdditionalMinyanAttendeesStep: Step = {
 
     await scheduleContext.update(forUpdate);
 
-    let responseText = "קיבלתי, תודה על העדכון!\n";
-
-    await waClient.sendTextMessage(userNum, responseText);
+    await waClient.sendTextMessage(
+      userNum,
+      messages.ATTENDEES_AMOUNT_UPDATE_ACCEPTED
+    );
     await notifyIfMinyanReached(
       waClient,
       schedule,

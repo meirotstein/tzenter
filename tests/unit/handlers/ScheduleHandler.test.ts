@@ -28,7 +28,7 @@ describe("ScheduleHandler", () => {
 
     const response = await scheduleHandler.handle({});
 
-    expect(getUpcomingSchedules).toHaveBeenCalledWith(60);
+    expect(getUpcomingSchedules).toHaveBeenCalledWith(46);
     expect(response).toEqual({ status: "done", schedules: 0 });
   });
 
@@ -48,7 +48,7 @@ describe("ScheduleHandler", () => {
 
     const response = await scheduleHandler.handle({});
 
-    expect(getUpcomingSchedules).toHaveBeenCalledWith(60);
+    expect(getUpcomingSchedules).toHaveBeenCalledWith(46);
     expect(invokeSchedule).toHaveBeenCalledTimes(2);
     expect(invokeSchedule).toHaveBeenCalledWith(
       expect.any(WhatsappClient),
