@@ -35,10 +35,12 @@ export const listAvailableMinyansStep: Step = {
         };
         availableMinyans.push(currentMinyan);
       });
-      let minyansText = getMessage(messages.AVAILABLE_MINYANS_LIST, {
-        availableMinyans,
-      });
-      await waClient.sendTextMessage(userNum, minyansText);
+      await waClient.sendTextMessage(
+        userNum,
+        getMessage(messages.AVAILABLE_MINYANS_LIST, {
+          availableMinyans,
+        })
+      );
       await context.update({ context: { availableMinyans } });
     }
   },

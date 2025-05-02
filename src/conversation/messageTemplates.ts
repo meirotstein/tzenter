@@ -46,6 +46,7 @@ export const messages = {
 
 במידה ותגיעו יותר מאדם אחד, בבקשה הזן את מספר הבאים (כולל אותך) עכשיו`,
   SNOOZED_ACCEPTED: `קיבלתי, אני אשאל אותך בהמשך`,
+  REJECT_ACCEPTED: "קיבלתי, תודה על העדכון!",
   ATTENDEES_AMOUNT_UPDATE_ACCEPTED: "קיבלתי, תודה על העדכון!",
   MINYAN_REACHED_WITH_LIST: `יש מניין!
 
@@ -55,6 +56,15 @@ export const messages = {
 
 
 בבקשה להגיע בזמן`,
+  SNOOZE_REMINDER: `זוהי תזכורת לתפילת <%= pray %> בשעה <%= hour %> במניין <%= minyanName %>
+
+האם תגיע?`,
+  MINYAN_ATTENDANCE_UPDATE: `עדכון לתפילת <%= pray %> בשעה <%= hour %> במניין <%= minyanName %>
+
+ נכון לרגע זה אשרו הגעה <%= prayers.length %> מתפללים
+<% for (let i = 0; i < prayers.length; i++) { %>
+<%=(i + 1) + '. ' + prayers[i]%><% } %>
+`,
 };
 
 export function getMessage(message: string, data: Record<string, any>): string {

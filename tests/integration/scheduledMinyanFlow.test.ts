@@ -1,9 +1,9 @@
 import templates from "../../src/conversation/waTemplates";
 import { Prayer } from "../../src/datasource/entities/Schedule";
 import {
-  expectTzenterTemplateMessage,
+  expectTzenterTemplateMessageSequence,
   expectTzenterTextMessage,
-  expectTzenterTextOnLastMessages,
+  expectTzenterTextMessageSequence,
   initMocksAndData,
   resetAll,
   scheduleExecution,
@@ -18,6 +18,11 @@ const user1 = {
 const user2 = {
   phoneNum: 97254345829,
   name: "אלברט איינשטין",
+};
+
+const user3 = {
+  phoneNum: 972523478652,
+  name: "חטפני השועל",
 };
 
 describe("minyan schedule flow", () => {
@@ -40,6 +45,11 @@ describe("minyan schedule flow", () => {
           name: user2.name,
           minyanNames: ["איצקוביץ"],
         },
+        {
+          phoneNum: user3.phoneNum,
+          name: user3.name,
+          minyanNames: ["איצקוביץ"],
+        },
       ],
       schedules: [
         {
@@ -58,16 +68,29 @@ describe("minyan schedule flow", () => {
 
   it("minyan schedule started -> user gets an alert", async () => {
     await scheduleExecution("15:20");
-    await expectTzenterTemplateMessage(
-      user2.phoneNum,
-      templates.minyan_appointment_reminder,
+    const expectedTemplateParams = {
+      "1": "איצקוביץ",
+      "2": "מנחה",
+      "3": "16:00",
+      "4": "-",
+    };
+    await expectTzenterTemplateMessageSequence([
       {
-        "1": "איצקוביץ",
-        "2": "מנחה",
-        "3": "16:00",
-        "4": "-",
-      }
-    );
+        phoneNum: user1.phoneNum,
+        template: templates.minyan_appointment_reminder,
+        params: expectedTemplateParams,
+      },
+      {
+        phoneNum: user2.phoneNum,
+        template: templates.minyan_appointment_reminder,
+        params: expectedTemplateParams,
+      },
+      {
+        phoneNum: user3.phoneNum,
+        template: templates.minyan_appointment_reminder,
+        params: expectedTemplateParams,
+      },
+    ]);
   });
 
   it("user1 approved attendees", async () => {
@@ -94,29 +117,36 @@ describe("minyan schedule flow", () => {
     );
   });
 
+  it("user3 rejected", async () => {
+    await userMessage(user3.phoneNum, user2.name, "לא אגיע");
+    await expectTzenterTextMessage(user3.phoneNum, "קיבלתי, תודה על העדכון!");
+  });
+
   it("minyan schedule executed again after 21 minutes -> users gets notifications", async () => {
     await scheduleExecution("15:41");
-    await expectTzenterTextOnLastMessages(
-      user1.phoneNum,
-      ` עדכון לתפילת מנחה בשעה 16:00 במניין איצקוביץ
+    await expectTzenterTextMessageSequence([
+      {
+        phoneNum: user2.phoneNum,
+        message: `זוהי תזכורת לתפילת מנחה בשעה 16:00 במניין איצקוביץ
+
+האם תגיע?`,
+      },
+      {
+        phoneNum: user1.phoneNum,
+        message: `עדכון לתפילת מנחה בשעה 16:00 במניין איצקוביץ
 
  נכון לרגע זה אשרו הגעה 3 מתפללים
 
 1. מוישה זוכמיר
 2. מוישה זוכמיר (2)
 3. מוישה זוכמיר (3)
-`
-    );
-    await expectTzenterTextOnLastMessages(
-      user2.phoneNum,
-      `זוהי תזכורת לתפילת מנחה בשעה 16:00 במניין איצקוביץ
-
-האם תגיע?`
-    );
+`,
+      },
+    ]);
   });
 
   it("user2 approved attendees", async () => {
-    await userMessage(user2.phoneNum, user2.name, "אגיע");
+    await userMessage(user2.phoneNum, user2.name, "כן");
     await expectTzenterTextMessage(
       user2.phoneNum,
       `קיבלתי, תודה על העדכון!
@@ -147,7 +177,10 @@ describe("minyan schedule flow", () => {
 
 
 בבקשה להגיע בזמן`;
-    await expectTzenterTextOnLastMessages(user2.phoneNum, expectedMessage);
-    await expectTzenterTextOnLastMessages(user1.phoneNum, expectedMessage);
+    await expectTzenterTextMessageSequence([
+      { phoneNum: user2.phoneNum, message: "קיבלתי, תודה על העדכון!" },
+      { phoneNum: user1.phoneNum, message: expectedMessage },
+      { phoneNum: user2.phoneNum, message: expectedMessage },
+    ]);
   });
 });

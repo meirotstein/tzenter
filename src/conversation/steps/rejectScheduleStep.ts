@@ -2,6 +2,7 @@ import { WhatsappClient } from "../../clients/WhatsappClient";
 import { Schedule } from "../../datasource/entities/Schedule";
 import { WATextMessage } from "../../handlers/types";
 import { Context, ContextType } from "../context";
+import { messages } from "../messageTemplates";
 import { ScheduleContext, Step, UserContext } from "../types";
 
 export const rejectScheduleStep: Step = {
@@ -39,7 +40,7 @@ export const rejectScheduleStep: Step = {
       rejected: Array.from(rejected),
     });
 
-    await waClient.sendTextMessage(userNum, "קיבלתי, תודה על העדכון!");
+    await waClient.sendTextMessage(userNum, messages.REJECT_ACCEPTED);
 
     await context.delete();
 

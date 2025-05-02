@@ -222,23 +222,16 @@ export async function expectTzenterTextMessage(
   ]);
 }
 
-export async function expectTzenterTextOnLastMessages(
-  phoneNum: number,
-  message: string,
-  isContains: boolean = false
+export async function expectTzenterTextMessageSequence(
+  msgs: Array<{ phoneNum: number; message: string }>
 ) {
-  const expectedPhone = phoneNum;
-  const expectedMessage = isContains
-    ? (actualMessage: string) =>
-        typeof actualMessage === "string" && actualMessage.includes(message)
-    : (actualMessage: string) => actualMessage === message;
-
-  const matched = sendTextMessageMock.mock.calls.some(
-    ([actualPhone, actualMessage]) =>
-      actualPhone === expectedPhone && expectedMessage(actualMessage)
-  );
-
-  expect(matched).toBe(true);
+  msgs.forEach(({ phoneNum, message }, idx) => {
+    let lastCallArgs =
+      sendTextMessageMock.mock.calls[
+        sendTextMessageMock.mock.calls.length - msgs.length + idx
+      ];
+    expect(lastCallArgs).toEqual([phoneNum, message]);
+  });
 }
 
 export async function expectTzenterTemplateMessage(
@@ -251,4 +244,20 @@ export async function expectTzenterTemplateMessage(
       sendTemplateMessageMock.mock.calls.length - 1
     ];
   expect(lastCallArgs).toEqual([phoneNum, template, params]);
+}
+
+export async function expectTzenterTemplateMessageSequence(
+  msgs: Array<{
+    phoneNum: number;
+    template: string;
+    params?: Record<string, any>;
+  }>
+) {
+  msgs.forEach(({ phoneNum, template, params }, idx) => {
+    let lastCallArgs =
+      sendTemplateMessageMock.mock.calls[
+        sendTemplateMessageMock.mock.calls.length - msgs.length + idx
+      ];
+    expect(lastCallArgs).toEqual([phoneNum, template, params]);
+  });
 }

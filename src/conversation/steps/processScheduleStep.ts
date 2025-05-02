@@ -12,6 +12,7 @@ import { ScheduleContext, Step, UserContext } from "../types";
 import { approveScheduleStep } from "./approveScheduleStep";
 import { rejectScheduleStep } from "./rejectScheduleStep";
 import { snoozeScheduleStep } from "./snoozeScheduleStep";
+import { getMessage, messages } from "../messageTemplates";
 
 const expectedUserResponses = {
   iWIllArrive: "אגיע",
@@ -76,32 +77,29 @@ export const processScheduleStep: Step = {
         });
         return;
       }
-      let msg = ` עדכון לתפילת ${prayerHebName(
-        schedule.prayer
-      )} בשעה ${DateTime.fromISO(schedule.time).toFormat("HH:mm")} במניין ${
-        minyan.name
-      }\n\n`;
 
-      let count = 0;
-      let prayerList = "";
+      const prayers = [];
       for (const phoneNum in approved) {
         const user = await getUserByPhone(phoneNum);
-        prayerList += `${++count}. ${user?.name || phoneNum}\n`;
+        prayers.push(user?.name || phoneNum);
 
         if (approved[String(phoneNum)] > 1) {
           for (let i = 1; i < approved[String(phoneNum)]; i++) {
-            prayerList += `${++count}. ${user?.name || phoneNum} (${i + 1})\n`;
+            prayers.push(`${user?.name || phoneNum} (${i + 1})`);
           }
         }
       }
 
-      msg += ` נכון לרגע זה אשרו הגעה ${count} מתפללים\n\n`;
+      await waClient.sendTextMessage(
+        userNum,
+        getMessage(messages.MINYAN_ATTENDANCE_UPDATE, {
+          minyanName: minyan.name,
+          hour: DateTime.fromISO(schedule.time).toFormat("HH:mm"),
+          pray: prayerHebName(schedule.prayer),
+          prayers,
+        })
+      );
 
-      if (prayerList) {
-        msg += prayerList;
-      }
-
-      await waClient.sendTextMessage(userNum, msg);
       await context.delete();
       return;
     }
@@ -110,13 +108,15 @@ export const processScheduleStep: Step = {
       await context.update({
         context: { ...userContext, processSnoozed: true },
       });
-      let msg = `זוהי תזכורת לתפילת ${prayerHebName(
-        schedule.prayer
-      )} בשעה ${DateTime.fromISO(schedule.time).toFormat("HH:mm")} במניין ${
-        minyan.name
-      }\n\n`;
-      msg += "האם תגיע?";
-      await waClient.sendTextMessage(userNum, msg);
+
+      await waClient.sendTextMessage(
+        userNum,
+        getMessage(messages.SNOOZE_REMINDER, {
+          minyanName: minyan.name,
+          hour: DateTime.fromISO(schedule.time).toFormat("HH:mm"),
+          pray: prayerHebName(schedule.prayer),
+        })
+      );
       return;
     }
   },
