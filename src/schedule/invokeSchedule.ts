@@ -101,9 +101,7 @@ export async function invokeSchedule(
   });
 
   if (isLastExecution(schedule.time, scheduleInterval) && scheduleContext) {
-    const scheduleOccurrence =
-      (await getScheduleOccurrencesByScheduleId(schedule.id)) ||
-      new ScheduleOccurrence();
+    const scheduleOccurrence = new ScheduleOccurrence();
     scheduleOccurrence.datetime = new Date();
     scheduleOccurrence.scheduleId = schedule.id;
     scheduleOccurrence.approved = calculatedAttendees(scheduleContext);

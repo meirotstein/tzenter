@@ -108,15 +108,15 @@ export async function notifyIfMinyanReached(
       await Promise.all(scheduleActions);
     }
 
-    const scheduleOccurrence =
-      (await getScheduleOccurrencesByScheduleId(schedule.id)) ||
-      new ScheduleOccurrence();
-    scheduleOccurrence.datetime = new Date();
-    scheduleOccurrence.scheduleId = schedule.id;
-    scheduleOccurrence.approved = amountOfApproved;
-    scheduleOccurrence.rejected = (scheduleContext.rejected || []).length;
-    scheduleOccurrence.snoozed = (scheduleContext.snoozed || []).length;
-    await saveScheduleOccurrence(scheduleOccurrence);
+    // const scheduleOccurrence =
+    //   (await getScheduleOccurrencesByScheduleId(schedule.id)) ||
+    //   new ScheduleOccurrence();
+    // scheduleOccurrence.datetime = new Date();
+    // scheduleOccurrence.scheduleId = schedule.id;
+    // scheduleOccurrence.approved = amountOfApproved;
+    // scheduleOccurrence.rejected = (scheduleContext.rejected || []).length;
+    // scheduleOccurrence.snoozed = (scheduleContext.snoozed || []).length;
+    // await saveScheduleOccurrence(scheduleOccurrence);
   }
 
   return "done";
