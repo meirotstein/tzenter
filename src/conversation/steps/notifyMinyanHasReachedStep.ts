@@ -38,13 +38,6 @@ export const notifyMinyanHasReachedStep: Step = {
 
     const prayers = [];
 
-    // let responseText = "יש מניין!\n\n";
-    // responseText += `המתפללים הבאים אשרו הגעה לתפילת ${prayerHebName(
-    //   schedule.prayer
-    // )} במניין ${schedule.minyan.name} בשעה ${DateTime.fromISO(
-    //   schedule.time
-    // ).toFormat("HH:mm")}\n\n`;
-
     let count = 0;
     for (const phoneNum in approved) {
       const user = await getUserByPhone(phoneNum);

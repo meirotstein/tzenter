@@ -10,7 +10,10 @@ import {
 import { Schedule } from "../datasource/entities/Schedule";
 import { ScheduleOccurrence } from "../datasource/entities/ScheduleOccurrence";
 import { getMinyanById } from "../datasource/minyansRepository";
-import { addScheduleOccurrence } from "../datasource/scheduleOccurrencesRepository";
+import {
+  getScheduleOccurrencesByScheduleId,
+  saveScheduleOccurrence,
+} from "../datasource/scheduleOccurrencesRepository";
 import { WATextMessage } from "../handlers/types";
 import {
   calculatedAttendees,
@@ -98,14 +101,15 @@ export async function invokeSchedule(
   });
 
   if (isLastExecution(schedule.time, scheduleInterval) && scheduleContext) {
-    const occurrence = new ScheduleOccurrence();
-
-    occurrence.datetime = new Date();
-    occurrence.scheduleId = schedule.id;
-    occurrence.approved = calculatedAttendees(scheduleContext);
-    occurrence.rejected = (scheduleContext.rejected || []).length;
-    occurrence.snoozed = (scheduleContext.snoozed || []).length;
-    await addScheduleOccurrence(occurrence);
+    const scheduleOccurrence =
+      (await getScheduleOccurrencesByScheduleId(schedule.id)) ||
+      new ScheduleOccurrence();
+    scheduleOccurrence.datetime = new Date();
+    scheduleOccurrence.scheduleId = schedule.id;
+    scheduleOccurrence.approved = calculatedAttendees(scheduleContext);
+    scheduleOccurrence.rejected = (scheduleContext.rejected || []).length;
+    scheduleOccurrence.snoozed = (scheduleContext.snoozed || []).length;
+    await saveScheduleOccurrence(scheduleOccurrence);
   }
 
   return status;

@@ -3,6 +3,11 @@ import { Context, ContextType } from "../conversation/context";
 import { notifyMinyanHasReachedStep } from "../conversation/steps/notifyMinyanHasReachedStep";
 import { ScheduleContext, UserContext } from "../conversation/types";
 import { Schedule } from "../datasource/entities/Schedule";
+import { ScheduleOccurrence } from "../datasource/entities/ScheduleOccurrence";
+import {
+  getScheduleOccurrencesByScheduleId,
+  saveScheduleOccurrence,
+} from "../datasource/scheduleOccurrencesRepository";
 import { getUserByPhone } from "../datasource/usersRepository";
 import { WATextMessage } from "../handlers/types";
 import { calculatedAttendees } from "../utils";
@@ -102,6 +107,16 @@ export async function notifyIfMinyanReached(
 
       await Promise.all(scheduleActions);
     }
+
+    const scheduleOccurrence =
+      (await getScheduleOccurrencesByScheduleId(schedule.id)) ||
+      new ScheduleOccurrence();
+    scheduleOccurrence.datetime = new Date();
+    scheduleOccurrence.scheduleId = schedule.id;
+    scheduleOccurrence.approved = amountOfApproved;
+    scheduleOccurrence.rejected = (scheduleContext.rejected || []).length;
+    scheduleOccurrence.snoozed = (scheduleContext.snoozed || []).length;
+    await saveScheduleOccurrence(scheduleOccurrence);
   }
 
   return "done";

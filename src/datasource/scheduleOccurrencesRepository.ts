@@ -7,7 +7,7 @@ export async function getRepo(): Promise<Repository<ScheduleOccurrence>> {
   return ds.getRepository(ScheduleOccurrence);
 }
 
-export async function addScheduleOccurrence(
+export async function saveScheduleOccurrence(
   occurrence: ScheduleOccurrence
 ): Promise<ScheduleOccurrence> {
   const repo = await getRepo();
@@ -19,4 +19,11 @@ export async function getScheduleOccurrenceById(
 ): Promise<ScheduleOccurrence | null> {
   const repo = await getRepo();
   return repo.findOne({ where: { id: occurrenceId } });
+}
+
+export async function getScheduleOccurrencesByScheduleId(
+  scheduleId: number
+): Promise<ScheduleOccurrence | null> {
+  const repo = await getRepo();
+  return repo.findOne({ where: { scheduleId } });
 }
