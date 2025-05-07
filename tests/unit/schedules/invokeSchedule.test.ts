@@ -66,6 +66,7 @@ describe("invokeSchedule", () => {
 
     expect(getMinyanById).toHaveBeenCalledWith(1);
     expect(scheduleContext.update).toHaveBeenCalledWith({
+      invocationId: expect.any(String),
       startedAt: expect.any(Number),
       status: ScheduleStatus.initiated,
     });
@@ -81,6 +82,7 @@ describe("invokeSchedule", () => {
 
     expect(getMinyanById).toHaveBeenCalledWith(1);
     expect(scheduleContext.update).toHaveBeenCalledWith({
+      invocationId: expect.any(String),
       startedAt: expect.any(Number),
       status: ScheduleStatus.processing,
     });
@@ -136,6 +138,7 @@ describe("invokeSchedule", () => {
     expect(result).toBe(ScheduleStatus.initiated);
     expect(getMinyanById).toHaveBeenCalledWith(1);
     expect(scheduleContext.update).toHaveBeenCalledWith({
+      invocationId: expect.any(String),
       startedAt: expect.any(Number),
       status: ScheduleStatus.initiated,
     });

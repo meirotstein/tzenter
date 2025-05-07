@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import { WhatsappClient } from "../clients/WhatsappClient";
 import { getInitScheduleStep, getProcessScheduleStep } from "../conversation";
 import { Context, ContextType } from "../conversation/context";
@@ -11,7 +12,7 @@ import { Schedule } from "../datasource/entities/Schedule";
 import { ScheduleOccurrence } from "../datasource/entities/ScheduleOccurrence";
 import { getMinyanById } from "../datasource/minyansRepository";
 import {
-  getScheduleOccurrencesByScheduleId,
+  getScheduleInvocationOccurrence,
   saveScheduleOccurrence,
 } from "../datasource/scheduleOccurrencesRepository";
 import { WATextMessage } from "../handlers/types";
@@ -30,6 +31,7 @@ export async function invokeSchedule(
     process.env.SCHEDULE_INVOCATION_INTERVAL_MIN || 14
   );
   const scheduleContext = await context.get();
+  const invocationId = scheduleContext?.invocationId || uuidv4();
   const startedAt = Date.now();
 
   if (
@@ -96,17 +98,21 @@ export async function invokeSchedule(
     : ScheduleStatus.initiated;
 
   await context.update({
+    invocationId,
     status,
     startedAt,
   });
 
   if (isLastExecution(schedule.time, scheduleInterval) && scheduleContext) {
-    const scheduleOccurrence = new ScheduleOccurrence();
+    const scheduleOccurrence =
+      (await getScheduleInvocationOccurrence(invocationId)) ||
+      new ScheduleOccurrence();
     scheduleOccurrence.datetime = new Date();
     scheduleOccurrence.scheduleId = schedule.id;
     scheduleOccurrence.approved = calculatedAttendees(scheduleContext);
     scheduleOccurrence.rejected = (scheduleContext.rejected || []).length;
     scheduleOccurrence.snoozed = (scheduleContext.snoozed || []).length;
+    scheduleOccurrence.invocationId = invocationId;
     await saveScheduleOccurrence(scheduleOccurrence);
   }
 

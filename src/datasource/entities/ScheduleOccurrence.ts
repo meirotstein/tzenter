@@ -19,4 +19,7 @@ export class ScheduleOccurrence {
 
   @Column()
   snoozed!: number;
+
+  @Column({ nullable: true })
+  invocationId?: string;
 }

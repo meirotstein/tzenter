@@ -21,9 +21,11 @@ export async function getScheduleOccurrenceById(
   return repo.findOne({ where: { id: occurrenceId } });
 }
 
-export async function getScheduleOccurrencesByScheduleId(
-  scheduleId: number
+export async function getScheduleInvocationOccurrence(
+  invocationId: string
 ): Promise<ScheduleOccurrence | null> {
   const repo = await getRepo();
-  return repo.findOne({ where: { scheduleId } });
+  return await repo.findOne({
+    where: { invocationId },
+  });
 }
