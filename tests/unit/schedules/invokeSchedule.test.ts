@@ -68,6 +68,7 @@ describe("invokeSchedule", () => {
     expect(scheduleContext.update).toHaveBeenCalledWith({
       invocationId: expect.any(String),
       startedAt: expect.any(Number),
+      updatedAt: expect.any(Number),
       status: ScheduleStatus.initiated,
     });
     expect(result).toBe(ScheduleStatus.initiated);
@@ -84,6 +85,7 @@ describe("invokeSchedule", () => {
     expect(scheduleContext.update).toHaveBeenCalledWith({
       invocationId: expect.any(String),
       startedAt: expect.any(Number),
+      updatedAt: expect.any(Number),
       status: ScheduleStatus.processing,
     });
     expect(result).toBe(ScheduleStatus.processing);
@@ -115,9 +117,9 @@ describe("invokeSchedule", () => {
   });
 
   it("should skip the schedule if the last process interval time has not passed", async () => {
-    const mockStartedAt = Date.now() - 5 * 60 * 1000; // 5 minutes ago
+    const mockUpdatedAt = Date.now() - 5 * 60 * 1000; // 5 minutes ago
     jest.spyOn(scheduleContext, "get").mockResolvedValue({
-      startedAt: mockStartedAt,
+      updatedAt: mockUpdatedAt,
     });
 
     const result = await invokeSchedule(waClient, schedule, scheduleContext);
@@ -128,9 +130,9 @@ describe("invokeSchedule", () => {
   });
 
   it("should proceed with the schedule if the last process interval time has passed", async () => {
-    const mockStartedAt = Date.now() - 20 * 60 * 1000; // 20 minutes ago
+    const mockUpdatedAt = Date.now() - 20 * 60 * 1000; // 20 minutes ago
     jest.spyOn(scheduleContext, "get").mockResolvedValue({
-      startedAt: mockStartedAt,
+      updatedAt: mockUpdatedAt,
     });
 
     const result = await invokeSchedule(waClient, schedule, scheduleContext);
@@ -140,6 +142,7 @@ describe("invokeSchedule", () => {
     expect(scheduleContext.update).toHaveBeenCalledWith({
       invocationId: expect.any(String),
       startedAt: expect.any(Number),
+      updatedAt: expect.any(Number),
       status: ScheduleStatus.initiated,
     });
   });

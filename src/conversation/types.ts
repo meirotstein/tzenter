@@ -27,6 +27,7 @@ export type ScheduleContext = {
   status: ScheduleStatus;
   invocationId?: string;
   startedAt?: number;
+  updatedAt?: number;
   approved?: Record<string, number>;
   rejected?: Array<string>;
   snoozed?: Array<string>;

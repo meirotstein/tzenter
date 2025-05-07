@@ -32,15 +32,15 @@ export async function invokeSchedule(
   );
   const scheduleContext = await context.get();
   const invocationId = scheduleContext?.invocationId || uuidv4();
-  const startedAt = Date.now();
+  const updatedAt = Date.now();
 
   if (
-    scheduleContext?.startedAt &&
-    !isAtLeastMinApart(scheduleContext.startedAt, startedAt, scheduleInterval)
+    scheduleContext?.updatedAt &&
+    !isAtLeastMinApart(scheduleContext.updatedAt, updatedAt, scheduleInterval)
   ) {
     console.log("skipping schedule - didnt pass last process interval time", {
-      startedAt,
-      lastInterval: scheduleContext.startedAt,
+      updatedAt,
+      lastInterval: scheduleContext.updatedAt,
       scheduleInterval,
     });
     return "skipped";
@@ -100,7 +100,8 @@ export async function invokeSchedule(
   await context.update({
     invocationId,
     status,
-    startedAt,
+    updatedAt,
+    startedAt: scheduleContext?.startedAt || Date.now(),
   });
 
   if (isLastExecution(schedule.time, scheduleInterval) && scheduleContext) {
