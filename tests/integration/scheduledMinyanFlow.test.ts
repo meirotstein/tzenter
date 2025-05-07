@@ -1,9 +1,12 @@
 import templates from "../../src/conversation/waTemplates";
 import { Prayer } from "../../src/datasource/entities/Schedule";
 import {
+  expectNoNewMessages,
   expectTzenterTemplateMessageSequence,
   expectTzenterTextMessage,
   expectTzenterTextMessageSequence,
+  getCurrentTemplateMessageCallsCount,
+  getCurrentTextMessageCallsCount,
   initMocksAndData,
   resetAll,
   scheduleExecution,
@@ -120,6 +123,13 @@ describe("minyan schedule flow", () => {
   it("user3 rejected", async () => {
     await userMessage(user3.phoneNum, user2.name, "לא אגיע");
     await expectTzenterTextMessage(user3.phoneNum, "קיבלתי, תודה על העדכון!");
+  });
+
+  it("minyan schedule executed again after 5 minutes -> schedule is skipped with no user notifications", async () => {
+    const textMessageCount = getCurrentTextMessageCallsCount();
+    const templateMessageCount = getCurrentTemplateMessageCallsCount();
+    await scheduleExecution("15:25");
+    expectNoNewMessages(textMessageCount, templateMessageCount);
   });
 
   it("minyan schedule executed again after 21 minutes -> users gets notifications", async () => {

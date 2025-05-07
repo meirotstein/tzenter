@@ -10,6 +10,7 @@ import {
 } from "../../src/verifiers";
 import { KVClientMock } from "./mocks/kvClientMock";
 
+import { DateTime } from "luxon";
 import onSchedule from "../../src/api/onSchedule";
 import { Minyan } from "../../src/datasource/entities/Minyan";
 import { Prayer, Schedule } from "../../src/datasource/entities/Schedule";
@@ -25,12 +26,10 @@ import {
 } from "../../src/datasource/scheduleRepository";
 import {
   assignUserToAMinyan,
-  saveUser,
   getRepo as getUsersRepo,
+  saveUser,
 } from "../../src/datasource/usersRepository";
 import { getJewishEventsOnDateWrapper } from "../../src/external/hebcal/getJewishEventsOnDateWrapper";
-import { DateTime } from "luxon";
-import exp from "constants";
 
 jest.mock("../../src/clients/WhatsappClient");
 jest.mock("../../src/verifiers");
@@ -220,6 +219,28 @@ export async function expectTzenterTextMessage(
     phoneNum,
     isContains ? expect.stringContaining(message) : message,
   ]);
+}
+
+export function getCurrentTextMessageCallsCount() {
+  return sendTextMessageMock.mock.calls.length;
+}
+
+export function getCurrentTemplateMessageCallsCount() {
+  return sendTemplateMessageMock.mock.calls.length;
+}
+
+export function expectNoNewMessages(
+  textMessageCount?: number,
+  templateMessageCount?: number
+) {
+  if (textMessageCount !== undefined) {
+    expect(sendTextMessageMock.mock.calls.length).toEqual(textMessageCount);
+  }
+  if (templateMessageCount !== undefined) {
+    expect(sendTemplateMessageMock.mock.calls.length).toEqual(
+      templateMessageCount
+    );
+  }
 }
 
 export async function expectTzenterTextMessageSequence(
