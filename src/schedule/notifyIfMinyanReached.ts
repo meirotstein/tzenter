@@ -117,6 +117,7 @@ export async function notifyIfMinyanReached(
       scheduleOccurrence.approved = amountOfApproved;
       scheduleOccurrence.rejected = (scheduleContext.rejected || []).length;
       scheduleOccurrence.snoozed = (scheduleContext.snoozed || []).length;
+      scheduleOccurrence.invocationId = scheduleContext.invocationId;
       await saveScheduleOccurrence(scheduleOccurrence);
     }
   }
