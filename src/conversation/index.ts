@@ -1,9 +1,10 @@
-import { restartWordHooks } from "./consts";
+import { initScheduleUpdateHookWord, restartWordHooks } from "./consts";
 import { approveScheduleStep } from "./steps/approveScheduleStep";
 import { dadJokeStep } from "./steps/dadJokeStep";
 import { getUserMinyansStep } from "./steps/getUserMinyansStep";
 import { initialMenuStep } from "./steps/initialMenuStep";
 import { initScheduleStep } from "./steps/initScheduleStep";
+import { initUpdateMinyanScheduleStep } from "./steps/initUpdateMinyanScheduleStep";
 import { listAvailableMinyansStep } from "./steps/listAvailableMinyansStep";
 import { processScheduleStep } from "./steps/processScheduleStep";
 import { registerMinyanStep } from "./steps/registerMinyanStep";
@@ -16,7 +17,9 @@ import { Step } from "./types";
 
 const initialStep = initialMenuStep;
 
-const hooks: Record<string, Step> = {};
+const hooks: Record<string, Step> = {
+  [initScheduleUpdateHookWord]: initUpdateMinyanScheduleStep,
+};
 
 restartWordHooks.forEach((word) => {
   hooks[word] = initialMenuStep;
@@ -36,6 +39,7 @@ const steps = {
   [snoozeScheduleStep.id]: snoozeScheduleStep,
   [updateAdditionalMinyanAttendeesStep.id]: updateAdditionalMinyanAttendeesStep,
   [dadJokeStep.id]: dadJokeStep,
+  [initUpdateMinyanScheduleStep.id]: initUpdateMinyanScheduleStep,
 };
 
 export function getStep(stepId: string): Step | undefined {

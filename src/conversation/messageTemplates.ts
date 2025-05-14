@@ -65,6 +65,7 @@ export const messages = {
 <% for (let i = 0; i < prayers.length; i++) { %>
 <%=(i + 1) + '. ' + prayers[i]%><% } %>
 `,
+  NO_ACTIVE_SCHEDULE: `אין כרגע תזמונים פעילים למניינים שנרשמת אליהם.`,
 };
 
 export function getMessage(message: string, data: Record<string, any>): string {

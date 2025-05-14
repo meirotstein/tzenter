@@ -57,31 +57,31 @@ export class MessageHandler implements IHandler {
 
     const context = Context.getContext<UserContext>(
       recipientPhoneNum,
-      ContextType.User,
+      ContextType.User
     );
 
     try {
       const userContext = await context.get();
 
-      if (!userContext?.currentStepId) {
-        return await this.initialMessage(+recipientPhoneNum, message, context);
-      }
+      if (userContext?.currentStepId) {
+        const lastStep = getStep(userContext.currentStepId);
 
-      const lastStep = getStep(userContext.currentStepId);
+        if (!lastStep) {
+          throw new Error(
+            `current step not found ${userContext.currentStepId}`
+          );
+        }
 
-      if (!lastStep) {
-        throw new Error(`current step not found ${userContext.currentStepId}`);
-      }
+        const nextResponse = await this.nextMessage(
+          lastStep,
+          context,
+          +recipientPhoneNum,
+          message
+        );
 
-      const nextResponse = await this.nextMessage(
-        lastStep,
-        context,
-        +recipientPhoneNum,
-        message
-      );
-
-      if (nextResponse) {
-        return nextResponse;
+        if (nextResponse) {
+          return nextResponse;
+        }
       }
 
       const hookStatus = await this.hookMessage(
@@ -92,6 +92,8 @@ export class MessageHandler implements IHandler {
       if (hookStatus) {
         return hookStatus;
       }
+
+      return await this.initialMessage(+recipientPhoneNum, message, context);
     } catch (e) {
       if (e instanceof UnexpectedUserInputError) {
         console.log("unexpected user input", e);
@@ -118,12 +120,7 @@ export class MessageHandler implements IHandler {
     context: Context<UserContext>
   ) {
     const initialStep = getInitialStep();
-    await initialStep.action(
-      phoneNum,
-      this.waClient,
-      message,
-      context
-    );
+    await initialStep.action(phoneNum, this.waClient, message, context);
     const newUserContext = { currentStepId: initialStep.id };
     await context.set(newUserContext);
     return { status: "Message received - initial" };
