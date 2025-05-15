@@ -10,11 +10,7 @@ export class KVClient<T> {
     });
   }
 
-  async set(
-    key: string,
-    value: T,
-    expirationSecs: number = 60 * 30
-  ) {
+  async set(key: string, value: T, expirationSecs: number = 60 * 30) {
     await this.redis.set<T>(key, value, {
       ex: expirationSecs,
     });
@@ -26,5 +22,25 @@ export class KVClient<T> {
 
   async get(key: string): Promise<T | null> {
     return await this.redis.get(key);
+  }
+
+  async getMatchingValues(pattern: string): Promise<Array<T>> {
+    let cursor = "0";
+    const keys = [];
+
+    do {
+      const [nextCursor, foundKeys] = await this.redis.scan(cursor, {
+        match: pattern,
+        count: 100,
+      });
+      cursor = nextCursor;
+      keys.push(...foundKeys);
+    } while (cursor !== "0");
+
+    if (!keys.length) {
+      return [];
+    }
+
+    return await this.redis.mget(keys);
   }
 }
