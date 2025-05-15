@@ -67,36 +67,34 @@ describe("KVClient", () => {
     expect(redisMock.del).toHaveBeenCalledWith("test-key");
   });
 
-  it("should return matching values for a given pattern", async () => {
-    const keys = ["key1", "key2"];
-    const values = [{ foo: "bar1" }, { foo: "bar2" }];
+  it("should get matching keys", async () => {
     Redis.prototype.scan = jest
       .fn()
-      .mockResolvedValueOnce(["1", ["key1"]])
-      .mockResolvedValueOnce(["0", ["key2"]]);
-    Redis.prototype.mget = jest.fn().mockResolvedValue(values);
+      .mockResolvedValueOnce(["1", ["key1", "key2"]])
+      .mockResolvedValueOnce(["0", ["key3"]]);
 
-    const result = await kvClient.getMatchingValues("key*");
+    const result = await kvClient.getMatchingKeys("key*");
 
     expect(redisMock.scan).toHaveBeenCalledWith("0", {
       match: "key*",
       count: 100,
     });
-    expect(redisMock.scan).toHaveBeenCalledTimes(2);
-    expect(redisMock.mget).toHaveBeenCalledWith(keys);
-    expect(result).toEqual(values);
-  });
-
-  it("should return an empty array if no keys match the pattern", async () => {
-    Redis.prototype.scan = jest.fn().mockResolvedValue(["0", []]);
-
-    const result = await kvClient.getMatchingValues("non-existent-pattern*");
-
-    expect(redisMock.scan).toHaveBeenCalledWith("0", {
-      match: "non-existent-pattern*",
+    expect(redisMock.scan).toHaveBeenCalledWith("1", {
+      match: "key*",
       count: 100,
     });
-    expect(redisMock.mget).not.toHaveBeenCalled();
+    expect(result).toEqual(["key1", "key2", "key3"]);
+  });
+
+  it("should return an empty array if no keys match", async () => {
+    Redis.prototype.scan = jest.fn().mockResolvedValueOnce(["0", []]);
+
+    const result = await kvClient.getMatchingKeys("non-existent*");
+
+    expect(redisMock.scan).toHaveBeenCalledWith("0", {
+      match: "non-existent*",
+      count: 100,
+    });
     expect(result).toEqual([]);
   });
 });

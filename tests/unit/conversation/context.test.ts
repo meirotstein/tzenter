@@ -83,4 +83,42 @@ describe("Context", () => {
       expect.stringMatching(new RegExp(`${userReferenceId}$`))
     );
   });
+
+  it("should get all contexts of a specific type", async () => {
+    const mockKeys = ["user:test-user-id1", "user:test-user-id2"];
+    const mockContexts = [
+      { currentStepId: "step1", context: { data: "data1" } },
+      { currentStepId: "step2", context: { data: "data2" } },
+    ];
+
+    mockKVClient.prototype.getMatchingKeys = jest
+      .fn()
+      .mockResolvedValue(mockKeys);
+    mockKVClient.prototype.get = jest
+      .fn()
+      .mockResolvedValueOnce(mockContexts[0])
+      .mockResolvedValueOnce(mockContexts[1]);
+
+    const result = await Context.getAllContexts<UserContext>(ContextType.User);
+
+    expect(mockKVClient.prototype.getMatchingKeys).toHaveBeenCalledWith(
+      "user:*"
+    );
+
+    expect(result).toHaveLength(mockKeys.length);
+    result.forEach(async (context, index) => {
+      expect(await context.get()).toEqual(mockContexts[index]);
+    });
+  });
+
+  it("should return an empty array if no contexts exist for a specific type", async () => {
+    mockKVClient.prototype.getMatchingKeys = jest.fn().mockResolvedValue([]);
+
+    const result = await Context.getAllContexts<UserContext>(ContextType.User);
+
+    expect(mockKVClient.prototype.getMatchingKeys).toHaveBeenCalledWith(
+      "user:*"
+    );
+    expect(result).toEqual([]);
+  });
 });

@@ -24,7 +24,7 @@ export class KVClient<T> {
     return await this.redis.get(key);
   }
 
-  async getMatchingValues(pattern: string): Promise<Array<T>> {
+  async getMatchingKeys(pattern: string): Promise<Array<string>> {
     let cursor = "0";
     const keys = [];
 
@@ -37,10 +37,6 @@ export class KVClient<T> {
       keys.push(...foundKeys);
     } while (cursor !== "0");
 
-    if (!keys.length) {
-      return [];
-    }
-
-    return await this.redis.mget(keys);
+    return keys;
   }
 }

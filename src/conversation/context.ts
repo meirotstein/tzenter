@@ -1,5 +1,12 @@
 import { KVClient } from "../clients/KVClient";
 
+function getClient<T>() {
+  return new KVClient<T>(
+    process.env.KV_REST_API_TOKEN!,
+    process.env.KV_REST_API_URL!
+  );
+}
+
 export enum ContextType {
   User = "user",
   Schedule = "schedule",
@@ -15,10 +22,7 @@ export class Context<T> {
     private contextType: ContextType,
     private expirationSecs: number = 60 * 30
   ) {
-    this.kvClient = new KVClient(
-      process.env.KV_REST_API_TOKEN!,
-      process.env.KV_REST_API_URL!
-    );
+    this.kvClient = getClient<T>();
   }
 
   async set(context: T) {
@@ -63,5 +67,19 @@ export class Context<T> {
         throw new Error(`Invalid context type: ${contextType}`);
     }
     return new Context<T>(referenceId, contextType, expirationSecs);
+  }
+
+  static async getAllContexts<T>(
+    contextType: ContextType
+  ): Promise<Array<Context<T>>> {
+    const client = getClient<T>();
+    const pattern = `${contextType}:*`;
+    const keys = await client.getMatchingKeys(pattern);
+    const contexts: Array<Context<T>> = [];
+    for (const key of keys) {
+      const context = Context.getContext<T>(key, contextType);
+      contexts.push(context);
+    }
+    return contexts;
   }
 }
