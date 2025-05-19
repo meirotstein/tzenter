@@ -18,4 +18,9 @@ export class KVClientMock<T> {
   async get(key: string): Promise<T | null> {
     return this.store[key] ?? null;
   }
+
+  async getMatchingKeys(pattern: string): Promise<Array<string>> {
+    const regex = new RegExp(`^${pattern.replace("*", ".*")}$`);
+    return Object.keys(this.store).filter((key) => regex.test(key));
+  }
 }

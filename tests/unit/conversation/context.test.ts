@@ -28,6 +28,8 @@ describe("Context", () => {
   it("should set user context", async () => {
     await context.set(mockUserContext);
 
+    expect(context.id).toEqual(userReferenceId);
+
     expect(mockKVClient.prototype.set).toHaveBeenCalledWith(
       expect.stringMatching(new RegExp(`${userReferenceId}$`)),
       mockUserContext,

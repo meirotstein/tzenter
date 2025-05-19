@@ -1,8 +1,11 @@
+import templates from "../../src/conversation/waTemplates";
 import { Prayer } from "../../src/datasource/entities/Schedule";
 import {
+  expectTzenterTemplateMessageSequence,
   expectTzenterTextMessage,
   initMocksAndData,
   resetAll,
+  scheduleExecution,
   userMessage,
 } from "./integrationUtils";
 
@@ -62,11 +65,67 @@ describe("minyan schedule flow", () => {
     await resetAll();
   });
 
-  it("user initiate an update - no active schedule - user gets a message", async () => {
+  it("user1 initiate an update - no active schedule - user gets a message", async () => {
     await userMessage(user1.phoneNum, user1.name, "עדכון");
     await expectTzenterTextMessage(
       user1.phoneNum,
       "אין כרגע תזמונים פעילים למניינים שנרשמת אליהם."
+    );
+  });
+
+  it("minyan schedule started -> users gets an alert", async () => {
+    await scheduleExecution("15:20");
+    const expectedTemplateParams = {
+      "1": "איצקוביץ",
+      "2": "מנחה",
+      "3": "16:00",
+      "4": "-",
+    };
+    await expectTzenterTemplateMessageSequence([
+      {
+        phoneNum: user1.phoneNum,
+        template: templates.minyan_appointment_reminder,
+        params: expectedTemplateParams,
+      },
+      {
+        phoneNum: user2.phoneNum,
+        template: templates.minyan_appointment_reminder,
+        params: expectedTemplateParams,
+      },
+      {
+        phoneNum: user3.phoneNum,
+        template: templates.minyan_appointment_reminder,
+        params: expectedTemplateParams,
+      },
+    ]);
+  });
+
+  it("user1 approved attendees", async () => {
+    await userMessage(user1.phoneNum, user1.name, "אגיע");
+    await expectTzenterTextMessage(
+      user1.phoneNum,
+      `קיבלתי, תודה על העדכון!
+אני אמשיך לעדכן אותך לגבי המניין.
+
+במידה ותגיעו יותר מאדם אחד, בבקשה הזן את מספר הבאים (כולל אותך) עכשיו`
+    );
+  });
+
+  it("user1 updated for 3 attendees", async () => {
+    await userMessage(user1.phoneNum, user1.name, "3");
+    await expectTzenterTextMessage(user1.phoneNum, "קיבלתי, תודה על העדכון!");
+  });
+
+  it("user1 initiate an update - one active schedule available - gets list of options", async () => {
+    await userMessage(user1.phoneNum, user1.name, "עדכון");
+    await expectTzenterTextMessage(
+      user1.phoneNum,
+      `יש כרגע תזמון פעיל לתפילת מנחה במניין איצקוביץ בשעה 16:00
+
+מה אתה מעוניין לעשות?
+
+1. לקבל עדכון לגבי מצב המניין
+2. לעדכן את הנוכחות שלי`
     );
   });
 });

@@ -1,9 +1,10 @@
+import { DateTime } from "luxon";
 import { WhatsappClient } from "../../clients/WhatsappClient";
-import { Schedule } from "../../datasource/entities/Schedule";
+import { getScheduleById } from "../../datasource/scheduleRepository";
 import { WATextMessage } from "../../handlers/types";
-import { notifyIfMinyanReached } from "../../schedule/notifyIfMinyanReached";
+import { prayerHebName } from "../../utils";
 import { Context, ContextType } from "../context";
-import { messages } from "../messageTemplates";
+import { getMessage, messages } from "../messageTemplates";
 import { ScheduleContext, Step, UserContext } from "../types";
 
 export const initUpdateMinyanScheduleStep: Step = {
@@ -14,61 +15,59 @@ export const initUpdateMinyanScheduleStep: Step = {
     message: WATextMessage,
     context: Context<UserContext>
   ) => {
-    const userContext = (await context.get())?.context;
-    if (!userContext?.minyan || !userContext?.schedule) {
+    const scheduleContexts = await Context.getAllContexts<ScheduleContext>(
+      ContextType.Schedule
+    );
+    const userSchedules: Array<{ id: string; data: ScheduleContext }> = [];
+
+    for (const ctx of scheduleContexts) {
+      const ctxData = await ctx.get();
+      if (
+        ctxData?.approved &&
+        Object.keys(ctxData.approved).includes(String(userNum))
+      ) {
+        userSchedules.push({ id: ctx.id, data: ctxData });
+      }
+    }
+
+    if (userSchedules.length === 0) {
+      await waClient.sendTextMessage(userNum, messages.NO_ACTIVE_SCHEDULE);
+      return;
+    }
+
+    if (userSchedules.length > 1) {
       await waClient.sendTextMessage(
         userNum,
-        messages.NO_ACTIVE_SCHEDULE
+        messages.MULTIPLE_ACTIVE_SCHEDULE_REJECT
       );
       return;
     }
 
-    const schedule: Schedule = userContext.schedule;
+    const scheduleEntity = await getScheduleById(+userSchedules[0].id);
 
-    const scheduleContext = Context.getContext<ScheduleContext>(
-      String(schedule.id),
-      ContextType.Schedule
-    );
-
-    if (!scheduleContext) {
-      throw new Error("Schedule context not found");
+    if (!scheduleEntity) {
+      throw new Error(`Schedule not found, id: ${userSchedules[0].id}`);
     }
 
-    const expectedSelection = Number(message.message);
-    if (isNaN(expectedSelection)) {
-      console.log(
-        "updateAdditionalMinyanAttendeesStep: userText is not a unexpected"
-      );
-      throw new Error(`userText is not a unexpected: ${message.message}`);
-    }
-
-    // TODO: might need to use a mutex-like functions for that kind of update
-    const scheduleContextData = await scheduleContext.get();
-
-    const approved = scheduleContextData?.approved || {};
-
-    approved[String(userNum)] = expectedSelection;
-
-    const forUpdate: Partial<ScheduleContext> = {
-      approved,
-    };
-
-    await scheduleContext.update(forUpdate);
+    await context.update({
+      context: {
+        scheduleId: scheduleEntity.id,
+      },
+    });
 
     await waClient.sendTextMessage(
       userNum,
-      messages.ATTENDEES_AMOUNT_UPDATE_ACCEPTED
-    );
-    await notifyIfMinyanReached(
-      waClient,
-      schedule,
-      scheduleContext,
-      String(userNum)
+      getMessage(messages.ACTIVE_SCHEDULE_SINGLE, {
+        minyanName: scheduleEntity.minyan.name,
+        hour: DateTime.fromISO(scheduleEntity.time).toFormat("HH:mm"),
+        pray: prayerHebName(scheduleEntity.prayer),
+      })
     );
 
-    await context.delete();
-
-    console.log("user updated schedule", { userNum, scheduleId: schedule.id });
+    console.log("user is updating existing schedule", {
+      userNum,
+      scheduleId: scheduleEntity.id,
+    });
   },
   getNextStepId: async (userText: string, context: Context<UserContext>) =>
     Promise.resolve(undefined),

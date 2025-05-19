@@ -25,6 +25,10 @@ export class Context<T> {
     this.kvClient = getClient<T>();
   }
 
+  get id(): string {
+    return this.referenceId;
+  }
+
   async set(context: T) {
     await this.kvClient.set(this.contextKey, context, this.expirationSecs);
   }
@@ -77,7 +81,8 @@ export class Context<T> {
     const keys = await client.getMatchingKeys(pattern);
     const contexts: Array<Context<T>> = [];
     for (const key of keys) {
-      const context = Context.getContext<T>(key, contextType);
+      const referenceId = key.split(":")[1];
+      const context = Context.getContext<T>(referenceId, contextType);
       contexts.push(context);
     }
     return contexts;
