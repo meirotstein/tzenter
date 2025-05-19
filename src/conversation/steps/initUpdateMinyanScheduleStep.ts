@@ -1,11 +1,18 @@
 import { DateTime } from "luxon";
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { getScheduleById } from "../../datasource/scheduleRepository";
+import { UnexpectedUserInputError } from "../../errors";
 import { WATextMessage } from "../../handlers/types";
 import { prayerHebName } from "../../utils";
 import { Context, ContextType } from "../context";
 import { getMessage, messages } from "../messageTemplates";
 import { ScheduleContext, Step, UserContext } from "../types";
+import { sendScheduleStatusStep } from "./sendScheduleStatusStep";
+
+const expectedUserResponses = {
+  getUpdate: "1",
+  performUpdate: "2",
+};
 
 export const initUpdateMinyanScheduleStep: Step = {
   id: "initUpdateMinyanScheduleStep",
@@ -69,6 +76,17 @@ export const initUpdateMinyanScheduleStep: Step = {
       scheduleId: scheduleEntity.id,
     });
   },
-  getNextStepId: async (userText: string, context: Context<UserContext>) =>
-    Promise.resolve(undefined),
+  getNextStepId: async (userText: string, context: Context<UserContext>) => {
+    console.log(
+      "received userText on initUpdateMinyanScheduleStep.getNextStepId",
+      userText
+    );
+    if (userText === expectedUserResponses.getUpdate) {
+      return Promise.resolve(sendScheduleStatusStep.id);
+    }
+    // else if (userText === expectedUserResponses.performUpdate) {
+    //   return Promise.resolve(updateScheduleAttendeesStep.id);
+    // }
+    return Promise.reject(new UnexpectedUserInputError(userText));
+  },
 };

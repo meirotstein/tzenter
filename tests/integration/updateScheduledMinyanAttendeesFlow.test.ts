@@ -128,4 +128,31 @@ describe("minyan schedule flow", () => {
 2. לעדכן את הנוכחות שלי`
     );
   });
+  it("user1 initiate an update - one active schedule available - gets list of options", async () => {
+    await userMessage(user1.phoneNum, user1.name, "עדכון");
+    await expectTzenterTextMessage(
+      user1.phoneNum,
+      `יש כרגע תזמון פעיל לתפילת מנחה במניין איצקוביץ בשעה 16:00
+
+מה אתה מעוניין לעשות?
+
+1. לקבל עדכון לגבי מצב המניין
+2. לעדכן את הנוכחות שלי`
+    );
+  });
+
+  it("user1 selects the first option - gets the current minyan status", async () => {
+    await userMessage(user1.phoneNum, user1.name, "1");
+    await expectTzenterTextMessage(
+      user1.phoneNum,
+      `עדכון לתפילת מנחה בשעה 16:00 במניין איצקוביץ
+
+ נכון לרגע זה אשרו הגעה 3 מתפללים
+
+1. מוישה זוכמיר
+2. מוישה זוכמיר (2)
+3. מוישה זוכמיר (3)
+`
+    );
+  });
 });

@@ -10,6 +10,7 @@ import { processScheduleStep } from "./steps/processScheduleStep";
 import { registerMinyanStep } from "./steps/registerMinyanStep";
 import { rejectScheduleStep } from "./steps/rejectScheduleStep";
 import { selectedMinyanStep } from "./steps/selectedMinyanStep";
+import { sendScheduleStatusStep } from "./steps/sendScheduleStatusStep";
 import { snoozeScheduleStep } from "./steps/snoozeScheduleStep";
 import { unregisterMinyanStep } from "./steps/unregisterMinyanStep";
 import { updateAdditionalMinyanAttendeesStep } from "./steps/updateAdditionalMinyanAttendeesStep";
@@ -40,6 +41,7 @@ const steps = {
   [updateAdditionalMinyanAttendeesStep.id]: updateAdditionalMinyanAttendeesStep,
   [dadJokeStep.id]: dadJokeStep,
   [initUpdateMinyanScheduleStep.id]: initUpdateMinyanScheduleStep,
+  [sendScheduleStatusStep.id]: sendScheduleStatusStep,
 };
 
 export function getStep(stepId: string): Step | undefined {
