@@ -42,15 +42,25 @@ export const updateAdditionalMinyanAttendeesStep: Step = {
     const scheduleContextData = await scheduleContext.get();
 
     const approved = scheduleContextData?.approved || {};
+    const rejected = scheduleContextData?.rejected || [];
+    const snoozed = scheduleContextData?.snoozed || [];
+
+    const userNumStr = String(userNum);
+
+    const updatedRejected = rejected.filter((num) => num !== userNumStr);
+    const updatedSnoozed = snoozed.filter((num) => num !== userNumStr);
 
     if (expectedSelection === 0) {
       delete approved[String(userNum)];
+      updatedRejected.push(userNumStr);
     } else {
       approved[String(userNum)] = expectedSelection;
     }
 
     const forUpdate: Partial<ScheduleContext> = {
       approved,
+      rejected: updatedRejected,
+      snoozed: updatedSnoozed,
     };
 
     await scheduleContext.update(forUpdate);
