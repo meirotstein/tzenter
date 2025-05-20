@@ -65,14 +65,19 @@ export const messages = {
 <% for (let i = 0; i < prayers.length; i++) { %>
 <%=(i + 1) + '. ' + prayers[i]%><% } %>
 `,
-  NO_ACTIVE_SCHEDULE: `אין כרגע תזמונים פעילים למניינים שנרשמת אליהם.`,
+  NO_ACTIVE_SCHEDULE: `אין כרגע תזמונים פעילים למניינים שנרשמת אליהם`,
   MULTIPLE_ACTIVE_SCHEDULE_REJECT: `אני מזהה שיש לך יותר מתזמון אחד פעיל למניין זה, בשלב זה לא ניתן לעדכן.`,
-  ACTIVE_SCHEDULE_SINGLE: `יש כרגע תזמון פעיל לתפילת <%= pray %> במניין <%= minyanName %> בשעה <%= hour %>
+  ACTIVE_SCHEDULE_USER_APPROVED: `יש כרגע תזמון פעיל לתפילת <%= pray %> במניין <%= minyanName %> בשעה <%= hour %>
 
 מה אתה מעוניין לעשות?
 
 1. לקבל עדכון לגבי מצב המניין
 2. לעדכן את הנוכחות שלי`,
+  ACTIVE_SCHEDULE_USER_NOT_APPROVED: `יש כרגע תזמון פעיל לתפילת <%= pray %> במניין <%= minyanName %> בשעה <%= hour %>
+
+האם אתה מעוניין לאשר הגעה?`,
+  UPDATE_ATTENDEES_AMOUNT: `הכנס את מספרי המתפללים העדכני שיגיעו למניין (כולל אותך)
+במידה ואתה מעוניין להסיר את ההרשמה, הכנס 0`,
 };
 
 export function getMessage(message: string, data: Record<string, any>): string {

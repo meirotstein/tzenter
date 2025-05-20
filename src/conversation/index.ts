@@ -14,6 +14,7 @@ import { sendScheduleStatusStep } from "./steps/sendScheduleStatusStep";
 import { snoozeScheduleStep } from "./steps/snoozeScheduleStep";
 import { unregisterMinyanStep } from "./steps/unregisterMinyanStep";
 import { updateAdditionalMinyanAttendeesStep } from "./steps/updateAdditionalMinyanAttendeesStep";
+import { updateScheduleAttendeesStep } from "./steps/updateScheduleAttendeesStep";
 import { Step } from "./types";
 
 const initialStep = initialMenuStep;
@@ -42,6 +43,7 @@ const steps = {
   [dadJokeStep.id]: dadJokeStep,
   [initUpdateMinyanScheduleStep.id]: initUpdateMinyanScheduleStep,
   [sendScheduleStatusStep.id]: sendScheduleStatusStep,
+  [updateScheduleAttendeesStep.id]: updateScheduleAttendeesStep,
 };
 
 export function getStep(stepId: string): Step | undefined {

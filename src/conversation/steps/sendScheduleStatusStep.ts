@@ -7,6 +7,7 @@ import { prayerHebName } from "../../utils";
 import { Context, ContextType } from "../context";
 import { getMessage, messages } from "../messageTemplates";
 import { ScheduleContext, Step, UserContext } from "../types";
+import { Schedule } from "../../../.vercel/output/static/datasource/entities/Schedule";
 
 export const sendScheduleStatusStep: Step = {
   id: "sendScheduleStatusStep",
@@ -18,29 +19,21 @@ export const sendScheduleStatusStep: Step = {
   ) => {
     const userContext = (await context.get())?.context;
 
-    if (!userContext?.scheduleId) {
+    if (!userContext?.schedule) {
       throw new Error(
-        `Schedule not found in user context, id: ${userContext?.scheduleId}`
+        `Schedule not found in user context, id: ${userContext?.schedule?.id}`
       );
     }
 
+    const schedule: Schedule = userContext.schedule;
+
     const scheduleContextData = await Context.getContext<ScheduleContext>(
-      String(userContext.scheduleId),
+      String(schedule.id),
       ContextType.Schedule
     ).get();
 
     if (!scheduleContextData) {
-      throw new Error(
-        `Schedule context not found, id: ${userContext.scheduleId}`
-      );
-    }
-
-    const scheduleEntity = await getScheduleById(userContext.scheduleId);
-
-    if (!scheduleEntity) {
-      throw new Error(
-        `Schedule entity not found, id: ${userContext.scheduleId}`
-      );
+      throw new Error(`Schedule context not found, id: ${schedule.id}`);
     }
 
     const approved = scheduleContextData.approved || {};
@@ -60,9 +53,9 @@ export const sendScheduleStatusStep: Step = {
     await waClient.sendTextMessage(
       userNum,
       getMessage(messages.MINYAN_ATTENDANCE_UPDATE, {
-        minyanName: scheduleEntity.minyan.name,
-        hour: DateTime.fromISO(scheduleEntity.time).toFormat("HH:mm"),
-        pray: prayerHebName(scheduleEntity.prayer),
+        minyanName: schedule.minyan.name,
+        hour: DateTime.fromISO(schedule.time).toFormat("HH:mm"),
+        pray: prayerHebName(schedule.prayer),
         prayers,
       })
     );

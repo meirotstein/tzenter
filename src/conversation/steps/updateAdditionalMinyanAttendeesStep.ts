@@ -15,8 +15,8 @@ export const updateAdditionalMinyanAttendeesStep: Step = {
     context: Context<UserContext>
   ) => {
     const userContext = (await context.get())?.context;
-    if (!userContext?.minyan || !userContext?.schedule) {
-      throw new Error("Minyan or schedule not found in context");
+    if (!userContext?.schedule) {
+      throw new Error("Schedule not found in context");
     }
 
     const schedule: Schedule = userContext.schedule;
@@ -43,7 +43,11 @@ export const updateAdditionalMinyanAttendeesStep: Step = {
 
     const approved = scheduleContextData?.approved || {};
 
-    approved[String(userNum)] = expectedSelection;
+    if (expectedSelection === 0) {
+      delete approved[String(userNum)];
+    } else {
+      approved[String(userNum)] = expectedSelection;
+    }
 
     const forUpdate: Partial<ScheduleContext> = {
       approved,
