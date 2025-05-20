@@ -47,11 +47,15 @@ export const initUpdateMinyanScheduleStep: Step = {
         throw new Error(`Schedule not found, id: ${ctx.id}`);
       }
 
-      if (DateTime.fromISO(scheduleEntity.time) < DateTime.now()) {
+      if (
+        DateTime.fromISO(scheduleEntity.time, { zone: "Asia/Jerusalem" }) <
+        DateTime.now().setZone("Asia/Jerusalem")
+      ) {
         console.log("schedule time has already passed", {
           userNum,
           scheduleId: ctx.id,
           scheduleTime: scheduleEntity.time,
+          timezone: "Asia/Jerusalem",
         });
         continue;
       }
