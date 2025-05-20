@@ -47,6 +47,7 @@ export const initUpdateMinyanScheduleStep: Step = {
         throw new Error(`Schedule not found, id: ${ctx.id}`);
       }
 
+      //TODO: this needs to be extracted to a utils, and refer also midnight
       if (
         DateTime.fromISO(scheduleEntity.time, { zone: "Asia/Jerusalem" }) <
         DateTime.now().setZone("Asia/Jerusalem")
