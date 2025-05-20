@@ -7,6 +7,7 @@ import { getUserMinyansStep } from "../../../../src/conversation/steps/getUserMi
 import { listAvailableMinyansStep } from "../../../../src/conversation/steps/listAvailableMinyansStep";
 import { UserContext } from "../../../../src/conversation/types";
 import { WATextMessage } from "../../../../src/handlers/types";
+import { initUpdateMinyanScheduleStep } from "../../../../src/conversation/steps/initUpdateMinyanScheduleStep";
 
 jest.mock("../../../../src/clients/WhatsappClient");
 
@@ -49,8 +50,13 @@ describe("initialMenuStep", () => {
       expect(nextStepId).toBe(listAvailableMinyansStep.id);
     });
 
-    it("should return dadJokeStep.id when user selects '3'", async () => {
+    it("should return initUpdateMinyanScheduleStep.id when user selects '3'", async () => {
       const nextStepId = await initialMenuStep.getNextStepId("3", context);
+      expect(nextStepId).toBe(initUpdateMinyanScheduleStep.id);
+    });
+
+    it("should return dadJokeStep.id when user selects '4'", async () => {
+      const nextStepId = await initialMenuStep.getNextStepId("4", context);
       expect(nextStepId).toBe(dadJokeStep.id);
     });
 

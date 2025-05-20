@@ -6,12 +6,14 @@ import { messages } from "../messageTemplates";
 import { Step, UserContext } from "../types";
 import { dadJokeStep } from "./dadJokeStep";
 import { getUserMinyansStep } from "./getUserMinyansStep";
+import { initUpdateMinyanScheduleStep } from "./initUpdateMinyanScheduleStep";
 import { listAvailableMinyansStep } from "./listAvailableMinyansStep";
 
 const expectedUserResponses = {
   MyMinyans: "1",
   JoinMinyan: "2",
-  DadJoke: "3",
+  updateSchedule: "3",
+  DadJoke: "4",
 };
 
 export const initialMenuStep: Step = {
@@ -34,6 +36,8 @@ export const initialMenuStep: Step = {
       return Promise.resolve(getUserMinyansStep.id);
     } else if (userText === expectedUserResponses.JoinMinyan) {
       return Promise.resolve(listAvailableMinyansStep.id);
+    } else if (userText === expectedUserResponses.updateSchedule) {
+      return Promise.resolve(initUpdateMinyanScheduleStep.id);
     } else if (userText === expectedUserResponses.DadJoke) {
       return Promise.resolve(dadJokeStep.id);
     }

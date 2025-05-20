@@ -1,3 +1,4 @@
+import { messages } from "../../src/conversation/messageTemplates";
 import templates from "../../src/conversation/waTemplates";
 import { Prayer } from "../../src/datasource/entities/Schedule";
 import {
@@ -109,7 +110,7 @@ describe("minyan schedule flow", () => {
 
 במידה ותגיעו יותר מאדם אחד, בבקשה הזן את מספר הבאים (כולל אותך) עכשיו
 
-בכדי להתעדכן במצב המניין, או לעדכן את הנוכחות בהמשך - פשוט תכתוב *עדכון*`
+בכדי להתעדכן במצב המניין, או לעדכן את הנוכחות בכל שלב - פשוט תכתוב *עדכון*`
     );
   });
 
@@ -246,7 +247,7 @@ describe("minyan schedule flow", () => {
 
 במידה ותגיעו יותר מאדם אחד, בבקשה הזן את מספר הבאים (כולל אותך) עכשיו
 
-בכדי להתעדכן במצב המניין, או לעדכן את הנוכחות בהמשך - פשוט תכתוב *עדכון*`
+בכדי להתעדכן במצב המניין, או לעדכן את הנוכחות בכל שלב - פשוט תכתוב *עדכון*`
     );
   });
 
@@ -255,8 +256,13 @@ describe("minyan schedule flow", () => {
     await expectTzenterTextMessage(user1.phoneNum, "קיבלתי, תודה על העדכון!");
   });
 
-  it("user1 initiate an update - one active schedule available - gets list of options", async () => {
-    await userMessage(user1.phoneNum, user1.name, "עדכון");
+  it("user1 call initiate new conversation using hook word", async () => {
+    await userMessage(user1.phoneNum, user1.name, "צענטר");
+    await expectTzenterTextMessage(user1.phoneNum, messages.INITIAL);
+  });
+
+  it("user1 selects update option - one active schedule available - gets list of options", async () => {
+    await userMessage(user1.phoneNum, user1.name, "3");
     await expectTzenterTextMessage(
       user1.phoneNum,
       `יש כרגע תזמון פעיל לתפילת מנחה במניין איצקוביץ בשעה 16:00
