@@ -47,6 +47,15 @@ export const initUpdateMinyanScheduleStep: Step = {
         throw new Error(`Schedule not found, id: ${ctx.id}`);
       }
 
+      if (DateTime.fromISO(scheduleEntity.time) < DateTime.now()) {
+        console.log("schedule time has already passed", {
+          userNum,
+          scheduleId: ctx.id,
+          scheduleTime: scheduleEntity.time,
+        });
+        continue;
+      }
+
       if (!user?.minyans?.find((m) => m.id === scheduleEntity.minyan.id)) {
         console.log("user is not registered to this minyan", {
           userNum,
