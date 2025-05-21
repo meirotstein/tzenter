@@ -77,21 +77,25 @@ describe("minyan schedule flow", () => {
       "3": "16:00",
       "4": "-",
     };
+    const expectedReplyIds = ["approve:1", "reject:1", "snooze:1"];
     await expectTzenterTemplateMessageSequence([
       {
         phoneNum: user1.phoneNum,
         template: templates.minyan_appointment_reminder,
         params: expectedTemplateParams,
+        replyIds: expectedReplyIds,
       },
       {
         phoneNum: user2.phoneNum,
         template: templates.minyan_appointment_reminder,
         params: expectedTemplateParams,
+        replyIds: expectedReplyIds,
       },
       {
         phoneNum: user3.phoneNum,
         template: templates.minyan_appointment_reminder,
         params: expectedTemplateParams,
+        replyIds: expectedReplyIds,
       },
     ]);
   });

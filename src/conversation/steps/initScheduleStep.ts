@@ -51,10 +51,17 @@ export const initScheduleStep: Step = {
       "4": scheduleMessages.length ? `[${scheduleMessages.join(" | ")}]` : "-",
     };
 
+    const replyIds = [
+      `approve:${schedule.id}`,
+      `reject:${schedule.id}`,
+      `snooze:${schedule.id}`,
+    ];
+
     const res = await waClient.sendTemplateMessage(
       userNum,
       scheduleTemplate,
-      params
+      params,
+      replyIds
     );
 
     console.log("schedule by system sent", res);

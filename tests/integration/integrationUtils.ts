@@ -272,13 +272,14 @@ export async function expectTzenterTemplateMessageSequence(
     phoneNum: number;
     template: string;
     params?: Record<string, any>;
+    replyIds?: Array<string>;
   }>
 ) {
-  msgs.forEach(({ phoneNum, template, params }, idx) => {
+  msgs.forEach(({ phoneNum, template, params, replyIds }, idx) => {
     let lastCallArgs =
       sendTemplateMessageMock.mock.calls[
         sendTemplateMessageMock.mock.calls.length - msgs.length + idx
       ];
-    expect(lastCallArgs).toEqual([phoneNum, template, params]);
+    expect(lastCallArgs).toEqual([phoneNum, template, params, replyIds]);
   });
 }
