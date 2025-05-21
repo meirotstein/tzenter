@@ -1,5 +1,6 @@
 import WhatsApp from "whatsapp";
 import {
+  ButtonTypesEnum,
   ComponentTypesEnum,
   LanguagesEnum,
   ParametersTypesEnum,
@@ -51,6 +52,19 @@ export class WhatsappClient {
             type: ComponentTypesEnum.Body,
             // @ts-ignore
             parameters,
+          },
+          //TODO: experimental
+          {
+            type: ComponentTypesEnum.Button,
+            sub_type: ButtonTypesEnum.QuickReply,
+            index: 0,
+            parameters: [
+              {
+                // @ts-ignore
+                type: ParametersTypesEnum.Payload,//"payload",
+                payload: "confirm-minyan-20240520-arvit-19:30",
+              },
+            ],
           },
         ],
       },
