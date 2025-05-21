@@ -26,6 +26,7 @@ export type WATextMessage = {
   };
   timestamp: string;
   message: string | undefined;
+  payload?: string;
 };
 
 export enum WAMessageType {
