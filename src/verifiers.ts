@@ -47,8 +47,9 @@ export async function verifyValidScheduleExecuter(
   console.log("Request IP address", ip);
 
   const allowedIps = (process.env.SCHEDULE_ALLOWED_IPS || "")?.split(",") || [];
+  const adminIps = (process.env.ADMIN_ALLOWED_IPS || "")?.split(",") || [];
 
-  if (!allowedIps.includes(ip)) {
+  if (![...allowedIps, ...adminIps].includes(ip)) {
     throw new UnauthorizedMessageError("Invalid schedule request IP address");
   }
 }

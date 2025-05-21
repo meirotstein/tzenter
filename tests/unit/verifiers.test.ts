@@ -111,10 +111,12 @@ describe("verifiers", () => {
     beforeEach(() => {
       jest.clearAllMocks();
       process.env.SCHEDULE_ALLOWED_IPS = "127.0.0.1,192.168.1.1";
+      process.env.ADMIN_ALLOWED_IPS = "147.161.225.6";
     });
 
     afterEach(() => {
       delete process.env.SCHEDULE_ALLOWED_IPS;
+      delete process.env.ADMIN_ALLOWED_IPS;
     });
 
     it("should throw UnauthorizedMessageError if IP is not in the allowed list", async () => {
@@ -127,6 +129,12 @@ describe("verifiers", () => {
 
     it("should not throw if IP is in the allowed list (x-forwarded-for header)", async () => {
       const req = mockReq({ "x-forwarded-for": "127.0.0.1" });
+
+      await expect(verifyValidScheduleExecuter(req)).resolves.toBeUndefined();
+    });
+
+    it("should not throw if IP is in the admin allowed list (x-forwarded-for header)", async () => {
+      const req = mockReq({ "x-forwarded-for": "147.161.225.6" });
 
       await expect(verifyValidScheduleExecuter(req)).resolves.toBeUndefined();
     });
