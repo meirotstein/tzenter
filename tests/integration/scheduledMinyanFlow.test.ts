@@ -134,8 +134,18 @@ describe("minyan schedule flow", () => {
     expectNoNewMessages(textMessageCount, templateMessageCount);
   });
 
-  it("minyan schedule executed again after 21 minutes -> users gets notifications", async () => {
-    await scheduleExecution("15:41");
+  it("minyan schedule executed again after 20 minutes -> only snoozed notifications are sent", async () => {
+    await scheduleExecution("15:40");
+    await expectTzenterTextMessage(
+      user2.phoneNum,
+      `זוהי תזכורת לתפילת מנחה בשעה 16:00 במניין איצקוביץ
+
+האם תגיע?`
+    );
+  });
+
+  it("minyan schedule executed again 1 minute before due time -> last execution -> schedule is triggering all user notifications", async () => {
+    await scheduleExecution("15:59");
     await expectTzenterTextMessageSequence([
       {
         phoneNum: user2.phoneNum,

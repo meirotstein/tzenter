@@ -8,11 +8,11 @@ import { WATextMessage } from "../../handlers/types";
 import { isLastExecution, prayerHebName } from "../../utils";
 import { noWords, yesWords } from "../consts";
 import { Context, ContextType } from "../context";
+import { getMessage, messages } from "../messageTemplates";
 import { ScheduleContext, Step, UserContext } from "../types";
 import { approveScheduleStep } from "./approveScheduleStep";
 import { rejectScheduleStep } from "./rejectScheduleStep";
 import { snoozeScheduleStep } from "./snoozeScheduleStep";
-import { getMessage, messages } from "../messageTemplates";
 
 const expectedUserResponses = {
   iWIllArrive: "אגיע",
@@ -67,14 +67,14 @@ export const processScheduleStep: Step = {
       const scheduleInterval = +(
         process.env.SCHEDULE_INVOCATION_INTERVAL_MIN || 14
       );
-      if (
-        scheduleContextData.notified &&
-        !isLastExecution(schedule.time, scheduleInterval)
-      ) {
-        console.log("skipping schedule - already notified", {
-          scheduleId: schedule.id,
-          userNum,
-        });
+      if (!isLastExecution(schedule.time, scheduleInterval)) {
+        console.log(
+          "skipping schedule - will notify only on the last execution",
+          {
+            scheduleId: schedule.id,
+            userNum,
+          }
+        );
         return;
       }
 
