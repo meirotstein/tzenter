@@ -29,7 +29,8 @@ export class WhatsappClient {
   sendTemplateMessage = async (
     recipientPhoneNum: number,
     name: string,
-    params?: Record<string, any>
+    params?: Record<string, any>,
+    replyIds?: string[]
   ): Promise<Record<string, any>> => {
     console.log("sending template message", recipientPhoneNum, name, params);
 
@@ -42,31 +43,37 @@ export class WhatsappClient {
       });
     }
 
+    const components = [
+      {
+        type: ComponentTypesEnum.Body,
+        parameters,
+      },
+    ];
+
+    if (replyIds && replyIds?.length > 0) {
+      replyIds.forEach((replyId, index) => {
+        components.push({
+          type: ComponentTypesEnum.Button,
+          sub_type: ButtonTypesEnum.QuickReply,
+          index,
+          parameters: [
+            {
+              type: ParametersTypesEnum.Payload,
+              // @ts-ignore
+              payload: replyId,
+            },
+          ],
+        });
+      });
+    }
+
     const resp = await this.wa.messages.template(
       {
         name,
         // @ts-ignore
         language: { code: LanguagesEnum.Hebrew },
-        components: [
-          {
-            type: ComponentTypesEnum.Body,
-            // @ts-ignore
-            parameters,
-          },
-          //TODO: experimental
-          {
-            type: ComponentTypesEnum.Button,
-            sub_type: ButtonTypesEnum.QuickReply,
-            index: 0,
-            parameters: [
-              {
-                // @ts-ignore
-                type: ParametersTypesEnum.Payload,//"payload",
-                payload: "confirm-minyan-20240520-arvit-19:30",
-              },
-            ],
-          },
-        ],
+        // @ts-ignore
+        components,
       },
       recipientPhoneNum
     );
