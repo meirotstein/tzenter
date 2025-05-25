@@ -14,8 +14,8 @@ export const rejectScheduleStep: Step = {
     context: Context<UserContext>
   ) => {
     const userContext = (await context.get())?.context;
-    if (!userContext?.minyan || !userContext?.schedule) {
-      throw new Error("Minyan or schedule not found in context");
+    if (!userContext?.schedule) {
+      throw new Error("schedule not found in context");
     }
 
     const schedule: Schedule = userContext.schedule;

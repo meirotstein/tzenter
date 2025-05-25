@@ -15,11 +15,6 @@ import { rejectScheduleStep } from "./rejectScheduleStep";
 import { sendScheduleStatusStep } from "./sendScheduleStatusStep";
 import { updateScheduleAttendeesStep } from "./updateScheduleAttendeesStep";
 
-const expectedUserResponsesWhenApproved = {
-  getUpdate: "1",
-  performUpdate: "2",
-};
-
 export const initUpdateMinyanScheduleStep: Step = {
   id: "initUpdateMinyanScheduleStep",
   action: async (
@@ -93,20 +88,73 @@ export const initUpdateMinyanScheduleStep: Step = {
     }
 
     if (userSchedules.length > 1) {
+      const params: any = {
+        activeCount: userSchedules.length,
+        schedules: [],
+        actions: [],
+      };
+
+      const contextData = [];
+
+      for (const schedule of userSchedules) {
+        params.schedules.push({
+          prayer: prayerHebName(schedule.entity.prayer),
+          minyan: schedule.entity.minyan.name,
+          time: DateTime.fromISO(schedule.entity.time).toFormat("HH:mm"),
+        });
+        if (schedule.isApproved) {
+          params.actions.push({
+            actionType: "status",
+            prayer: prayerHebName(schedule.entity.prayer),
+            minyan: schedule.entity.minyan.name,
+            time: DateTime.fromISO(schedule.entity.time).toFormat("HH:mm"),
+          });
+          contextData.push({
+            schedule: schedule.entity,
+            actionType: "status",
+          });
+        }
+        params.actions.push({
+          actionType: "presence",
+          prayer: prayerHebName(schedule.entity.prayer),
+          minyan: schedule.entity.minyan.name,
+          time: DateTime.fromISO(schedule.entity.time).toFormat("HH:mm"),
+        });
+        contextData.push({
+          schedule: schedule.entity,
+          actionType: "presence",
+        });
+      }
+
+      await context.update({
+        context: contextData,
+      });
+
       await waClient.sendTextMessage(
         userNum,
-        messages.MULTIPLE_ACTIVE_SCHEDULE_REJECT
+        getMessage(messages.MULTIPLE_ACTIVE_SCHEDULES, params)
       );
       return;
     }
 
+    // single schedule
     const userSchedule = userSchedules[0];
 
-    await context.update({
-      context: {
+    const contextData = [];
+
+    if (userSchedule.isApproved) {
+      contextData.push({
         schedule: userSchedule.entity,
-        isApproved: userSchedule.isApproved,
-      },
+        actionType: "status",
+      });
+    }
+    contextData.push({
+      schedule: userSchedule.entity,
+      actionType: "presence",
+    });
+
+    await context.update({
+      context: contextData,
     });
 
     await waClient.sendTextMessage(
@@ -135,21 +183,56 @@ export const initUpdateMinyanScheduleStep: Step = {
     );
     const userContext = await context.get();
 
-    if (userContext?.context?.isApproved) {
-      if (userText === expectedUserResponsesWhenApproved.getUpdate) {
-        return Promise.resolve(sendScheduleStatusStep.id);
-      } else if (userText === expectedUserResponsesWhenApproved.performUpdate) {
-        return Promise.resolve(updateScheduleAttendeesStep.id);
-      }
-    }
-
-    if (!userContext?.context?.isApproved) {
+    if (
+      userContext?.context?.length === 1 &&
+      userContext.context[0].actionType === "presence"
+    ) {
+      await context.update({
+        context: {
+          schedule: userContext.context[0].schedule,
+        },
+      });
       if (yesWords.includes(userText)) {
         return approveScheduleStep.id;
       }
       if (noWords.includes(userText)) {
         return rejectScheduleStep.id;
       }
+    }
+
+    const userIndexSelection = Number(userText);
+
+    if (!userIndexSelection || isNaN(userIndexSelection)) {
+      console.log(
+        "initUpdateMinyanScheduleStep: userText is not a number - aborting",
+        userText
+      );
+      return Promise.reject(new UnexpectedUserInputError(userText));
+    }
+
+    const selectionContext = userContext?.context?.[userIndexSelection - 1];
+
+    if (!selectionContext) {
+      console.log(
+        "initUpdateMinyanScheduleStep: userText selection not found - aborting",
+        userText
+      );
+      return Promise.reject(new UnexpectedUserInputError(userText));
+    }
+
+    const schedule = selectionContext.schedule;
+    await context.update({
+      context: {
+        schedule,
+      },
+    });
+
+    if (selectionContext.actionType === "status") {
+      return Promise.resolve(sendScheduleStatusStep.id);
+    }
+
+    if (selectionContext.actionType === "presence") {
+      return Promise.resolve(updateScheduleAttendeesStep.id);
     }
 
     return Promise.reject(new UnexpectedUserInputError(userText));

@@ -1,5 +1,6 @@
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { Schedule } from "../../datasource/entities/Schedule";
+import { getScheduleById } from "../../datasource/scheduleRepository";
 import { WATextMessage } from "../../handlers/types";
 import { notifyIfMinyanReached } from "../../schedule/notifyIfMinyanReached";
 import { Context, ContextType } from "../context";
@@ -15,12 +16,29 @@ export const approveScheduleStep: Step = {
     message: WATextMessage,
     context: Context<UserContext>
   ) => {
+    let schedule: Schedule | undefined | null;
+
     const userContext = (await context.get())?.context;
-    if (!userContext?.schedule) {
-      throw new Error("Minyan or schedule not found in context");
+    userContext?.schedule;
+
+    // Payload means that the user clicked on a template message button
+    const payload = message?.payload;
+    const match = payload?.match(/^approve:(\d+)$/);
+    if (match && match[1]) {
+      const scheduleId = match[1];
+
+      if (+scheduleId === userContext?.schedule?.id) {
+        schedule = userContext?.schedule;
+      } else {
+        schedule = await getScheduleById(+scheduleId);
+      }
+    } else {
+      schedule = userContext?.schedule;
     }
 
-    const schedule: Schedule = userContext.schedule;
+    if (!schedule) {
+      throw new Error("Minyan or schedule not found in context");
+    }
 
     const scheduleContext = Context.getContext<ScheduleContext>(
       String(schedule.id),

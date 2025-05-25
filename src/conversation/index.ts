@@ -1,4 +1,10 @@
-import { initScheduleUpdateHookWord, restartWordHooks } from "./consts";
+import { WATextMessage } from "../handlers/types";
+import {
+  approveScheduleHookPayloadRegex,
+  approveScheduleHookWord,
+  initScheduleUpdateHookWord,
+  restartWordHooks,
+} from "./consts";
 import { approveScheduleStep } from "./steps/approveScheduleStep";
 import { dadJokeStep } from "./steps/dadJokeStep";
 import { getUserMinyansStep } from "./steps/getUserMinyansStep";
@@ -54,8 +60,15 @@ export function getInitialStep(): Step {
   return initialStep;
 }
 
-export function getHookStep(userText: string): Step | undefined {
-  return hooks[userText];
+export function getHookStep(userMessage: WATextMessage): Step | undefined {
+  if (
+    userMessage.message === approveScheduleHookWord &&
+    userMessage.payload &&
+    approveScheduleHookPayloadRegex.test(userMessage.payload)
+  ) {
+    return approveScheduleStep;
+  }
+  return hooks[userMessage.message!];
 }
 
 export function getInitScheduleStep(): Step {
