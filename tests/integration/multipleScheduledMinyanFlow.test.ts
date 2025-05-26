@@ -8,7 +8,7 @@ import {
   resetAll,
   scheduleExecution,
   userButtonReply,
-  userMessage
+  userMessage,
 } from "./integrationUtils";
 
 const user1 = {
@@ -27,6 +27,10 @@ describe("multiple minyan schedule flow", () => {
         {
           name: "פנס",
           city: "רעננה",
+        },
+        {
+          name: "רחוק",
+          city: "אילת",
         },
       ],
       users: [
@@ -48,6 +52,12 @@ describe("multiple minyan schedule flow", () => {
           prayer: Prayer.Mincha,
           time: "16:00",
           minyanName: "פנס",
+        },
+        {
+          name: "מנין שזוכמיר לא נרשם אליו",
+          prayer: Prayer.Mincha,
+          time: "16:00",
+          minyanName: "רחוק",
         },
       ],
     });
@@ -102,6 +112,24 @@ describe("multiple minyan schedule flow", () => {
     );
   });
 
+  it("user1 initiate an update - two active schedule available - only one apporved - gets list of options", async () => {
+    await userMessage(user1.phoneNum, user1.name, "עדכון");
+    await expectTzenterTextMessage(
+      user1.phoneNum,
+      `יש כרגע 2 תזמונים פעילים
+
+- לתפילת מנחה במניין איצקוביץ בשעה 16:00
+- לתפילת מנחה במניין פנס בשעה 16:00
+
+מה אתה מעוניין לעשות?
+
+1. לקבל עדכון לגבי מצב מנחה במניין איצקוביץ
+2. לעדכן את הנוכחות שלי במנחה במניין איצקוביץ
+3. לעדכן את הנוכחות שלי במנחה במניין פנס
+`
+    );
+  });
+
   it("user approves second minyan by clicking the template button -> gets confirmation message", async () => {
     await userButtonReply(user1.phoneNum, user1.name, "אגיע", "approve:2");
     await expectTzenterTextMessage(
@@ -113,30 +141,6 @@ describe("multiple minyan schedule flow", () => {
 
 בכדי להתעדכן במצב המניין, או לעדכן את הנוכחות בכל שלב - פשוט תכתוב *עדכון*`
     );
-  });
-
-  it("minyan schedule executed again 1 minute before due time -> last execution -> schedule is triggering all user notifications", async () => {
-    await scheduleExecution("15:59");
-    await expectTzenterTextMessageSequence([
-      {
-        phoneNum: user1.phoneNum,
-        message: `עדכון לתפילת מנחה בשעה 16:00 במניין איצקוביץ
-
- נכון לרגע זה אשרו הגעה 1 מתפללים
-
-1. מוישה זוכמיר
-`,
-      },
-      {
-        phoneNum: user1.phoneNum,
-        message: `עדכון לתפילת מנחה בשעה 16:00 במניין פנס
-
- נכון לרגע זה אשרו הגעה 1 מתפללים
-
-1. מוישה זוכמיר
-`,
-      },
-    ]);
   });
 
   it("user1 initiate an update - two active schedule available - gets list of options", async () => {
@@ -167,96 +171,98 @@ describe("multiple minyan schedule flow", () => {
     );
   });
 
-//   it("user1 updated for 2 attendees", async () => {
-//     await userMessage(user1.phoneNum, user1.name, "2");
-//     await expectTzenterTextMessage(user1.phoneNum, "קיבלתי, תודה על העדכון!");
-//   });
+  it("user1 updated for 2 attendees", async () => {
+    await userMessage(user1.phoneNum, user1.name, "2");
+    await expectTzenterTextMessage(user1.phoneNum, "קיבלתי, תודה על העדכון!");
+  });
 
-//   it("user1 initiate another update - two active schedule available - gets list of options", async () => {
-//     await userMessage(user1.phoneNum, user1.name, "עדכון");
-//     await expectTzenterTextMessage(
-//       user1.phoneNum,
-//       `יש כרגע 2 תזמונים פעילים
+  it("user1 initiate another update - two active schedule available - gets list of options", async () => {
+    await userMessage(user1.phoneNum, user1.name, "עדכון");
+    await expectTzenterTextMessage(
+      user1.phoneNum,
+      `יש כרגע 2 תזמונים פעילים
 
-// - לתפילת מנחה במניין איצקוביץ בשעה 16:00
-// - לתפילת מנחה במניין פנס בשעה 16:00
-  
-// מה אתה מעוניין לעשות?
+- לתפילת מנחה במניין איצקוביץ בשעה 16:00
+- לתפילת מנחה במניין פנס בשעה 16:00
 
-// 1. לקבל עדכון לגבי מצב מנחה במניין איצקוביץ
-// 2. לעדכן את הנוכחות שלי במנחה במניין איצקוביץ
-// 3. לקבל עדכון לגבי מצב מנחה במניין פנס
-// 4. לעדכן את הנוכחות שלי במנחה במניין פנס`
-//     );
-//   });
+מה אתה מעוניין לעשות?
 
-//   it("user1 selects the third option - gets the current minyan status of 2 approvals", async () => {
-//     await userMessage(user1.phoneNum, user1.name, "3");
-//     await expectTzenterTextMessage(
-//       user1.phoneNum,
-//       `עדכון לתפילת מנחה בשעה 16:00 במניין פנס
-  
-//    נכון לרגע זה אשרו הגעה 2 מתפללים
-  
-//   1. מוישה זוכמיר
-//   2. מוישה זוכמיר (2)
-//   `
-//     );
-//   });
+1. לקבל עדכון לגבי מצב מנחה במניין איצקוביץ
+2. לעדכן את הנוכחות שלי במנחה במניין איצקוביץ
+3. לקבל עדכון לגבי מצב מנחה במניין פנס
+4. לעדכן את הנוכחות שלי במנחה במניין פנס
+`
+    );
+  });
 
-//   it("user1 initiate another update - two active schedule available - gets list of options", async () => {
-//     await userMessage(user1.phoneNum, user1.name, "עדכון");
-//     await expectTzenterTextMessage(
-//       user1.phoneNum,
-//       `יש כרגע 2 תזמונים פעילים
+  it("user1 selects the third option - gets the current minyan status of 2 approvals", async () => {
+    await userMessage(user1.phoneNum, user1.name, "3");
+    await expectTzenterTextMessage(
+      user1.phoneNum,
+      `עדכון לתפילת מנחה בשעה 16:00 במניין פנס
 
-// - לתפילת מנחה במניין איצקוביץ בשעה 16:00
-// - לתפילת מנחה במניין פנס בשעה 16:00
-  
-// מה אתה מעוניין לעשות?
+ נכון לרגע זה אשרו הגעה 2 מתפללים
 
-// 1. לקבל עדכון לגבי מצב מנחה במניין איצקוביץ
-// 2. לעדכן את הנוכחות שלי במנחה במניין איצקוביץ
-// 3. לקבל עדכון לגבי מצב מנחה במניין פנס
-// 4. לעדכן את הנוכחות שלי במנחה במניין פנס`
-//     );
-//   });
+1. מוישה זוכמיר
+2. מוישה זוכמיר (2)
+`
+    );
+  });
 
-//   it("user1 selects the first option - gets the current minyan status of 1 approvals", async () => {
-//     await userMessage(user1.phoneNum, user1.name, "1");
-//     await expectTzenterTextMessage(
-//       user1.phoneNum,
-//       `עדכון לתפילת מנחה בשעה 16:00 במניין איצקוביץ
-  
-//    נכון לרגע זה אשרו הגעה 1 מתפללים
-  
-//   1. מוישה זוכמיר
-//   `
-//     );
-//   });
+  it("user1 initiate another update - two active schedule available - gets list of options", async () => {
+    await userMessage(user1.phoneNum, user1.name, "עדכון");
+    await expectTzenterTextMessage(
+      user1.phoneNum,
+      `יש כרגע 2 תזמונים פעילים
 
-//   it("minyan schedule executed again 1 minute before due time -> last execution -> schedule is triggering all user notifications", async () => {
-//     await scheduleExecution("15:59");
-//     await expectTzenterTextMessageSequence([
-//       {
-//         phoneNum: user1.phoneNum,
-//         message: `עדכון לתפילת מנחה בשעה 16:00 במניין איצקוביץ
+- לתפילת מנחה במניין איצקוביץ בשעה 16:00
+- לתפילת מנחה במניין פנס בשעה 16:00
 
-//  נכון לרגע זה אשרו הגעה 1 מתפללים
+מה אתה מעוניין לעשות?
 
-// 1. מוישה זוכמיר
-// `,
-//       },
-//       {
-//         phoneNum: user1.phoneNum,
-//         message: `עדכון לתפילת מנחה בשעה 16:00 במניין פנס
+1. לקבל עדכון לגבי מצב מנחה במניין איצקוביץ
+2. לעדכן את הנוכחות שלי במנחה במניין איצקוביץ
+3. לקבל עדכון לגבי מצב מנחה במניין פנס
+4. לעדכן את הנוכחות שלי במנחה במניין פנס
+`
+    );
+  });
 
-//  נכון לרגע זה אשרו הגעה 1 מתפללים
+  it("user1 selects the first option - gets the current minyan status of 1 approvals", async () => {
+    await userMessage(user1.phoneNum, user1.name, "1");
+    await expectTzenterTextMessage(
+      user1.phoneNum,
+      `עדכון לתפילת מנחה בשעה 16:00 במניין איצקוביץ
 
-// 1. מוישה זוכמיר
-// 2. מוישה זוכמיר (2)
-// `,
-//       },
-//     ]);
-  // });
+ נכון לרגע זה אשרו הגעה 1 מתפללים
+
+1. מוישה זוכמיר
+`
+    );
+  });
+
+  it("minyan schedule executed again 1 minute before due time -> last execution -> schedule is triggering all user notifications", async () => {
+    await scheduleExecution("15:59");
+    await expectTzenterTextMessageSequence([
+      {
+        phoneNum: user1.phoneNum,
+        message: `עדכון לתפילת מנחה בשעה 16:00 במניין איצקוביץ
+
+ נכון לרגע זה אשרו הגעה 1 מתפללים
+
+1. מוישה זוכמיר
+`,
+      },
+      {
+        phoneNum: user1.phoneNum,
+        message: `עדכון לתפילת מנחה בשעה 16:00 במניין פנס
+
+ נכון לרגע זה אשרו הגעה 2 מתפללים
+
+1. מוישה זוכמיר
+2. מוישה זוכמיר (2)
+`,
+      },
+    ]);
+  });
 });
