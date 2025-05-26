@@ -69,7 +69,6 @@ export const messages = {
 <%=(i + 1) + '. ' + prayers[i]%><% } %>
 `,
   NO_ACTIVE_SCHEDULE: `אין כרגע תזמונים פעילים למניינים שנרשמת אליהם`,
-  MULTIPLE_ACTIVE_SCHEDULE_REJECT: `אני מזהה שיש לך יותר מתזמון אחד פעיל למניין זה, בשלב זה לא ניתן לעדכן.`,
   ACTIVE_SCHEDULE_USER_APPROVED: `יש כרגע תזמון פעיל לתפילת <%= pray %> במניין <%= minyanName %> בשעה <%= hour %>
 
 מה אתה מעוניין לעשות?
