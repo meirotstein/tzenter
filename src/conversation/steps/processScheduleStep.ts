@@ -109,13 +109,37 @@ export const processScheduleStep: Step = {
         context: { ...userContext, processSnoozed: true },
       });
 
+      // If user has additional schedules which he snoozed - give him a different reminder
+      let numOfSnoozed = 0;
+      const allSchedules = await Context.getAllContexts<ScheduleContext>(
+        ContextType.Schedule
+      );
+
+      for (const scheduleContext of allSchedules) {
+        const scheduleData = await scheduleContext.get();
+        if (scheduleData?.snoozed?.includes(String(userNum))) {
+          numOfSnoozed++;
+        }
+      }
+
+      if (numOfSnoozed > 1) {
+        await context.update({
+          context: { ...userContext, multipleSnoozed: true },
+        });
+      }
+
       await waClient.sendTextMessage(
         userNum,
-        getMessage(messages.SNOOZE_REMINDER, {
-          minyanName: minyan.name,
-          hour: DateTime.fromISO(schedule.time).toFormat("HH:mm"),
-          pray: prayerHebName(schedule.prayer),
-        })
+        getMessage(
+          numOfSnoozed > 1
+            ? messages.SNOOZE_REMINDER_ON_MULTIPLE_SCHEDULES
+            : messages.SNOOZE_REMINDER,
+          {
+            minyanName: minyan.name,
+            hour: DateTime.fromISO(schedule.time).toFormat("HH:mm"),
+            pray: prayerHebName(schedule.prayer),
+          }
+        )
       );
       return;
     }
@@ -124,6 +148,10 @@ export const processScheduleStep: Step = {
     const userContext = (await context.get())?.context;
     if (!userContext) {
       throw new Error("User context not found");
+    }
+
+    if (userContext.multipleSnoozed) {
+      return;
     }
 
     if (

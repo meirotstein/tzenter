@@ -62,6 +62,9 @@ export const messages = {
   SNOOZE_REMINDER: `זוהי תזכורת לתפילת <%= pray %> בשעה <%= hour %> במניין <%= minyanName %>
 
 האם תגיע?`,
+  SNOOZE_REMINDER_ON_MULTIPLE_SCHEDULES: `זוהי תזכורת לתפילת <%= pray %> בשעה <%= hour %> במניין <%= minyanName %>
+
+על מנת לעדכן נוכחות כתוב *עדכון*`,
   MINYAN_ATTENDANCE_UPDATE: `עדכון לתפילת <%= pray %> בשעה <%= hour %> במניין <%= minyanName %>
 
  נכון לרגע זה אשרו הגעה <%= prayers.length %> מתפללים

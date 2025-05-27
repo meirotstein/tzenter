@@ -4,6 +4,8 @@ import {
   approveScheduleHookWord,
   initScheduleUpdateHookWord,
   restartWordHooks,
+  snoozeScheduleHookPayloadRegex,
+  snoozeScheduleHookWord,
 } from "./consts";
 import { approveScheduleStep } from "./steps/approveScheduleStep";
 import { dadJokeStep } from "./steps/dadJokeStep";
@@ -67,6 +69,13 @@ export function getHookStep(userMessage: WATextMessage): Step | undefined {
     approveScheduleHookPayloadRegex.test(userMessage.payload)
   ) {
     return approveScheduleStep;
+  }
+  if (
+    userMessage.message === snoozeScheduleHookWord &&
+    userMessage.payload &&
+    snoozeScheduleHookPayloadRegex.test(userMessage.payload)
+  ) {
+    return snoozeScheduleStep;
   }
   return hooks[userMessage.message!];
 }
