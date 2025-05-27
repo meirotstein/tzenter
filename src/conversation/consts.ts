@@ -4,5 +4,7 @@ export const noWords: string[] = ["לא", "שלילי", "no", "nope"];
 export const initScheduleUpdateHookWord = "עדכון";
 export const approveScheduleHookWord = "אגיע";
 export const snoozeScheduleHookWord = "שאל אותי מאוחר יותר";
+export const rejectScheduleHookWord = "לא אגיע";
 export const approveScheduleHookPayloadRegex = /^approve:\d+$/;
 export const snoozeScheduleHookPayloadRegex = /^snooze:\d+$/;
+export const rejectScheduleHookPayloadRegex = /^reject:\d+$/;

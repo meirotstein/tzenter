@@ -3,6 +3,8 @@ import {
   approveScheduleHookPayloadRegex,
   approveScheduleHookWord,
   initScheduleUpdateHookWord,
+  rejectScheduleHookPayloadRegex,
+  rejectScheduleHookWord,
   restartWordHooks,
   snoozeScheduleHookPayloadRegex,
   snoozeScheduleHookWord,
@@ -76,6 +78,13 @@ export function getHookStep(userMessage: WATextMessage): Step | undefined {
     snoozeScheduleHookPayloadRegex.test(userMessage.payload)
   ) {
     return snoozeScheduleStep;
+  }
+  if (
+    userMessage.message === rejectScheduleHookWord &&
+    userMessage.payload &&
+    rejectScheduleHookPayloadRegex.test(userMessage.payload)
+  ) {
+    return rejectScheduleStep;
   }
   return hooks[userMessage.message!];
 }
