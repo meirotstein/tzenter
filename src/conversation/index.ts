@@ -29,12 +29,27 @@ import { Step } from "./types";
 
 const initialStep = initialMenuStep;
 
-const hooks: Record<string, Step> = {
+const hookWords: Record<string, Step> = {
   [initScheduleUpdateHookWord]: initUpdateMinyanScheduleStep,
 };
 
+const hookPayloadRegexes: Array<{ regex: RegExp; step: Step }> = [
+  {
+    regex: approveScheduleHookPayloadRegex,
+    step: approveScheduleStep,
+  },
+  {
+    regex: snoozeScheduleHookPayloadRegex,
+    step: snoozeScheduleStep,
+  },
+  {
+    regex: rejectScheduleHookPayloadRegex,
+    step: rejectScheduleStep,
+  },
+];
+
 restartWordHooks.forEach((word) => {
-  hooks[word] = initialMenuStep;
+  hookWords[word] = initialMenuStep;
 });
 
 const steps = {
@@ -65,28 +80,15 @@ export function getInitialStep(): Step {
 }
 
 export function getHookStep(userMessage: WATextMessage): Step | undefined {
-  if (
-    userMessage.message === approveScheduleHookWord &&
-    userMessage.payload &&
-    approveScheduleHookPayloadRegex.test(userMessage.payload)
-  ) {
-    return approveScheduleStep;
+  if (userMessage.payload) {
+    const hookPayloadStep = hookPayloadRegexes.find((hook) =>
+      hook.regex.test(userMessage.payload!)
+    );
+    if (hookPayloadStep) {
+      return hookPayloadStep.step;
+    }
   }
-  if (
-    userMessage.message === snoozeScheduleHookWord &&
-    userMessage.payload &&
-    snoozeScheduleHookPayloadRegex.test(userMessage.payload)
-  ) {
-    return snoozeScheduleStep;
-  }
-  if (
-    userMessage.message === rejectScheduleHookWord &&
-    userMessage.payload &&
-    rejectScheduleHookPayloadRegex.test(userMessage.payload)
-  ) {
-    return rejectScheduleStep;
-  }
-  return hooks[userMessage.message!];
+  return hookWords[userMessage.message!];
 }
 
 export function getInitScheduleStep(): Step {
