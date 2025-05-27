@@ -1,4 +1,14 @@
-import { initScheduleUpdateHookWord, restartWordHooks } from "./consts";
+import { WATextMessage } from "../handlers/types";
+import {
+  approveScheduleHookPayloadRegex,
+  approveScheduleHookWord,
+  initScheduleUpdateHookWord,
+  rejectScheduleHookPayloadRegex,
+  rejectScheduleHookWord,
+  restartWordHooks,
+  snoozeScheduleHookPayloadRegex,
+  snoozeScheduleHookWord,
+} from "./consts";
 import { approveScheduleStep } from "./steps/approveScheduleStep";
 import { dadJokeStep } from "./steps/dadJokeStep";
 import { getUserMinyansStep } from "./steps/getUserMinyansStep";
@@ -54,8 +64,29 @@ export function getInitialStep(): Step {
   return initialStep;
 }
 
-export function getHookStep(userText: string): Step | undefined {
-  return hooks[userText];
+export function getHookStep(userMessage: WATextMessage): Step | undefined {
+  if (
+    userMessage.message === approveScheduleHookWord &&
+    userMessage.payload &&
+    approveScheduleHookPayloadRegex.test(userMessage.payload)
+  ) {
+    return approveScheduleStep;
+  }
+  if (
+    userMessage.message === snoozeScheduleHookWord &&
+    userMessage.payload &&
+    snoozeScheduleHookPayloadRegex.test(userMessage.payload)
+  ) {
+    return snoozeScheduleStep;
+  }
+  if (
+    userMessage.message === rejectScheduleHookWord &&
+    userMessage.payload &&
+    rejectScheduleHookPayloadRegex.test(userMessage.payload)
+  ) {
+    return rejectScheduleStep;
+  }
+  return hooks[userMessage.message!];
 }
 
 export function getInitScheduleStep(): Step {

@@ -180,6 +180,59 @@ export async function userMessage(
   await onMessage(req, res);
 }
 
+export async function userButtonReply(
+  phoneNum: number,
+  userName: string,
+  message: string,
+  payload?: string
+) {
+  const mockMessage: WebhookObject = {
+    entry: [
+      {
+        id: "1234567890",
+        changes: [
+          {
+            value: {
+              messaging_product: "whatsapp",
+              contacts: [
+                {
+                  wa_id: phoneNum.toString(),
+                  profile: {
+                    name: userName,
+                  },
+                },
+              ],
+              messages: [
+                {
+                  id: "1234567890",
+                  type: WebhookTypesEnum.Button,
+                  button: {
+                    text: message,
+                    payload: payload || message,
+                  },
+                  timestamp: Date.now().toString(),
+                },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+  } as WebhookObject;
+
+  const req = {
+    method: "POST",
+    body: mockMessage,
+  } as unknown as VercelRequest;
+
+  const res = {
+    status: jest.fn().mockReturnThis(),
+    send: jest.fn(),
+  } as unknown as VercelResponse;
+
+  await onMessage(req, res);
+}
+
 export async function scheduleExecution(time: string) {
   const [hour, minute] = time.split(":").map(Number);
 

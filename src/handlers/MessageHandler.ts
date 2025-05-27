@@ -61,6 +61,15 @@ export class MessageHandler implements IHandler {
     );
 
     try {
+      const hookStatus = await this.hookMessage(
+        context,
+        +recipientPhoneNum,
+        message
+      );
+      if (hookStatus) {
+        return hookStatus;
+      }
+
       const userContext = await context.get();
 
       if (userContext?.currentStepId) {
@@ -82,15 +91,6 @@ export class MessageHandler implements IHandler {
         if (nextResponse) {
           return nextResponse;
         }
-      }
-
-      const hookStatus = await this.hookMessage(
-        context,
-        +recipientPhoneNum,
-        message
-      );
-      if (hookStatus) {
-        return hookStatus;
       }
 
       return await this.initialMessage(+recipientPhoneNum, message, context);
@@ -153,7 +153,7 @@ export class MessageHandler implements IHandler {
     phoneNum: number,
     message: WATextMessage
   ) {
-    const hookStep = getHookStep(message.message!);
+    const hookStep = getHookStep(message);
     if (hookStep) {
       console.log("hook step found", hookStep.id);
       await hookStep.action(phoneNum, this.waClient, message, context);

@@ -62,6 +62,9 @@ export const messages = {
   SNOOZE_REMINDER: `זוהי תזכורת לתפילת <%= pray %> בשעה <%= hour %> במניין <%= minyanName %>
 
 האם תגיע?`,
+  SNOOZE_REMINDER_ON_MULTIPLE_SCHEDULES: `זוהי תזכורת לתפילת <%= pray %> בשעה <%= hour %> במניין <%= minyanName %>
+
+על מנת לעדכן נוכחות כתוב *עדכון*`,
   MINYAN_ATTENDANCE_UPDATE: `עדכון לתפילת <%= pray %> בשעה <%= hour %> במניין <%= minyanName %>
 
  נכון לרגע זה אשרו הגעה <%= prayers.length %> מתפללים
@@ -69,7 +72,6 @@ export const messages = {
 <%=(i + 1) + '. ' + prayers[i]%><% } %>
 `,
   NO_ACTIVE_SCHEDULE: `אין כרגע תזמונים פעילים למניינים שנרשמת אליהם`,
-  MULTIPLE_ACTIVE_SCHEDULE_REJECT: `אני מזהה שיש לך יותר מתזמון אחד פעיל למניין זה, בשלב זה לא ניתן לעדכן.`,
   ACTIVE_SCHEDULE_USER_APPROVED: `יש כרגע תזמון פעיל לתפילת <%= pray %> במניין <%= minyanName %> בשעה <%= hour %>
 
 מה אתה מעוניין לעשות?
@@ -81,6 +83,14 @@ export const messages = {
 האם אתה מעוניין לאשר הגעה?`,
   UPDATE_ATTENDEES_AMOUNT: `הכנס את מספרי המתפללים העדכני שיגיעו למניין (כולל אותך)
 במידה ואתה מעוניין להסיר את ההרשמה, הכנס 0`,
+  MULTIPLE_ACTIVE_SCHEDULES: `יש כרגע <%= activeCount %> תזמונים פעילים
+<% schedules.forEach((s) => { %>
+- לתפילת <%= s.prayer %> במניין <%= s.minyan %> בשעה <%= s.time %><% }) %>
+
+מה אתה מעוניין לעשות?
+<% actions.forEach((action, index) => { %>
+<%= index + 1 %>. <% if (action.actionType === 'status') { %>לקבל עדכון לגבי מצב <%= action.prayer %> במניין <%= action.minyan %><% } else if (action.actionType === 'presence') { %>לעדכן את הנוכחות שלי ב<%= action.prayer %> במניין <%= action.minyan %><% } %><% }) %>
+`,
 };
 
 export function getMessage(message: string, data: Record<string, any>): string {

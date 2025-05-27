@@ -132,6 +132,7 @@ describe("utils tests", () => {
         },
         timestamp: "timestamp",
         message: "button text",
+        payload: "button payload",
       });
     });
 

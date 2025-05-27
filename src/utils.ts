@@ -43,6 +43,7 @@ export function extractTextFromMessage(
 
   let msgType: WAMessageType;
   let msgText: string | undefined;
+  let msgPayload: string | undefined;
 
   switch (waMsg.type) {
     case "text":
@@ -52,6 +53,7 @@ export function extractTextFromMessage(
     case "button":
       msgType = WAMessageType.TEMPLATE;
       msgText = waMsg.button?.text;
+      msgPayload = waMsg.button?.payload;
       break;
     default:
       console.log(`Unsupported message type: ${waMsg.type}`);
@@ -67,6 +69,7 @@ export function extractTextFromMessage(
     },
     timestamp: message.entry[0].changes[0].value.messages[0]?.timestamp,
     message: msgText,
+    payload: msgPayload,
   };
 }
 
