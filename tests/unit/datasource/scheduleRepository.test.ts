@@ -2,6 +2,7 @@ import { Prayer } from "../../../src/datasource/entities/Schedule";
 import { saveMinyan } from "../../../src/datasource/minyansRepository";
 import {
   addSchedule,
+  getAllSchedules,
   getScheduleById,
   getRepo as getScheduleRepo,
   updateSchedule,
@@ -95,5 +96,61 @@ describe("scheduleRepository", () => {
 
     expect(fetchedSchedule).toBeDefined();
     expect(fetchedSchedule?.enabled).toBe(false);
+  });
+
+  it("should filter schedules by enabled status", async () => {
+    const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+    const savedMinyan = await saveMinyan(minyan);
+
+    const schedules = [
+      {
+        name: "Enabled Prayer 1",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+        enabled: true,
+      },
+      {
+        name: "Enabled Prayer 2",
+        prayer: Prayer.Mincha,
+        time: "13:00:00",
+        minyan: savedMinyan,
+        enabled: true,
+      },
+      {
+        name: "Disabled Prayer 1",
+        prayer: Prayer.Arvit,
+        time: "19:00:00",
+        minyan: savedMinyan,
+        enabled: false,
+      },
+      {
+        name: "Disabled Prayer 2",
+        prayer: Prayer.Shacharit,
+        time: "06:00:00",
+        minyan: savedMinyan,
+        enabled: false,
+      },
+    ];
+
+    for (const schedule of schedules) {
+      await addSchedule(schedule);
+    }
+
+    // Test default behavior (enabled=true)
+    const enabledSchedules = await getAllSchedules();
+    expect(enabledSchedules).toHaveLength(2);
+    expect(enabledSchedules.map((s) => s.name)).toEqual([
+      "Enabled Prayer 1",
+      "Enabled Prayer 2",
+    ]);
+
+    // Test explicitly getting disabled schedules
+    const disabledSchedules = await getAllSchedules(false);
+    expect(disabledSchedules).toHaveLength(2);
+    expect(disabledSchedules.map((s) => s.name)).toEqual([
+      "Disabled Prayer 1",
+      "Disabled Prayer 2",
+    ]);
   });
 });
