@@ -1,10 +1,8 @@
 import { WhatsappClient } from "../clients/WhatsappClient";
 import { Context, ContextType } from "../conversation/context";
 import { ScheduleContext } from "../conversation/types";
-import {
-  getScheduleById,
-  getUpcomingSchedules,
-} from "../datasource/scheduleRepository";
+import { getScheduleById } from "../datasource/scheduleRepository";
+import { getUpcomingSchedules } from "../schedule/getUpcomingSchedule";
 import { invokeSchedule } from "../schedule/invokeSchedule";
 import { shouldSkipScheduleToday } from "../utils";
 import { HandlerRequest, HandlerResponse, IHandler } from "./types";
