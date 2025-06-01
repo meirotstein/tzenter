@@ -1,4 +1,9 @@
-import { Prayer } from "../../../src/datasource/entities/Schedule";
+import {
+  Prayer,
+  RelativeTime,
+  WeekDay,
+} from "../../../src/datasource/entities/Schedule";
+import { DateTime } from "luxon";
 import { saveMinyan } from "../../../src/datasource/minyansRepository";
 import {
   addSchedule,
@@ -7,7 +12,6 @@ import {
 import { getUpcomingSchedules } from "../../../src/schedule/getUpcomingSchedule";
 
 describe("getUpcomingSchedules", () => {
-  
   afterEach(async () => {
     const scheduleRepo = await getScheduleRepo();
     await scheduleRepo.clear();
@@ -255,6 +259,329 @@ describe("getUpcomingSchedules", () => {
     const fromDate = new Date("2023-01-01T07:00:00");
     const upcomingSchedules = await getUpcomingSchedules(360, fromDate); // 360 minutes = 6 hours
 
+    expect(upcomingSchedules).toHaveLength(0);
+  });
+
+  it("should handle relative schedules based on sunrise and sunset", async () => {
+    const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+    const savedMinyan = await saveMinyan(minyan);
+
+    const schedules = [
+      {
+        name: "Before Sunrise Prayer",
+        prayer: Prayer.Shacharit,
+        time: "1:30:00",
+        minyan: savedMinyan,
+        relative: RelativeTime.BEFORE_SUNRISE,
+      },
+      {
+        name: "After Sunrise Prayer",
+        prayer: Prayer.Shacharit,
+        time: "0:30:00",
+        minyan: savedMinyan,
+        relative: RelativeTime.AFTER_SUNRISE,
+      },
+      {
+        name: "Before Sunset Prayer",
+        prayer: Prayer.Mincha,
+        time: "1:00:00",
+        minyan: savedMinyan,
+        relative: RelativeTime.BEFORE_SUNSET,
+      },
+      {
+        name: "After Sunset Prayer",
+        prayer: Prayer.Arvit,
+        time: "0:20:00",
+        minyan: savedMinyan,
+        relative: RelativeTime.AFTER_SUNSET,
+      },
+    ];
+
+    for (const schedule of schedules) {
+      await addSchedule(schedule);
+    }
+
+    const fromDate = new Date("2023-01-01T04:00:00");
+    
+    // Mock the coordinates for the minyan to ensure proper dayTimes calculation
+    savedMinyan.latitude = 31.9; // Jerusalem latitude
+    savedMinyan.longitude = 35.2; // Jerusalem longitude
+    await saveMinyan(savedMinyan);
+
+    const upcomingSchedules = await getUpcomingSchedules(
+      1440, // 24 hours
+      fromDate,
+      "Asia/Jerusalem",
+      true
+    );
+
+    expect(upcomingSchedules).toHaveLength(4);
+    expect(upcomingSchedules[0].name).toBe("Before Sunrise Prayer"); // 4:30 AM
+    expect(upcomingSchedules[1].name).toBe("After Sunrise Prayer"); // 6:30 AM
+    expect(upcomingSchedules[2].name).toBe("Before Sunset Prayer"); // 16:00 PM
+    expect(upcomingSchedules[3].name).toBe("After Sunset Prayer"); // 17:20 PM
+  });
+
+  it("should handle relative schedules with roundToNearestFiveMinutes", async () => {
+    const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+    const savedMinyan = await saveMinyan(minyan);
+
+    const schedules = [
+      {
+        name: "Rounded After Sunrise",
+        prayer: Prayer.Shacharit,
+        time: "0:33:00", // Should round to 0:35
+        minyan: savedMinyan,
+        relative: RelativeTime.AFTER_SUNRISE,
+        roundToNearestFiveMinutes: true,
+      },
+      {
+        name: "Rounded Before Sunset",
+        prayer: Prayer.Mincha,
+        time: "1:28:00", // Should round to 1:30
+        minyan: savedMinyan,
+        relative: RelativeTime.BEFORE_SUNSET,
+        roundToNearestFiveMinutes: true,
+      },
+    ];
+
+    for (const schedule of schedules) {
+      await addSchedule(schedule);
+    }
+
+    const fromDate = new Date("2023-01-01T04:00:00");
+    
+    // Mock the coordinates for the minyan to ensure proper dayTimes calculation
+    savedMinyan.latitude = 31.9; // Jerusalem latitude
+    savedMinyan.longitude = 35.2; // Jerusalem longitude
+    await saveMinyan(savedMinyan);
+
+    const upcomingSchedules = await getUpcomingSchedules(
+      1440,
+      fromDate,
+      "Asia/Jerusalem",
+      true
+    );
+
+    expect(upcomingSchedules).toHaveLength(2);
+    expect(upcomingSchedules[0].name).toBe("Rounded After Sunrise");
+    expect(upcomingSchedules[1].name).toBe("Rounded Before Sunset");
+  });
+
+  it("should handle relative schedules with weeklyDetermineByDay", async () => {
+    const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+    const savedMinyan = await saveMinyan(minyan);
+
+    // January 1st 2023 is a Sunday (weekday 7)
+    const schedules = [
+      {
+        name: "Tuesday Sunrise Prayer",
+        prayer: Prayer.Shacharit,
+        time: "0:30:00",
+        minyan: savedMinyan,
+        relative: RelativeTime.AFTER_SUNRISE,
+        weeklyDetermineByDay: WeekDay.Tuesday,
+      },
+      {
+        name: "Friday Sunset Prayer",
+        prayer: Prayer.Mincha,
+        time: "1:00:00",
+        minyan: savedMinyan,
+        relative: RelativeTime.BEFORE_SUNSET,
+        weeklyDetermineByDay: WeekDay.Friday,
+      },
+    ];
+
+    for (const schedule of schedules) {
+      await addSchedule(schedule);
+    }
+
+    const fromDate = new Date("2023-01-01T04:00:00"); // Sunday
+    
+    // Mock the coordinates for the minyan to ensure proper dayTimes calculation
+    savedMinyan.latitude = 31.9; // Jerusalem latitude
+    savedMinyan.longitude = 35.2; // Jerusalem longitude
+    await saveMinyan(savedMinyan);
+
+    const upcomingSchedules = await getUpcomingSchedules(
+      10080, // 7 days in minutes
+      fromDate,
+      "Asia/Jerusalem",
+      true
+    );
+
+    expect(upcomingSchedules).toHaveLength(2);
+    expect(upcomingSchedules[0].name).toBe("Tuesday Sunrise Prayer");
+    expect(upcomingSchedules[1].name).toBe("Friday Sunset Prayer");
+  });
+  it("should not return relative schedules that fall outside the specified time range", async () => {
+    const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+    const savedMinyan = await saveMinyan(minyan);
+
+    // Create schedules that will fall outside our 10 AM - 12 PM test window
+    const schedules = [
+      {
+        name: "Before Sunrise Prayer - Outside Range",
+        prayer: Prayer.Shacharit,
+        time: "3:00:00", // 3 hours before sunrise = 3 AM (outside 10 AM - 12 PM)
+        minyan: savedMinyan,
+        relative: RelativeTime.BEFORE_SUNRISE,
+      },
+      {
+        name: "After Sunrise Prayer - Outside Range",
+        prayer: Prayer.Shacharit,
+        time: "7:00:00", // 7 hours after sunrise = 1 PM (outside 10 AM - 12 PM)
+        minyan: savedMinyan,
+        relative: RelativeTime.AFTER_SUNRISE,
+      },
+      {
+        name: "Before Sunset Prayer - Outside Range",
+        prayer: Prayer.Mincha,
+        time: "8:00:00", // 8 hours before sunset = 9 AM (outside 10 AM - 12 PM)
+        minyan: savedMinyan,
+        relative: RelativeTime.BEFORE_SUNSET,
+      },
+      {
+        name: "After Sunset Prayer - Outside Range",
+        prayer: Prayer.Arvit,
+        time: "1:00:00", // 1 hour after sunset = 6 PM (outside 10 AM - 12 PM)
+        minyan: savedMinyan,
+        relative: RelativeTime.AFTER_SUNSET,
+      },
+    ];
+
+    for (const schedule of schedules) {
+      await addSchedule(schedule);
+    }
+
+    const fromDate = new Date("2023-01-01T10:00:00"); // 10 AM
+    
+    // Mock the coordinates for the minyan to ensure proper dayTimes calculation
+    savedMinyan.latitude = 31.9; // Jerusalem latitude
+    savedMinyan.longitude = 35.2; // Jerusalem longitude
+    await saveMinyan(savedMinyan);
+
+    // Only look for schedules in a 2-hour window (10 AM - 12 PM)
+    const upcomingSchedules = await getUpcomingSchedules(
+      120, // 2 hours
+      fromDate,
+      "Asia/Jerusalem",
+      true
+    );
+
+    // None of the relative schedules should be in this timeframe
+    expect(upcomingSchedules).toHaveLength(0);
+  });
+
+  it("should only return relative schedules that fall within the specified time range", async () => {
+    const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+    const savedMinyan = await saveMinyan(minyan);
+
+    // Create a mix of schedules inside and outside our 10 AM - 12 PM test window
+    const schedules = [
+      {
+        name: "Before Sunrise Prayer - Outside Range",
+        prayer: Prayer.Shacharit,
+        time: "3:00:00", // 3 hours before sunrise = 3 AM (outside 10 AM - 12 PM)
+        minyan: savedMinyan,
+        relative: RelativeTime.BEFORE_SUNRISE,
+      },
+      {
+        name: "After Sunrise Prayer - Within Range",
+        prayer: Prayer.Shacharit,
+        time: "4:30:00", // 4.5 hours after sunrise = 10:30 AM (within 10 AM - 12 PM)
+        minyan: savedMinyan,
+        relative: RelativeTime.AFTER_SUNRISE,
+      },
+      {
+        name: "Before Sunset Prayer - Within Range",
+        prayer: Prayer.Mincha,
+        time: "6:00:00", // 6 hours before sunset = 11 AM (within 10 AM - 12 PM)
+        minyan: savedMinyan,
+        relative: RelativeTime.BEFORE_SUNSET,
+      },
+      {
+        name: "After Sunset Prayer - Outside Range",
+        prayer: Prayer.Arvit,
+        time: "1:00:00", // 1 hour after sunset = 6 PM (outside 10 AM - 12 PM)
+        minyan: savedMinyan,
+        relative: RelativeTime.AFTER_SUNSET,
+      },
+    ];
+
+    for (const schedule of schedules) {
+      await addSchedule(schedule);
+    }
+
+    const fromDate = new Date("2023-01-01T10:00:00"); // 10 AM
+    
+    // Mock the coordinates for the minyan to ensure proper dayTimes calculation
+    savedMinyan.latitude = 31.9; // Jerusalem latitude
+    savedMinyan.longitude = 35.2; // Jerusalem longitude
+    await saveMinyan(savedMinyan);
+
+    // Look for schedules in a 2-hour window (10 AM - 12 PM)
+    const upcomingSchedules = await getUpcomingSchedules(
+      120, // 2 hours
+      fromDate,
+      "Asia/Jerusalem",
+      true
+    );
+
+    // Only the schedules within the 10 AM - 12 PM timeframe should be returned
+    expect(upcomingSchedules).toHaveLength(2);
+    expect(upcomingSchedules[0].name).toBe(
+      "After Sunrise Prayer - Within Range"
+    );
+    expect(upcomingSchedules[1].name).toBe(
+      "Before Sunset Prayer - Within Range"
+    );
+  });
+
+  it("should handle relative schedules with weeklyDetermineByDay that fall outside the time range", async () => {
+    const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+    const savedMinyan = await saveMinyan(minyan);
+
+    // January 1st 2023 is a Sunday (weekday 1)
+    const schedules = [
+      {
+        name: "Tuesday Sunrise Prayer - Outside Range",
+        prayer: Prayer.Shacharit,
+        time: "7:00:00", // 7 hours after sunrise = 1 PM (outside 10 AM - 11 AM)
+        minyan: savedMinyan,
+        relative: RelativeTime.AFTER_SUNRISE,
+        weeklyDetermineByDay: WeekDay.Tuesday,
+      },
+      {
+        name: "Friday Sunset Prayer - Outside Range",
+        prayer: Prayer.Mincha,
+        time: "8:00:00", // 8 hours before sunset = 9 AM (outside 10 AM - 11 AM)
+        minyan: savedMinyan,
+        relative: RelativeTime.BEFORE_SUNSET,
+        weeklyDetermineByDay: WeekDay.Friday,
+      },
+    ];
+
+    for (const schedule of schedules) {
+      await addSchedule(schedule);
+    }
+
+    const fromDate = new Date("2023-01-01T10:00:00"); // Sunday 10 AM
+    
+    // Mock the coordinates for the minyan to ensure proper dayTimes calculation
+    savedMinyan.latitude = 31.9; // Jerusalem latitude
+    savedMinyan.longitude = 35.2; // Jerusalem longitude
+    await saveMinyan(savedMinyan);
+
+    // Look for schedules in a 1-hour window (10 AM - 11 AM)
+    const upcomingSchedules = await getUpcomingSchedules(
+      60, // 1 hour
+      fromDate,
+      "Asia/Jerusalem",
+      true
+    );
+
+    // None of the schedules should be in this timeframe
     expect(upcomingSchedules).toHaveLength(0);
   });
 });
