@@ -148,40 +148,15 @@ export function calculateScheduleTime(
   if (!schedule.relative) {
     return calculateRegularScheduleTime(schedule, referenceDateTime);
   } else {
-    // If dayTimes is provided, use it
-    if (dayTimes) {
-      return calculateRelativeScheduleTime(
-        schedule,
-        dayTimes,
-        timezone,
-        referenceDateTime
-      );
-    }
-    
-    // For relative schedules without dayTimes, we need to calculate them
-    // If weeklyDetermineByDay is set, adjust the reference date to that day
-    let dateForDayTimes = referenceDate;
-    
-    if (schedule.weeklyDetermineByDay) {
-      dateForDayTimes = adjustDateToWeekDay(referenceDate, schedule.weeklyDetermineByDay);
-    }
-    
-    // We need the minyan's coordinates to calculate sunrise/sunset
-    const latitude = schedule.minyan.latitude;
-    const longitude = schedule.minyan.longitude;
-    
-    // If coordinates are not available, fall back to regular schedule
-    if (!latitude || !longitude) {
-      console.warn(`Missing coordinates for minyan ${schedule.minyan.name}. Falling back to regular schedule.`);
+    // For relative schedules, dayTimes must be provided
+    if (!dayTimes) {
+      console.warn(`No dayTimes provided for relative schedule ${schedule.name}. Falling back to regular schedule.`);
       return calculateRegularScheduleTime(schedule, referenceDateTime);
     }
     
-    // Calculate dayTimes using KosherZmanim
-    const calculatedDayTimes = calculateDayTimes(dateForDayTimes, latitude, longitude, timezone);
-    
     return calculateRelativeScheduleTime(
       schedule,
-      calculatedDayTimes,
+      dayTimes,
       timezone,
       referenceDateTime
     );
