@@ -104,7 +104,9 @@ export async function invokeSchedule(
     startedAt: scheduleContext?.startedAt || Date.now(),
   });
 
-  if (isLastExecution(schedule.time, scheduleInterval) && scheduleContext) {
+  const scheduleHour = scheduleContext?.calculatedHour || schedule.time;
+
+  if (isLastExecution(scheduleHour, scheduleInterval) && scheduleContext) {
     const scheduleOccurrence =
       (await getScheduleInvocationOccurrence(invocationId)) ||
       new ScheduleOccurrence();

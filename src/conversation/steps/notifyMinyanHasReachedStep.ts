@@ -50,12 +50,16 @@ export const notifyMinyanHasReachedStep: Step = {
       }
     }
 
+    const scheduleHour =
+      scheduleContext?.calculatedHour ||
+      DateTime.fromISO(schedule.time).toFormat("HH:mm");
+
     await waClient.sendTextMessage(
       userNum,
       getMessage(messages.MINYAN_REACHED_WITH_LIST, {
         prayers,
         minyanName: schedule.minyan.name,
-        hour: DateTime.fromISO(schedule.time).toFormat("HH:mm"),
+        hour: scheduleHour,
         pray: prayerHebName(schedule.prayer),
       })
     );
