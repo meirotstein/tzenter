@@ -41,9 +41,13 @@ export class ScheduleHandler implements IHandler {
           String(upcomingSchedule.id),
           ContextType.Schedule
         );
-      const schedule = await getScheduleById(upcomingSchedule.id);
+      context.update({
+        calculatedHour: upcomingSchedule.calculatedHour,
+      })
+      
+      // const schedule = await getScheduleById(upcomingSchedule.id);
       scheduleInvocations.push(
-        invokeSchedule(this.waClient, schedule!, context)
+        invokeSchedule(this.waClient, upcomingSchedule, context)
       );
     }
 
