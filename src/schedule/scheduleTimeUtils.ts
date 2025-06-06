@@ -23,10 +23,19 @@ export function calculateDayTimes(
     elevation: 0,
     timeZoneId: timezone,
   });
-  
+
+  console.log("Zmanim data:", {
+    sunrise: (zmanimData as any).BasicZmanim.Sunrise,
+    sunset: (zmanimData as any).BasicZmanim.Sunset,
+  });
+
   return {
-    sunrise: DateTime.fromISO((zmanimData as any).BasicZmanim.Sunrise, { zone: timezone }),
-    sunset: DateTime.fromISO((zmanimData as any).BasicZmanim.Sunset, { zone: timezone })
+    sunrise: DateTime.fromISO((zmanimData as any).BasicZmanim.Sunrise, {
+      zone: timezone,
+    }),
+    sunset: DateTime.fromISO((zmanimData as any).BasicZmanim.Sunset, {
+      zone: timezone,
+    }),
   };
 }
 
@@ -37,23 +46,23 @@ export function calculateDayTimes(
 export function adjustDateToWeekDay(date: Date, weekDay: WeekDay): Date {
   const dt = DateTime.fromJSDate(date);
   const currentDayOfWeek = dt.weekday; // Luxon uses 1-7 for Monday-Sunday
-  
+
   // Convert WeekDay enum (1-7 for Sunday-Saturday) to Luxon weekday (1-7 for Monday-Sunday)
   const targetDayLuxon = weekDay === WeekDay.Sunday ? 7 : weekDay - 1;
-  
+
   // Calculate the difference in days
   let daysDiff = targetDayLuxon - currentDayOfWeek;
-  
+
   // If the target day is earlier in the week, move to the next week
   if (daysDiff < 0) {
     daysDiff += 7;
   }
-  
+
   // If it's the same day, don't add any days
   if (daysDiff === 0) {
     return date;
   }
-  
+
   return dt.plus({ days: daysDiff }).toJSDate();
 }
 
@@ -67,7 +76,7 @@ export function roundToFiveMinutes(dt: DateTime): DateTime {
     minute: roundedMinutes % 60,
     hour: dt.hour + Math.floor(roundedMinutes / 60),
     second: 0,
-    millisecond: 0
+    millisecond: 0,
   });
 }
 
@@ -75,11 +84,11 @@ export function roundToFiveMinutes(dt: DateTime): DateTime {
  * Calculates the time for a regular (non-relative) schedule
  */
 export function calculateRegularScheduleTime(
-  schedule: Schedule, 
+  schedule: Schedule,
   referenceDateTime: DateTime
 ): DateTime {
   const [hours, minutes] = schedule.time.split(":").map(Number);
-  
+
   // Create time in the same timezone on the same day as the reference
   let scheduleTime = referenceDateTime.set({
     hour: hours,
@@ -87,13 +96,13 @@ export function calculateRegularScheduleTime(
     second: 0,
     millisecond: 0,
   });
-  
+
   // Handle midnight wrapping by adjusting the date if needed
   if (scheduleTime < referenceDateTime && hours < 12) {
     // If the time is earlier today and before noon, it's probably meant for tomorrow
     scheduleTime = scheduleTime.plus({ days: 1 });
   }
-  
+
   return scheduleTime;
 }
 
@@ -108,29 +117,33 @@ export function calculateRelativeScheduleTime(
 ): DateTime {
   // Use provided reference time or current time
   const now = referenceDateTime || DateTime.now().setZone(timezone);
-  
+
   const baseTime = schedule.relative!.includes("SUNSET")
     ? dayTimes.sunset.setZone(timezone)
     : dayTimes.sunrise.setZone(timezone);
-  
+
   const [hours, minutes] = schedule.time.split(":").map(Number);
-  
+
   // If weeklyDetermineByDay is set, we use it to determine which day's sunrise/sunset
   // times should be used as the base for calculation
   let scheduleTime = baseTime;
-  
+
   // Add or subtract hours based on BEFORE/AFTER
   if (schedule.relative!.startsWith("BEFORE")) {
-    scheduleTime = scheduleTime.minus({ hours }).set({ minute: minutes || 0, second: 0, millisecond: 0 });
+    scheduleTime = scheduleTime
+      .minus({ hours })
+      .set({ minute: minutes || 0, second: 0, millisecond: 0 });
   } else {
-    scheduleTime = scheduleTime.plus({ hours }).set({ minute: minutes || 0, second: 0, millisecond: 0 });
+    scheduleTime = scheduleTime
+      .plus({ hours })
+      .set({ minute: minutes || 0, second: 0, millisecond: 0 });
   }
-  
+
   // Round to nearest 5 minutes if needed
   if (schedule.roundToNearestFiveMinutes) {
     scheduleTime = roundToFiveMinutes(scheduleTime);
   }
-  
+
   return scheduleTime;
 }
 
@@ -143,17 +156,20 @@ export function calculateScheduleTime(
   dayTimes?: DayTimes,
   referenceDate: Date = new Date()
 ): DateTime {
-  const referenceDateTime = DateTime.fromJSDate(referenceDate).setZone(timezone);
-  
+  const referenceDateTime =
+    DateTime.fromJSDate(referenceDate).setZone(timezone);
+
   if (!schedule.relative) {
     return calculateRegularScheduleTime(schedule, referenceDateTime);
   } else {
     // For relative schedules, dayTimes must be provided
     if (!dayTimes) {
-      console.warn(`No dayTimes provided for relative schedule ${schedule.name}. Falling back to regular schedule.`);
+      console.warn(
+        `No dayTimes provided for relative schedule ${schedule.name}. Falling back to regular schedule.`
+      );
       return calculateRegularScheduleTime(schedule, referenceDateTime);
     }
-    
+
     return calculateRelativeScheduleTime(
       schedule,
       dayTimes,
@@ -173,7 +189,7 @@ export function isScheduleInTimeRange(
 ): boolean {
   // For schedules that wrap around midnight
   const midnight = startTime.plus({ days: 1 }).startOf("day");
-  
+
   if (endTime.day !== startTime.day) {
     // If period crosses midnight, include:
     // 1. Schedules from now until midnight today
@@ -183,7 +199,7 @@ export function isScheduleInTimeRange(
       (calculatedTime >= midnight && calculatedTime <= endTime)
     );
   }
-  
+
   // Normal case (same day)
   return calculatedTime >= startTime && calculatedTime <= endTime;
 }

@@ -13,7 +13,12 @@ import { KVClientMock } from "./mocks/kvClientMock";
 import { DateTime } from "luxon";
 import onSchedule from "../../src/api/onSchedule";
 import { Minyan } from "../../src/datasource/entities/Minyan";
-import { Prayer, Schedule } from "../../src/datasource/entities/Schedule";
+import {
+  Prayer,
+  RelativeTime,
+  Schedule,
+  WeekDay,
+} from "../../src/datasource/entities/Schedule";
 import { User } from "../../src/datasource/entities/User";
 import {
   getMinyanByName,
@@ -44,12 +49,17 @@ export interface IntegrationTestData {
   minyans?: Array<{
     name: string;
     city: string;
+    latitude?: number;
+    longitude?: number;
   }>;
   schedules?: Array<{
     name: string;
     prayer: Prayer;
     time: string;
     minyanName: string;
+    relative?: RelativeTime;
+    weeklyDetermineByDay?: WeekDay;
+    roundToNearestFiveMinutes?: boolean;
   }>;
   users?: Array<{
     phoneNum: number;
@@ -75,6 +85,8 @@ export async function initMocksAndData(data: IntegrationTestData) {
       const minyan = new Minyan();
       minyan.name = minyanData.name;
       minyan.city = minyanData.city;
+      minyan.latitude = minyanData.latitude;
+      minyan.longitude = minyanData.longitude;
       await saveMinyan(minyan);
     }
   }
@@ -85,6 +97,10 @@ export async function initMocksAndData(data: IntegrationTestData) {
       schedule.name = scheduleData.name;
       schedule.prayer = scheduleData.prayer;
       schedule.time = scheduleData.time;
+      schedule.relative = scheduleData.relative;
+      schedule.roundToNearestFiveMinutes =
+        scheduleData.roundToNearestFiveMinutes;
+      schedule.weeklyDetermineByDay = scheduleData.weeklyDetermineByDay;
       const minyan = await getMinyanByName(scheduleData.minyanName);
       schedule.minyan = minyan!;
 
@@ -117,12 +133,14 @@ export async function resetAll() {
   (verifyValidScheduleExecuter as jest.Mock).mockClear();
   (getJewishEventsOnDateWrapper as jest.Mock).mockClear();
 
-  (await getMinyanRepo()).clear();
-  (await getScheduleRepo()).clear();
-  (await getUsersRepo()).clear();
+  await (await getMinyanRepo()).clear();
+  await (await getScheduleRepo()).clear();
+  await (await getUsersRepo()).clear();
 
   jest.useRealTimers();
   jest.clearAllMocks();
+
+  kvMock.clear();
 }
 
 export function timeTravelTo(date: Date) {
