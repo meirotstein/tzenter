@@ -309,8 +309,8 @@ describe("getUpcomingSchedules", () => {
     await saveMinyan(savedMinyan);
     
     // Note: With these coordinates, KosherZmanim calculates the following dayTimes:
-    // - Sunrise: ~07:00 AM
-    // - Sunset: ~16:00 PM
+    // - Sunrise: ~06:39 AM
+    // - Sunset: ~16:45 PM
 
     const upcomingSchedules = await getUpcomingSchedules(
       1440, // 24 hours
@@ -341,17 +341,17 @@ describe("getUpcomingSchedules", () => {
     expect(timeRegex.test(upcomingSchedules[3].calculatedHour)).toBe(true);
     
     // Verify specific time values
-    // Before Sunrise Prayer (1:30 before sunrise which is around 07:00 AM)
-    expect(upcomingSchedules[0].calculatedHour).toBe("05:30");
+    // Before Sunrise Prayer (1:30 before sunrise which is at 06:39:26)
+    expect(upcomingSchedules[0].calculatedHour).toBe("05:09");
     
-    // After Sunrise Prayer (0:30 after sunrise which is around 06:00 AM)
-    expect(upcomingSchedules[1].calculatedHour).toBe("06:30");
+    // After Sunrise Prayer (0:30 after sunrise which is at 06:39:26)
+    expect(upcomingSchedules[1].calculatedHour).toBe("07:09");
     
-    // Before Sunset Prayer (1:00 before sunset which is around 16:00)
-    expect(upcomingSchedules[2].calculatedHour).toBe("15:00");
+    // Before Sunset Prayer (1:00 before sunset which is at 16:45:51)
+    expect(upcomingSchedules[2].calculatedHour).toBe("15:45");
     
-    // After Sunset Prayer (0:20 after sunset which is around 16:00)
-    expect(upcomingSchedules[3].calculatedHour).toBe("16:20");
+    // After Sunset Prayer (0:20 after sunset which is at 16:45:51)
+    expect(upcomingSchedules[3].calculatedHour).toBe("17:05");
   });
 
   it("should handle relative schedules with roundToNearestFiveMinutes", async () => {
@@ -389,8 +389,8 @@ describe("getUpcomingSchedules", () => {
     await saveMinyan(savedMinyan);
     
     // Note: With these coordinates, KosherZmanim calculates the following dayTimes:
-    // - Sunrise: ~07:00 AM
-    // - Sunset: ~16:00 PM
+    // - Sunrise: ~06:39 AM
+    // - Sunset: ~16:45 PM
 
     const upcomingSchedules = await getUpcomingSchedules(
       1440,
@@ -421,11 +421,11 @@ describe("getUpcomingSchedules", () => {
     expect(parseInt(minutes1) % 5).toBe(0);
     
     // Verify specific time values
-    // Rounded After Sunrise (0:33 after sunrise which is around 06:00 AM, rounded to 0:35)
-    expect(upcomingSchedules[0].calculatedHour).toBe("06:35");
+    // Rounded After Sunrise (0:33 after sunrise which is at 06:39:26, rounded to nearest 5 minutes)
+    expect(upcomingSchedules[0].calculatedHour).toBe("07:10");
     
-    // Rounded Before Sunset (1:28 before sunset which is around 16:00, rounded to 1:30)
-    expect(upcomingSchedules[1].calculatedHour).toBe("15:30");
+    // Rounded Before Sunset (1:28 before sunset which is at 16:45:51, rounded to nearest 5 minutes)
+    expect(upcomingSchedules[1].calculatedHour).toBe("15:15");
   });
 
   it("should handle relative schedules with weeklyDetermineByDay", async () => {
@@ -464,8 +464,8 @@ describe("getUpcomingSchedules", () => {
     await saveMinyan(savedMinyan);
     
     // Note: With these coordinates, KosherZmanim calculates the following dayTimes:
-    // - Sunrise: ~07:00 AM
-    // - Sunset: ~16:00 PM
+    // - Sunrise: ~06:39 AM
+    // - Sunset: ~16:45 PM
 
     const upcomingSchedules = await getUpcomingSchedules(
       10080, // 7 days in minutes
@@ -490,11 +490,11 @@ describe("getUpcomingSchedules", () => {
     expect(timeRegex.test(upcomingSchedules[1].calculatedHour)).toBe(true);
     
     // Verify specific time values
-    // Tuesday Sunrise Prayer (0:30 after sunrise which is around 06:00 AM)
-    expect(upcomingSchedules[0].calculatedHour).toBe("06:30");
+    // Tuesday Sunrise Prayer (0:30 after sunrise which is at 06:39:51 on Tuesday)
+    expect(upcomingSchedules[0].calculatedHour).toBe("07:09");
     
-    // Friday Sunset Prayer (1:00 before sunset which is around 16:00)
-    expect(upcomingSchedules[1].calculatedHour).toBe("15:00");
+    // Friday Sunset Prayer (1:00 before sunset which is at 16:49:39 on Friday)
+    expect(upcomingSchedules[1].calculatedHour).toBe("15:49");
   });
   it("should not return relative schedules that fall outside the specified time range", async () => {
     const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
@@ -544,8 +544,8 @@ describe("getUpcomingSchedules", () => {
     await saveMinyan(savedMinyan);
     
     // Note: With these coordinates, KosherZmanim calculates the following dayTimes:
-    // - Sunrise: ~07:00 AM
-    // - Sunset: ~16:00 PM
+    // - Sunrise: ~06:39 AM
+    // - Sunset: ~16:45 PM
 
     // Only look for schedules in a 2-hour window (10 AM - 12 PM)
     const upcomingSchedules = await getUpcomingSchedules(
@@ -607,8 +607,8 @@ describe("getUpcomingSchedules", () => {
     await saveMinyan(savedMinyan);
     
     // Note: With these coordinates, KosherZmanim calculates the following dayTimes:
-    // - Sunrise: ~07:00 AM
-    // - Sunset: ~16:00 PM
+    // - Sunrise: ~06:39 AM
+    // - Sunset: ~16:45 PM
 
     // Look for schedules in a 2-hour window (10 AM - 12 PM)
     const upcomingSchedules = await getUpcomingSchedules(
@@ -647,11 +647,11 @@ describe("getUpcomingSchedules", () => {
     expect(hour1).toBeLessThan(12);
     
     // Verify specific time values
-    // After Sunrise Prayer - Within Range (4:30 after sunrise which is around 06:00 AM)
-    expect(upcomingSchedules[0].calculatedHour).toBe("10:30");
+    // After Sunrise Prayer - Within Range (4:30 after sunrise which is at 06:39:26)
+    expect(upcomingSchedules[0].calculatedHour).toBe("11:09");
     
-    // Before Sunset Prayer - Within Range (6:00 before sunset which is around 16:00)
-    expect(upcomingSchedules[1].calculatedHour).toBe("10:00");
+    // Before Sunset Prayer - Within Range (6:00 before sunset which is at 16:45:51)
+    expect(upcomingSchedules[1].calculatedHour).toBe("10:45");
   });
 
   it("should handle relative schedules with weeklyDetermineByDay that fall outside the time range", async () => {
@@ -690,8 +690,8 @@ describe("getUpcomingSchedules", () => {
     await saveMinyan(savedMinyan);
     
     // Note: With these coordinates, KosherZmanim calculates the following dayTimes:
-    // - Sunrise: ~07:00 AM
-    // - Sunset: ~16:00 PM
+    // - Sunrise: ~06:39 AM
+    // - Sunset: ~16:45 PM
 
     // Look for schedules in a 1-hour window (10 AM - 11 AM)
     const upcomingSchedules = await getUpcomingSchedules(

@@ -128,15 +128,15 @@ export function calculateRelativeScheduleTime(
   // times should be used as the base for calculation
   let scheduleTime = baseTime;
 
-  // Add or subtract hours based on BEFORE/AFTER
+  // Add or subtract hours and minutes based on BEFORE/AFTER
   if (schedule.relative!.startsWith("BEFORE")) {
     scheduleTime = scheduleTime
-      .minus({ hours })
-      .set({ minute: minutes || 0, second: 0, millisecond: 0 });
+      .minus({ hours, minutes })
+      .set({ second: 0, millisecond: 0 });
   } else {
     scheduleTime = scheduleTime
-      .plus({ hours })
-      .set({ minute: minutes || 0, second: 0, millisecond: 0 });
+      .plus({ hours, minutes })
+      .set({ second: 0, millisecond: 0 });
   }
 
   // Round to nearest 5 minutes if needed
