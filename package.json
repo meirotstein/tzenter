@@ -30,6 +30,7 @@
     "@upstash/redis": "^1.34.4",
     "crypto": "^1.0.1",
     "ejs": "^3.1.10",
+    "kosher-zmanim": "^0.9.0",
     "luxon": "^3.6.0",
     "pg": "^8.13.3",
     "raw-body": "^3.0.0",

@@ -29,4 +29,10 @@ export class Minyan {
 
   @Column({ type: "boolean", nullable: true, default: false })
   hidden?: boolean;
+
+  @Column("decimal", { nullable: true, precision: 9, scale: 6 })
+  latitude?: number;
+
+  @Column("decimal", { nullable: true, precision: 9, scale: 6 })
+  longitude?: number;
 }

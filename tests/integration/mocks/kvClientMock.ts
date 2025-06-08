@@ -23,4 +23,8 @@ export class KVClientMock<T> {
     const regex = new RegExp(`^${pattern.replace("*", ".*")}$`);
     return Object.keys(this.store).filter((key) => regex.test(key));
   }
+
+  clear(): void {
+    this.store = {};
+  }
 }

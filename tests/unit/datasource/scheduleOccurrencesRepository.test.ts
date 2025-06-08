@@ -27,6 +27,7 @@ describe("scheduleOccurrencesRepository", () => {
     const foundOccurrence = await getScheduleOccurrenceById(occurrence.id);
     expect(foundOccurrence).toEqual({
       ...occurrence,
+      datetime: "2025-04-20 07:00:00.000",
       snoozed: 10,
     });
   });
@@ -55,7 +56,10 @@ describe("scheduleOccurrencesRepository", () => {
       occurrence2.invocationId
     );
 
-    expect(occurrence2Instance).toEqual(occurrence2);
+    expect(occurrence2Instance).toEqual({
+      ...occurrence2,
+      datetime: "2025-04-21 09:00:00.000",
+    });
   });
 
   it("should return null if no occurrences exist for a schedule invocation", async () => {

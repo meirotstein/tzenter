@@ -5,8 +5,8 @@ import { UnexpectedUserInputError } from "../../errors";
 import { WATextMessage } from "../../handlers/types";
 import { scheduleAnnouncements } from "../../schedule/scheduleAnnouncements";
 import { prayerHebName } from "../../utils";
-import { Context } from "../context";
-import { Step, UserContext } from "../types";
+import { Context, ContextType } from "../context";
+import { ScheduleContext, Step, UserContext } from "../types";
 import templates from "../waTemplates";
 import { approveScheduleStep } from "./approveScheduleStep";
 import { rejectScheduleStep } from "./rejectScheduleStep";
@@ -40,14 +40,23 @@ export const initScheduleStep: Step = {
       userNum,
     });
 
+    const scheduleContext = await Context.getContext<ScheduleContext>(
+      String(schedule.id),
+      ContextType.Schedule
+    ).get();
+
     const scheduleMessages = await scheduleAnnouncements(schedule, new Date());
 
     const scheduleTemplate = templates.minyan_appointment_reminder;
 
+    const scheduleHour =
+      scheduleContext?.calculatedHour ||
+      DateTime.fromISO(schedule.time).toFormat("HH:mm");
+
     const params = {
       "1": minyan.name,
       "2": prayerHebName(schedule.prayer),
-      "3": DateTime.fromISO(schedule.time).toFormat("HH:mm"),
+      "3": scheduleHour,
       "4": scheduleMessages.length ? `[${scheduleMessages.join(" | ")}]` : "-",
     };
 

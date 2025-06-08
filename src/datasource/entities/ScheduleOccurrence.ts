@@ -1,5 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
+const isTestEnv = process.env.NODE_ENV === "test";
+
 @Entity("schedule_occurrences")
 export class ScheduleOccurrence {
   @PrimaryGeneratedColumn()
@@ -8,7 +10,9 @@ export class ScheduleOccurrence {
   @Column()
   scheduleId!: number;
 
-  @Column()
+  @Column({
+    type: isTestEnv ? "varchar" : "timestamp",
+  })
   datetime!: Date;
 
   @Column()

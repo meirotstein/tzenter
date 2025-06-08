@@ -63,11 +63,13 @@ export const processScheduleStep: Step = {
       return;
     }
 
+    const scheduleHour = scheduleContextData?.calculatedHour || schedule.time;
+
     if (!!approved[String(userNum)]) {
       const scheduleInterval = +(
         process.env.SCHEDULE_INVOCATION_INTERVAL_MIN || 14
       );
-      if (!isLastExecution(schedule.time, scheduleInterval)) {
+      if (!isLastExecution(scheduleHour, scheduleInterval)) {
         console.log(
           "skipping schedule - will notify only on the last execution",
           {
@@ -90,11 +92,15 @@ export const processScheduleStep: Step = {
         }
       }
 
+      const resolvedScheduleHour =
+        scheduleContextData?.calculatedHour ||
+        DateTime.fromISO(schedule.time).toFormat("HH:mm");
+
       await waClient.sendTextMessage(
         userNum,
         getMessage(messages.MINYAN_ATTENDANCE_UPDATE, {
           minyanName: minyan.name,
-          hour: DateTime.fromISO(schedule.time).toFormat("HH:mm"),
+          hour: resolvedScheduleHour,
           pray: prayerHebName(schedule.prayer),
           prayers,
         })
@@ -128,6 +134,10 @@ export const processScheduleStep: Step = {
         });
       }
 
+      const resolvedScheduleHour =
+        scheduleContextData?.calculatedHour ||
+        DateTime.fromISO(schedule.time).toFormat("HH:mm");
+
       await waClient.sendTextMessage(
         userNum,
         getMessage(
@@ -136,7 +146,7 @@ export const processScheduleStep: Step = {
             : messages.SNOOZE_REMINDER,
           {
             minyanName: minyan.name,
-            hour: DateTime.fromISO(schedule.time).toFormat("HH:mm"),
+            hour: resolvedScheduleHour,
             pray: prayerHebName(schedule.prayer),
           }
         )

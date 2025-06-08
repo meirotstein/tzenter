@@ -1,4 +1,3 @@
-import { DateTime } from "luxon";
 import { Repository } from "typeorm";
 import { initDataSource } from ".";
 import { Schedule } from "./entities/Schedule";
@@ -39,47 +38,10 @@ export async function updateSchedule(
   return repo.save(schedule);
 }
 
-export async function getUpcomingSchedules(
-  minutes: number,
-  from: Date = new Date(),
-  timezone: string = "Asia/Jerusalem",
-  enabled: boolean = true
-): Promise<Schedule[]> {
+export async function getAllSchedules(enabled: boolean = true): Promise<Schedule[]> {
   const repo = await getRepo();
-
-  const now = DateTime.fromJSDate(from, { zone: timezone });
-  const later = now.plus({ minutes });
-
-  const format = (dt: DateTime) => dt.toFormat("HH:mm:ss");
-
-  const fromTime = format(now);
-  const futureTime = format(later);
-
-  const isWrappingMidnight = fromTime > futureTime;
-
-  if (isWrappingMidnight) {
-    return repo
-      .createQueryBuilder("schedule")
-      .where(
-        "(schedule.time >= :fromTime OR schedule.time <= :futureTime) AND schedule.enabled = :enabled",
-        {
-          fromTime,
-          futureTime,
-          enabled,
-        }
-      )
-      .getMany();
-  } else {
-    return repo
-      .createQueryBuilder("schedule")
-      .where(
-        "schedule.time >= :fromTime AND schedule.time <= :futureTime AND schedule.enabled = :enabled",
-        {
-          fromTime,
-          futureTime,
-          enabled,
-        }
-      )
-      .getMany();
-  }
+  return repo.find({
+    where: { enabled },
+    relations: ["minyan"]
+  });
 }

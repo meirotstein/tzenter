@@ -1,10 +1,8 @@
 import { WhatsappClient } from "../../../src/clients/WhatsappClient";
 import { Context } from "../../../src/conversation/context";
-import {
-  getScheduleById,
-  getUpcomingSchedules,
-} from "../../../src/datasource/scheduleRepository";
+import { getScheduleById } from "../../../src/datasource/scheduleRepository";
 import { ScheduleHandler } from "../../../src/handlers/ScheduleHandler";
+import { getUpcomingSchedules } from "../../../src/schedule/getUpcomingSchedule";
 import { invokeSchedule } from "../../../src/schedule/invokeSchedule";
 import { shouldSkipScheduleToday } from "../../../src/utils";
 
@@ -12,6 +10,7 @@ jest.mock("../../../src/clients/WhatsappClient");
 jest.mock("../../../src/datasource/scheduleRepository");
 jest.mock("../../../src/schedule/invokeSchedule");
 jest.mock("../../../src/utils");
+jest.mock("../../../src/schedule/getUpcomingSchedule");
 
 describe("ScheduleHandler", () => {
   let scheduleHandler: ScheduleHandler;

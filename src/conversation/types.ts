@@ -25,6 +25,7 @@ export type UserContext = {
 
 export type ScheduleContext = {
   status: ScheduleStatus;
+  calculatedHour: string; // HH:mm format
   invocationId?: string;
   startedAt?: number;
   updatedAt?: number;
