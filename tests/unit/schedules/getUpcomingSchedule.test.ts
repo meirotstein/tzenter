@@ -452,6 +452,18 @@ describe("getUpcomingSchedules", () => {
       },
     ];
 
+    // Zmanim data - tuesday (January 3rd 2023):{
+    //   sunrise: '2023-01-03T06:39:51+02:00',
+    //   sunset: '2023-01-03T16:47:20+02:00'
+    // }
+
+    // Zmanim data: - Friday (January 6th 2023):{
+    //   sunrise: '2023-01-06T06:40:15+02:00',
+    //   sunset: '2023-01-06T16:49:39+02:00'
+    // }
+
+
+
     for (const schedule of schedules) {
       await addSchedule(schedule);
     }
@@ -496,6 +508,7 @@ describe("getUpcomingSchedules", () => {
     // Friday Sunset Prayer (1:00 before sunset which is at 16:49:39 on Friday)
     expect(upcomingSchedules[1].calculatedHour).toBe("15:49");
   });
+
   it("should not return relative schedules that fall outside the specified time range", async () => {
     const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
     const savedMinyan = await saveMinyan(minyan);

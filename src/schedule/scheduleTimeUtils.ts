@@ -1,6 +1,10 @@
 import { DateTime } from "luxon";
 import * as KosherZmanim from "kosher-zmanim";
-import { Schedule, WeekDay } from "../datasource/entities/Schedule";
+import {
+  RelativeTime,
+  Schedule,
+  WeekDay,
+} from "../datasource/entities/Schedule";
 
 export interface DayTimes {
   sunrise: DateTime;
@@ -118,18 +122,30 @@ export function calculateRelativeScheduleTime(
   // Use provided reference time or current time
   const now = referenceDateTime || DateTime.now().setZone(timezone);
 
-  const baseTime = schedule.relative!.includes("SUNSET")
+  const adjustedDayTime = [
+    RelativeTime.AFTER_SUNSET,
+    RelativeTime.BEFORE_SUNSET,
+  ].includes(schedule.relative!)
     ? dayTimes.sunset.setZone(timezone)
     : dayTimes.sunrise.setZone(timezone);
 
+  const baseTime = now.set({
+    hour: adjustedDayTime.hour,
+    minute: adjustedDayTime.minute,
+    second: adjustedDayTime.second,
+    millisecond: adjustedDayTime.millisecond,
+  });
+
   const [hours, minutes] = schedule.time.split(":").map(Number);
 
-  // If weeklyDetermineByDay is set, we use it to determine which day's sunrise/sunset
-  // times should be used as the base for calculation
   let scheduleTime = baseTime;
 
   // Add or subtract hours and minutes based on BEFORE/AFTER
-  if (schedule.relative!.startsWith("BEFORE")) {
+  if (
+    [RelativeTime.BEFORE_SUNRISE, RelativeTime.BEFORE_SUNSET].includes(
+      schedule.relative!
+    )
+  ) {
     scheduleTime = scheduleTime
       .minus({ hours, minutes })
       .set({ second: 0, millisecond: 0 });

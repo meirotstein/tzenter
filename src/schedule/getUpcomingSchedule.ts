@@ -41,26 +41,12 @@ export async function getUpcomingSchedules(
 
         if (schedule.weeklyDetermineByDay) {
           const dt = DateTime.fromJSDate(from);
-          const currentDayOfWeek = dt.weekday; // Luxon uses 1-7 for Monday-Sunday
+          const currentDayOfWeek = (dt.weekday + 1) % 7; // Luxon uses 1-7 for Monday-Sunday, convert it to 1-7 for Sunday-Saturday
 
-          // Convert WeekDay enum (1-7 for Sunday-Saturday) to Luxon weekday (1-7 for Monday-Sunday)
-          const targetDayLuxon =
-            schedule.weeklyDetermineByDay === 1
-              ? 7
-              : schedule.weeklyDetermineByDay - 1;
+          let daysDiff = schedule.weeklyDetermineByDay - currentDayOfWeek;
 
-          // Calculate the difference in days
-          let daysDiff = targetDayLuxon - currentDayOfWeek;
-
-          // If the target day is earlier in the week, move to the next week
-          if (daysDiff < 0) {
-            daysDiff += 7;
-          }
-
-          // If it's not the same day, adjust the date
-          if (daysDiff !== 0) {
-            dateForDayTimes = dt.plus({ days: daysDiff }).toJSDate();
-          }
+          // Adjust the date to the previous occurrence of the target day
+          dateForDayTimes = dt.plus({ days: daysDiff }).toJSDate();
         }
 
         dayTimes = calculateDayTimes(
