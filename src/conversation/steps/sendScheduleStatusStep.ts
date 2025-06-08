@@ -1,13 +1,12 @@
 import { DateTime } from "luxon";
 import { WhatsappClient } from "../../clients/WhatsappClient";
-import { getScheduleById } from "../../datasource/scheduleRepository";
+import { Schedule } from "../../datasource/entities/Schedule";
 import { getUserByPhone } from "../../datasource/usersRepository";
 import { WATextMessage } from "../../handlers/types";
 import { prayerHebName } from "../../utils";
 import { Context, ContextType } from "../context";
 import { getMessage, messages } from "../messageTemplates";
 import { ScheduleContext, Step, UserContext } from "../types";
-import { Schedule } from "../../../.vercel/output/static/datasource/entities/Schedule";
 
 export const sendScheduleStatusStep: Step = {
   id: "sendScheduleStatusStep",
