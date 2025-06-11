@@ -66,6 +66,12 @@ export const approveScheduleStep: Step = {
       forUpdate.snoozed = Array.from(snoozed);
     }
 
+    console.debug("user approved schedule", {
+      userNum,
+      scheduleId: schedule.id,
+      forUpdate,
+    });
+
     await scheduleContext.update(forUpdate);
 
     await waClient.sendTextMessage(userNum, messages.APPROVAL_ACCEPTED);

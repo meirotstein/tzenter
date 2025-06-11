@@ -63,6 +63,12 @@ export const updateAdditionalMinyanAttendeesStep: Step = {
       snoozed: updatedSnoozed,
     };
 
+    console.debug("user updated schedule", {
+      userNum,
+      scheduleId: schedule.id,
+      forUpdate,
+    });
+
     await scheduleContext.update(forUpdate);
 
     await waClient.sendTextMessage(

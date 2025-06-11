@@ -11,6 +11,7 @@ jest.mock("../../../src/datasource/scheduleRepository");
 jest.mock("../../../src/schedule/invokeSchedule");
 jest.mock("../../../src/utils");
 jest.mock("../../../src/schedule/getUpcomingSchedule");
+jest.mock("../../../src/clients/KVClient");
 
 describe("ScheduleHandler", () => {
   let scheduleHandler: ScheduleHandler;

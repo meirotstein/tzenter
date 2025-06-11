@@ -1,7 +1,6 @@
 import { WhatsappClient } from "../clients/WhatsappClient";
 import { Context, ContextType } from "../conversation/context";
 import { ScheduleContext } from "../conversation/types";
-import { getScheduleById } from "../datasource/scheduleRepository";
 import { getUpcomingSchedules } from "../schedule/getUpcomingSchedule";
 import { invokeSchedule } from "../schedule/invokeSchedule";
 import { shouldSkipScheduleToday } from "../utils";
@@ -41,10 +40,10 @@ export class ScheduleHandler implements IHandler {
           String(upcomingSchedule.id),
           ContextType.Schedule
         );
-      context.update({
+      await context.update({
         calculatedHour: upcomingSchedule.calculatedHour,
-      })
-      
+      });
+
       // const schedule = await getScheduleById(upcomingSchedule.id);
       scheduleInvocations.push(
         invokeSchedule(this.waClient, upcomingSchedule, context)
