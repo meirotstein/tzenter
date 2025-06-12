@@ -219,3 +219,51 @@ export function isScheduleInTimeRange(
   // Normal case (same day)
   return calculatedTime >= startTime && calculatedTime <= endTime;
 }
+
+/**
+ * Determines if a schedule's time has passed based on the calculatedHour property
+ * @param scheduleContext The schedule context object containing calculatedHour
+ * @param graceMinutes Optional grace period in minutes (default: 0)
+ * @param referenceTime Optional reference time for testing (default: current time)
+ * @param timezone Optional timezone (default: Asia/Jerusalem)
+ * @returns boolean indicating whether the schedule time has passed
+ */
+export function hasScheduleTimePassed(
+  scheduleContext: { calculatedHour: string },
+  graceMinutes: number = 0,
+  referenceTime?: DateTime,
+  timezone: string = "Asia/Jerusalem"
+): boolean {
+  // Parse the calculatedHour (HH:mm format)
+  const [hours, minutes] = scheduleContext.calculatedHour.split(":").map(Number);
+  
+  // Get the current time or use the provided reference time
+  const now = referenceTime || DateTime.now().setZone(timezone);
+  
+  // Create a DateTime object for the schedule time on the same day
+  let scheduleTime = now.set({
+    hour: hours,
+    minute: minutes,
+    second: 0,
+    millisecond: 0
+  });
+  
+  // Handle midnight wrapping by adjusting the date if needed
+  const hourDiff = Math.abs(now.hour - hours);
+  
+  if (scheduleTime < now && hourDiff > 12) {
+    // If the schedule time is earlier than now and the hour difference is significant,
+    // it's probably meant for tomorrow
+    scheduleTime = scheduleTime.plus({ days: 1 });
+  } else if (scheduleTime > now && hourDiff > 12) {
+    // If the schedule time is later than now and the hour difference is significant,
+    // it's probably meant for yesterday
+    scheduleTime = scheduleTime.minus({ days: 1 });
+  }
+  
+  // Add the grace period to the schedule time
+  const adjustedScheduleTime = scheduleTime.plus({ minutes: graceMinutes });
+  
+  // Check if the current time has passed the adjusted schedule time
+  return now > adjustedScheduleTime;
+}

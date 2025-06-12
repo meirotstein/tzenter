@@ -91,6 +91,7 @@ export const messages = {
 <% actions.forEach((action, index) => { %>
 <%= index + 1 %>. <% if (action.actionType === 'status') { %>לקבל עדכון לגבי מצב <%= action.prayer %> במניין <%= action.minyan %><% } else if (action.actionType === 'presence') { %>לעדכן את הנוכחות שלי ב<%= action.prayer %> במניין <%= action.minyan %><% } %><% }) %>
 `,
+  SCHEDULE_TIME_PASSED: "התזמון כבר עבר",
 };
 
 export function getMessage(message: string, data: Record<string, any>): string {
