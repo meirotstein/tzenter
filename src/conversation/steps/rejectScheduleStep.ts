@@ -2,6 +2,7 @@ import { WhatsappClient } from "../../clients/WhatsappClient";
 import { Schedule } from "../../datasource/entities/Schedule";
 import { getScheduleById } from "../../datasource/scheduleRepository";
 import { WATextMessage } from "../../handlers/types";
+import { hasScheduleTimePassed } from "../../schedule/scheduleTimeUtils";
 import { Context, ContextType } from "../context";
 import { messages } from "../messageTemplates";
 import { ScheduleContext, Step, UserContext } from "../types";
@@ -17,7 +18,6 @@ export const rejectScheduleStep: Step = {
     let schedule: Schedule | undefined | null;
 
     const userContext = (await context.get())?.context;
-    userContext?.schedule;
 
     // Payload means that the user clicked on a template message button
     const payload = message?.payload;
@@ -49,6 +49,17 @@ export const rejectScheduleStep: Step = {
 
     // TODO: might need to use a mutex-like functions for that kind of update
     const scheduleContextData = await scheduleContext.get();
+
+    if (!scheduleContextData || hasScheduleTimePassed(scheduleContextData, 5)) {
+      console.log("schedule time has already passed", {
+        userNum,
+        scheduleId: schedule.id,
+        scheduleTime: schedule.time,
+        timezone: "Asia/Jerusalem",
+      });
+      await waClient.sendTextMessage(userNum, messages.SCHEDULE_TIME_PASSED);
+      return;
+    }
 
     const rejected = new Set(scheduleContextData?.rejected || []);
 

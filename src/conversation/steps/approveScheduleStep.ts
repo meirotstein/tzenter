@@ -3,6 +3,7 @@ import { Schedule } from "../../datasource/entities/Schedule";
 import { getScheduleById } from "../../datasource/scheduleRepository";
 import { WATextMessage } from "../../handlers/types";
 import { notifyIfMinyanReached } from "../../schedule/notifyIfMinyanReached";
+import { hasScheduleTimePassed } from "../../schedule/scheduleTimeUtils";
 import { Context, ContextType } from "../context";
 import { messages } from "../messageTemplates";
 import { ScheduleContext, Step, UserContext } from "../types";
@@ -51,6 +52,17 @@ export const approveScheduleStep: Step = {
 
     // TODO: might need to use a mutex-like functions for that kind of update
     const scheduleContextData = await scheduleContext.get();
+
+    if (!scheduleContextData || hasScheduleTimePassed(scheduleContextData, 5)) {
+      console.log("schedule time has already passed", {
+        userNum,
+        scheduleId: schedule.id,
+        scheduleTime: schedule.time,
+        timezone: "Asia/Jerusalem",
+      });
+      await waClient.sendTextMessage(userNum, messages.SCHEDULE_TIME_PASSED);
+      return;
+    }
 
     const approved = scheduleContextData?.approved || {};
     const snoozed = new Set(scheduleContextData?.snoozed || []);

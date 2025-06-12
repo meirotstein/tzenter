@@ -3,7 +3,6 @@ import {
   RelativeTime,
   WeekDay,
 } from "../../../src/datasource/entities/Schedule";
-import { DateTime } from "luxon";
 import { saveMinyan } from "../../../src/datasource/minyansRepository";
 import {
   addSchedule,
