@@ -81,7 +81,7 @@ export const messages = {
   ACTIVE_SCHEDULE_USER_NOT_APPROVED: `יש כרגע תזמון פעיל לתפילת <%= pray %> במניין <%= minyanName %> בשעה <%= hour %>
 
 האם אתה מעוניין לאשר הגעה?`,
-  UPDATE_ATTENDEES_AMOUNT: `הכנס את מספרי המתפללים העדכני שיגיעו למניין (כולל אותך)
+  UPDATE_ATTENDEES_AMOUNT: `הכנס את מספר המתפללים העדכני שיגיעו למניין (כולל אותך)
 במידה ואתה מעוניין להסיר את ההרשמה, הכנס 0`,
   MULTIPLE_ACTIVE_SCHEDULES: `יש כרגע <%= activeCount %> תזמונים פעילים
 <% schedules.forEach((s) => { %>

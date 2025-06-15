@@ -112,7 +112,7 @@ describe("multiple minyan schedule flow", () => {
     );
   });
 
-  it("user1 initiate an update - two active schedule available - only one apporved - gets list of options", async () => {
+  it("user1 initiate an update - two active schedule available - only one approved - gets list of options", async () => {
     await userMessage(user1.phoneNum, user1.name, "עדכון");
     await expectTzenterTextMessage(
       user1.phoneNum,
@@ -166,7 +166,7 @@ describe("multiple minyan schedule flow", () => {
     await userMessage(user1.phoneNum, user1.name, "4");
     await expectTzenterTextMessage(
       user1.phoneNum,
-      `הכנס את מספרי המתפללים העדכני שיגיעו למניין (כולל אותך)
+      `הכנס את מספר המתפללים העדכני שיגיעו למניין (כולל אותך)
 במידה ואתה מעוניין להסיר את ההרשמה, הכנס 0`
     );
   });

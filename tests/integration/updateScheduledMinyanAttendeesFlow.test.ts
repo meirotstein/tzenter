@@ -168,7 +168,7 @@ describe("minyan schedule flow", () => {
     await userMessage(user1.phoneNum, user1.name, "2");
     await expectTzenterTextMessage(
       user1.phoneNum,
-      `הכנס את מספרי המתפללים העדכני שיגיעו למניין (כולל אותך)
+      `הכנס את מספר המתפללים העדכני שיגיעו למניין (כולל אותך)
 במידה ואתה מעוניין להסיר את ההרשמה, הכנס 0`
     );
   });
@@ -222,7 +222,7 @@ describe("minyan schedule flow", () => {
     await userMessage(user1.phoneNum, user1.name, "2");
     await expectTzenterTextMessage(
       user1.phoneNum,
-      `הכנס את מספרי המתפללים העדכני שיגיעו למניין (כולל אותך)
+      `הכנס את מספר המתפללים העדכני שיגיעו למניין (כולל אותך)
 במידה ואתה מעוניין להסיר את ההרשמה, הכנס 0`
     );
   });

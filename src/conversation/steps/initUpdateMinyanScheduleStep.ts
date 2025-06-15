@@ -5,6 +5,7 @@ import { getScheduleById } from "../../datasource/scheduleRepository";
 import { getUserByPhone } from "../../datasource/usersRepository";
 import { UnexpectedUserInputError } from "../../errors";
 import { WATextMessage } from "../../handlers/types";
+import { hasScheduleTimePassed } from "../../schedule/scheduleTimeUtils";
 import { prayerHebName } from "../../utils";
 import { noWords, yesWords } from "../consts";
 import { Context, ContextType } from "../context";
@@ -36,24 +37,21 @@ export const initUpdateMinyanScheduleStep: Step = {
     const user = await getUserByPhone(String(userNum));
 
     for (const ctx of scheduleContexts) {
+      const ctxData = await ctx.get();
+
+      if (!ctxData || hasScheduleTimePassed(ctxData, 5)) {
+        console.log("schedule time has already passed", {
+          userNum,
+          scheduleId: ctx.id,
+          scheduleTime: ctxData?.calculatedHour || "unknown",
+        });
+        continue;
+      }
+
       const scheduleEntity = await getScheduleById(+ctx.id);
 
       if (!scheduleEntity) {
         throw new Error(`Schedule not found, id: ${ctx.id}`);
-      }
-
-      //TODO: this needs to be extracted to a utils, and refer also midnight
-      if (
-        DateTime.fromISO(scheduleEntity.time, { zone: "Asia/Jerusalem" }) <
-        DateTime.now().setZone("Asia/Jerusalem")
-      ) {
-        console.log("schedule time has already passed", {
-          userNum,
-          scheduleId: ctx.id,
-          scheduleTime: scheduleEntity.time,
-          timezone: "Asia/Jerusalem",
-        });
-        continue;
       }
 
       if (!user?.minyans?.find((m) => m.id === scheduleEntity.minyan.id)) {
@@ -65,7 +63,6 @@ export const initUpdateMinyanScheduleStep: Step = {
         continue;
       }
 
-      const ctxData = await ctx.get();
       const userSchedule = {
         id: ctx.id,
         data: ctxData ? { ...ctxData } : null,
@@ -100,14 +97,18 @@ export const initUpdateMinyanScheduleStep: Step = {
         params.schedules.push({
           prayer: prayerHebName(schedule.entity.prayer),
           minyan: schedule.entity.minyan.name,
-          time: DateTime.fromISO(schedule.entity.time).toFormat("HH:mm"),
+          time:
+            schedule.data?.calculatedHour ||
+            DateTime.fromISO(schedule.entity.time).toFormat("HH:mm"),
         });
         if (schedule.isApproved) {
           params.actions.push({
             actionType: "status",
             prayer: prayerHebName(schedule.entity.prayer),
             minyan: schedule.entity.minyan.name,
-            time: DateTime.fromISO(schedule.entity.time).toFormat("HH:mm"),
+            time:
+              schedule.data?.calculatedHour ||
+              DateTime.fromISO(schedule.entity.time).toFormat("HH:mm"),
           });
           contextData.push({
             schedule: schedule.entity,
@@ -118,7 +119,9 @@ export const initUpdateMinyanScheduleStep: Step = {
           actionType: "presence",
           prayer: prayerHebName(schedule.entity.prayer),
           minyan: schedule.entity.minyan.name,
-          time: DateTime.fromISO(schedule.entity.time).toFormat("HH:mm"),
+          time:
+            schedule.data?.calculatedHour ||
+            DateTime.fromISO(schedule.entity.time).toFormat("HH:mm"),
         });
         contextData.push({
           schedule: schedule.entity,
@@ -165,7 +168,9 @@ export const initUpdateMinyanScheduleStep: Step = {
           : messages.ACTIVE_SCHEDULE_USER_NOT_APPROVED,
         {
           minyanName: userSchedule.entity.minyan.name,
-          hour: DateTime.fromISO(userSchedule.entity.time).toFormat("HH:mm"),
+          hour:
+            userSchedule.data?.calculatedHour ||
+            DateTime.fromISO(userSchedule.entity.time).toFormat("HH:mm"),
           pray: prayerHebName(userSchedule.entity.prayer),
         }
       )
