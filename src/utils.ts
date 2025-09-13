@@ -79,6 +79,8 @@ export function prayerHebName(prayer: Prayer): string {
       return "שחרית";
     case Prayer.Mincha:
       return "מנחה";
+    case Prayer.Slichot:
+      return "סליחות";
     default:
       return "ערבית";
   }
