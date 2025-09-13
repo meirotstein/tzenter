@@ -11,6 +11,7 @@ export enum Prayer {
   Shacharit = 1,
   Mincha = 2,
   Arvit = 3,
+  Slichot = 4,
 }
 
 export enum WeekDay {
