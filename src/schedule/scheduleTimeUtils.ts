@@ -1,5 +1,5 @@
-import { DateTime } from "luxon";
 import * as KosherZmanim from "kosher-zmanim";
+import { DateTime } from "luxon";
 import {
   RelativeTime,
   Schedule,
@@ -235,22 +235,24 @@ export function hasScheduleTimePassed(
   timezone: string = "Asia/Jerusalem"
 ): boolean {
   // Parse the calculatedHour (HH:mm format)
-  const [hours, minutes] = scheduleContext.calculatedHour.split(":").map(Number);
-  
+  const [hours, minutes] = scheduleContext.calculatedHour
+    .split(":")
+    .map(Number);
+
   // Get the current time or use the provided reference time
   const now = referenceTime || DateTime.now().setZone(timezone);
-  
+
   // Create a DateTime object for the schedule time on the same day
   let scheduleTime = now.set({
     hour: hours,
     minute: minutes,
     second: 0,
-    millisecond: 0
+    millisecond: 0,
   });
-  
+
   // Handle midnight wrapping by adjusting the date if needed
   const hourDiff = Math.abs(now.hour - hours);
-  
+
   if (scheduleTime < now && hourDiff > 12) {
     // If the schedule time is earlier than now and the hour difference is significant,
     // it's probably meant for tomorrow
@@ -260,10 +262,92 @@ export function hasScheduleTimePassed(
     // it's probably meant for yesterday
     scheduleTime = scheduleTime.minus({ days: 1 });
   }
-  
+
   // Add the grace period to the schedule time
   const adjustedScheduleTime = scheduleTime.plus({ minutes: graceMinutes });
-  
+
   // Check if the current time has passed the adjusted schedule time
   return now > adjustedScheduleTime;
+}
+
+/**
+ * Determines if a schedule is active on a specific date based on its date range configuration
+ * @param schedule The schedule to check
+ * @param date The date to check against
+ * @returns boolean indicating whether the schedule is active on the given date
+ */
+export function isScheduleActiveOnDate(
+  schedule: Schedule,
+  date: Date
+): boolean {
+  // If no date range is configured, the schedule is always active
+  if (!schedule.startAt && !schedule.endAt) {
+    return true;
+  }
+
+  const checkDate = DateTime.fromJSDate(date);
+
+  // Check start date
+  if (schedule.startAt) {
+    const startDate = DateTime.fromJSDate(schedule.startAt);
+    if (checkDate < startDate) {
+      return false;
+    }
+  }
+
+  // Check end date
+  if (schedule.endAt) {
+    const endDate = DateTime.fromJSDate(schedule.endAt);
+    if (checkDate > endDate) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Determines if a schedule is active on a specific weekday
+ * @param schedule The schedule to check
+ * @param date The date to check against
+ * @returns boolean indicating whether the schedule is active on the given weekday
+ */
+export function isScheduleActiveOnWeekday(
+  schedule: Schedule,
+  date: Date
+): boolean {
+  // If no weekdays are configured, the schedule is active on all days
+  if (!schedule.weekDays || schedule.weekDays.length === 0) {
+    return true;
+  }
+
+  const dt = DateTime.fromJSDate(date);
+  // Convert Luxon weekday (1-7 for Monday-Sunday) to WeekDay enum (1-7 for Sunday-Saturday)
+  // Luxon: 1=Monday, 2=Tuesday, ..., 7=Sunday
+  // WeekDay: 1=Sunday, 2=Monday, ..., 7=Saturday
+  const currentWeekDay =
+    dt.weekday === 7 ? WeekDay.Sunday : ((dt.weekday + 1) as WeekDay);
+
+  // Convert weekDays to numbers since TypeORM simple-array stores them as strings
+  const weekDaysAsNumbers = schedule.weekDays.map((day) =>
+    typeof day === "string" ? parseInt(day) : day
+  );
+
+  return weekDaysAsNumbers.includes(currentWeekDay);
+}
+
+/**
+ * Determines if a schedule is relevant for a specific date based on both date range and weekday configurations
+ * @param schedule The schedule to check
+ * @param date The date to check against
+ * @returns boolean indicating whether the schedule is relevant for the given date
+ */
+export function isScheduleRelevantForDate(
+  schedule: Schedule,
+  date: Date
+): boolean {
+  return (
+    isScheduleActiveOnDate(schedule, date) &&
+    isScheduleActiveOnWeekday(schedule, date)
+  );
 }

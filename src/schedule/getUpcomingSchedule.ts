@@ -6,6 +6,7 @@ import {
   calculateDayTimes,
   calculateScheduleTime,
   isScheduleInTimeRange,
+  isScheduleRelevantForDate,
 } from "./scheduleTimeUtils";
 
 export interface ScheduleWithCalculatedTime extends Schedule {
@@ -27,6 +28,7 @@ export async function getUpcomingSchedules(
 
   // Calculate actual times for each schedule and filter those within range
   const result = schedules
+    .filter((schedule) => isScheduleRelevantForDate(schedule, from))
     .map((schedule) => {
       // Calculate dayTimes if the schedule is relative and has coordinates
       let dayTimes: DayTimes | undefined = undefined;
