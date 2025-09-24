@@ -60,6 +60,9 @@ export interface IntegrationTestData {
     relative?: RelativeTime;
     weeklyDetermineByDay?: WeekDay;
     roundToNearestFiveMinutes?: boolean;
+    weekDays?: WeekDay[];
+    startAt?: Date;
+    endAt?: Date;
   }>;
   users?: Array<{
     phoneNum: number;

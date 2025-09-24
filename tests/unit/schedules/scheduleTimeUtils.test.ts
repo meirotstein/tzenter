@@ -1,24 +1,27 @@
+import * as KosherZmanim from "kosher-zmanim";
 import { DateTime } from "luxon";
-import {
-  calculateScheduleTime,
-  isScheduleInTimeRange,
-  roundToFiveMinutes,
-  calculateDayTimes,
-  hasScheduleTimePassed,
-} from "../../../src/schedule/scheduleTimeUtils";
+import { Minyan } from "../../../src/datasource/entities/Minyan";
 import {
   Prayer,
   RelativeTime,
+  Schedule,
   WeekDay,
 } from "../../../src/datasource/entities/Schedule";
-import { Schedule } from "../../../src/datasource/entities/Schedule";
-import { Minyan } from "../../../src/datasource/entities/Minyan";
+import {
+  calculateDayTimes,
+  calculateScheduleTime,
+  hasScheduleTimePassed,
+  isScheduleActiveOnDate,
+  isScheduleActiveOnWeekday,
+  isScheduleInTimeRange,
+  isScheduleRelevantForDate,
+  roundToFiveMinutes,
+} from "../../../src/schedule/scheduleTimeUtils";
 
 // Mock KosherZmanim module
 jest.mock("kosher-zmanim", () => ({
   getZmanimJson: jest.fn(),
 }));
-import * as KosherZmanim from "kosher-zmanim";
 
 describe("scheduleTimeUtils", () => {
   const timezone = "Asia/Jerusalem";
@@ -539,6 +542,394 @@ describe("scheduleTimeUtils", () => {
         // Restore original DateTime.now
         DateTime.now = originalNow;
       }
+    });
+  });
+
+  describe("isScheduleActiveOnDate", () => {
+    it("should return true when no date range is configured", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15");
+      const result = isScheduleActiveOnDate(schedule, date);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return true when date is within range (start date only)", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        startAt: new Date("2023-01-01"),
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15");
+      const result = isScheduleActiveOnDate(schedule, date);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return false when date is before start date", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        startAt: new Date("2023-01-15"),
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-10");
+      const result = isScheduleActiveOnDate(schedule, date);
+
+      expect(result).toBe(false);
+    });
+
+    it("should return true when date is within range (end date only)", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        endAt: new Date("2023-01-31"),
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15");
+      const result = isScheduleActiveOnDate(schedule, date);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return true when date is exactly on end date", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        endAt: new Date("2023-01-31"),
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-31");
+      const result = isScheduleActiveOnDate(schedule, date);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return false when date is after end date", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        endAt: new Date("2023-01-15"),
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-20");
+      const result = isScheduleActiveOnDate(schedule, date);
+
+      expect(result).toBe(false);
+    });
+
+    it("should return true when date is within both start and end dates", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        startAt: new Date("2023-01-01"),
+        endAt: new Date("2023-01-31"),
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15");
+      const result = isScheduleActiveOnDate(schedule, date);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return false when date is outside the range", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        startAt: new Date("2023-01-10"),
+        endAt: new Date("2023-01-20"),
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-05");
+      const result = isScheduleActiveOnDate(schedule, date);
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("isScheduleActiveOnWeekday", () => {
+    it("should return true when no weekdays are configured", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15"); // Sunday
+      const result = isScheduleActiveOnWeekday(schedule, date);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return true when weekdays array is empty", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        weekDays: [],
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15"); // Sunday
+      const result = isScheduleActiveOnWeekday(schedule, date);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return true when date matches configured weekday (Sunday)", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        weekDays: [WeekDay.Sunday],
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15"); // Sunday
+      const result = isScheduleActiveOnWeekday(schedule, date);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return false when date does not match configured weekday", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        weekDays: [WeekDay.Monday],
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15"); // Sunday
+      const result = isScheduleActiveOnWeekday(schedule, date);
+
+      expect(result).toBe(false);
+    });
+
+    it("should return true when date matches one of multiple configured weekdays", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        weekDays: [WeekDay.Monday, WeekDay.Wednesday, WeekDay.Friday],
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-18"); // Wednesday
+      const result = isScheduleActiveOnWeekday(schedule, date);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return false when date does not match any of multiple configured weekdays", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        weekDays: [WeekDay.Monday, WeekDay.Wednesday, WeekDay.Friday],
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-17"); // Tuesday
+      const result = isScheduleActiveOnWeekday(schedule, date);
+
+      expect(result).toBe(false);
+    });
+
+    it("should handle all weekdays correctly", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        weekDays: [
+          WeekDay.Sunday,
+          WeekDay.Monday,
+          WeekDay.Tuesday,
+          WeekDay.Wednesday,
+          WeekDay.Thursday,
+          WeekDay.Friday,
+          WeekDay.Saturday,
+        ],
+        minyan: mockMinyan,
+      } as Schedule;
+
+      // Test each day of the week
+      const testDates = [
+        { date: new Date("2023-01-15"), day: "Sunday" },
+        { date: new Date("2023-01-16"), day: "Monday" },
+        { date: new Date("2023-01-17"), day: "Tuesday" },
+        { date: new Date("2023-01-18"), day: "Wednesday" },
+        { date: new Date("2023-01-19"), day: "Thursday" },
+        { date: new Date("2023-01-20"), day: "Friday" },
+        { date: new Date("2023-01-21"), day: "Saturday" },
+      ];
+
+      testDates.forEach(({ date, day }) => {
+        const result = isScheduleActiveOnWeekday(schedule, date);
+        expect(result).toBe(true);
+      });
+    });
+  });
+
+  describe("isScheduleRelevantForDate", () => {
+    it("should return true when both date range and weekday conditions are met", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        startAt: new Date("2023-01-01"),
+        endAt: new Date("2023-01-31"),
+        weekDays: [WeekDay.Sunday],
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15"); // Sunday, within date range
+      const result = isScheduleRelevantForDate(schedule, date);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return false when date range condition is not met", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        startAt: new Date("2023-01-20"),
+        endAt: new Date("2023-01-31"),
+        weekDays: [WeekDay.Sunday],
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15"); // Sunday, but before start date
+      const result = isScheduleRelevantForDate(schedule, date);
+
+      expect(result).toBe(false);
+    });
+
+    it("should return false when weekday condition is not met", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        startAt: new Date("2023-01-01"),
+        endAt: new Date("2023-01-31"),
+        weekDays: [WeekDay.Monday],
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15"); // Sunday, within date range but wrong weekday
+      const result = isScheduleRelevantForDate(schedule, date);
+
+      expect(result).toBe(false);
+    });
+
+    it("should return true when no constraints are configured", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15");
+      const result = isScheduleRelevantForDate(schedule, date);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return true when only date range is configured and condition is met", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        startAt: new Date("2023-01-01"),
+        endAt: new Date("2023-01-31"),
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15");
+      const result = isScheduleRelevantForDate(schedule, date);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return true when only weekday is configured and condition is met", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        weekDays: [WeekDay.Sunday],
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-15"); // Sunday
+      const result = isScheduleRelevantForDate(schedule, date);
+
+      expect(result).toBe(true);
     });
   });
 });

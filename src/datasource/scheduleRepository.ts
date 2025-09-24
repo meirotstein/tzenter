@@ -42,6 +42,7 @@ export async function getAllSchedules(enabled: boolean = true): Promise<Schedule
   const repo = await getRepo();
   return repo.find({
     where: { enabled },
-    relations: ["minyan"]
+    relations: ["minyan"],
+    order: { id: "ASC" }
   });
 }

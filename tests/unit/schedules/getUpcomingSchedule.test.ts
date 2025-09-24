@@ -301,12 +301,12 @@ describe("getUpcomingSchedules", () => {
     }
 
     const fromDate = new Date("2023-01-01T04:00:00");
-    
+
     // Mock the coordinates for the minyan to ensure proper dayTimes calculation
     savedMinyan.latitude = 31.9; // Jerusalem latitude
     savedMinyan.longitude = 35.2; // Jerusalem longitude
     await saveMinyan(savedMinyan);
-    
+
     // Note: With these coordinates, KosherZmanim calculates the following dayTimes:
     // - Sunrise: ~06:39 AM
     // - Sunset: ~16:45 PM
@@ -319,36 +319,36 @@ describe("getUpcomingSchedules", () => {
     );
 
     expect(upcomingSchedules).toHaveLength(4);
-    
+
     // Check names
     expect(upcomingSchedules[0].name).toBe("Before Sunrise Prayer"); // 05:30 AM
     expect(upcomingSchedules[1].name).toBe("After Sunrise Prayer"); // 06:30 AM
     expect(upcomingSchedules[2].name).toBe("Before Sunset Prayer"); // 15:00 PM
     expect(upcomingSchedules[3].name).toBe("After Sunset Prayer"); // 16:20 PM
-    
+
     // Check calculatedHour values
     expect(upcomingSchedules[0].calculatedHour).toBeDefined();
     expect(upcomingSchedules[1].calculatedHour).toBeDefined();
     expect(upcomingSchedules[2].calculatedHour).toBeDefined();
     expect(upcomingSchedules[3].calculatedHour).toBeDefined();
-    
+
     // Verify time format (HH:mm)
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     expect(timeRegex.test(upcomingSchedules[0].calculatedHour)).toBe(true);
     expect(timeRegex.test(upcomingSchedules[1].calculatedHour)).toBe(true);
     expect(timeRegex.test(upcomingSchedules[2].calculatedHour)).toBe(true);
     expect(timeRegex.test(upcomingSchedules[3].calculatedHour)).toBe(true);
-    
+
     // Verify specific time values
     // Before Sunrise Prayer (1:30 before sunrise which is at 06:39:26)
     expect(upcomingSchedules[0].calculatedHour).toBe("05:09");
-    
+
     // After Sunrise Prayer (0:30 after sunrise which is at 06:39:26)
     expect(upcomingSchedules[1].calculatedHour).toBe("07:09");
-    
+
     // Before Sunset Prayer (1:00 before sunset which is at 16:45:51)
     expect(upcomingSchedules[2].calculatedHour).toBe("15:45");
-    
+
     // After Sunset Prayer (0:20 after sunset which is at 16:45:51)
     expect(upcomingSchedules[3].calculatedHour).toBe("17:05");
   });
@@ -381,12 +381,12 @@ describe("getUpcomingSchedules", () => {
     }
 
     const fromDate = new Date("2023-01-01T04:00:00");
-    
+
     // Mock the coordinates for the minyan to ensure proper dayTimes calculation
     savedMinyan.latitude = 31.9; // Jerusalem latitude
     savedMinyan.longitude = 35.2; // Jerusalem longitude
     await saveMinyan(savedMinyan);
-    
+
     // Note: With these coordinates, KosherZmanim calculates the following dayTimes:
     // - Sunrise: ~06:39 AM
     // - Sunset: ~16:45 PM
@@ -399,30 +399,30 @@ describe("getUpcomingSchedules", () => {
     );
 
     expect(upcomingSchedules).toHaveLength(2);
-    
+
     // Check names
     expect(upcomingSchedules[0].name).toBe("Rounded After Sunrise");
     expect(upcomingSchedules[1].name).toBe("Rounded Before Sunset");
-    
+
     // Check calculatedHour values
     expect(upcomingSchedules[0].calculatedHour).toBeDefined();
     expect(upcomingSchedules[1].calculatedHour).toBeDefined();
-    
+
     // Verify time format (HH:mm)
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     expect(timeRegex.test(upcomingSchedules[0].calculatedHour)).toBe(true);
     expect(timeRegex.test(upcomingSchedules[1].calculatedHour)).toBe(true);
-    
+
     // Verify minutes are multiples of 5 (rounded)
-    const [, minutes0] = upcomingSchedules[0].calculatedHour.split(':');
-    const [, minutes1] = upcomingSchedules[1].calculatedHour.split(':');
+    const [, minutes0] = upcomingSchedules[0].calculatedHour.split(":");
+    const [, minutes1] = upcomingSchedules[1].calculatedHour.split(":");
     expect(parseInt(minutes0) % 5).toBe(0);
     expect(parseInt(minutes1) % 5).toBe(0);
-    
+
     // Verify specific time values
     // Rounded After Sunrise (0:33 after sunrise which is at 06:39:26, rounded to nearest 5 minutes)
     expect(upcomingSchedules[0].calculatedHour).toBe("07:10");
-    
+
     // Rounded Before Sunset (1:28 before sunset which is at 16:45:51, rounded to nearest 5 minutes)
     expect(upcomingSchedules[1].calculatedHour).toBe("15:15");
   });
@@ -461,19 +461,17 @@ describe("getUpcomingSchedules", () => {
     //   sunset: '2023-01-06T16:49:39+02:00'
     // }
 
-
-
     for (const schedule of schedules) {
       await addSchedule(schedule);
     }
 
     const fromDate = new Date("2023-01-01T04:00:00"); // Sunday
-    
+
     // Mock the coordinates for the minyan to ensure proper dayTimes calculation
     savedMinyan.latitude = 31.9; // Jerusalem latitude
     savedMinyan.longitude = 35.2; // Jerusalem longitude
     await saveMinyan(savedMinyan);
-    
+
     // Note: With these coordinates, KosherZmanim calculates the following dayTimes:
     // - Sunrise: ~06:39 AM
     // - Sunset: ~16:45 PM
@@ -486,24 +484,24 @@ describe("getUpcomingSchedules", () => {
     );
 
     expect(upcomingSchedules).toHaveLength(2);
-    
+
     // Check names
     expect(upcomingSchedules[0].name).toBe("Tuesday Sunrise Prayer");
     expect(upcomingSchedules[1].name).toBe("Friday Sunset Prayer");
-    
+
     // Check calculatedHour values
     expect(upcomingSchedules[0].calculatedHour).toBeDefined();
     expect(upcomingSchedules[1].calculatedHour).toBeDefined();
-    
+
     // Verify time format (HH:mm)
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     expect(timeRegex.test(upcomingSchedules[0].calculatedHour)).toBe(true);
     expect(timeRegex.test(upcomingSchedules[1].calculatedHour)).toBe(true);
-    
+
     // Verify specific time values
     // Tuesday Sunrise Prayer (0:30 after sunrise which is at 06:39:51 on Tuesday)
     expect(upcomingSchedules[0].calculatedHour).toBe("07:09");
-    
+
     // Friday Sunset Prayer (1:00 before sunset which is at 16:49:39 on Friday)
     expect(upcomingSchedules[1].calculatedHour).toBe("15:49");
   });
@@ -549,12 +547,12 @@ describe("getUpcomingSchedules", () => {
     }
 
     const fromDate = new Date("2023-01-01T10:00:00"); // 10 AM
-    
+
     // Mock the coordinates for the minyan to ensure proper dayTimes calculation
     savedMinyan.latitude = 31.9; // Jerusalem latitude
     savedMinyan.longitude = 35.2; // Jerusalem longitude
     await saveMinyan(savedMinyan);
-    
+
     // Note: With these coordinates, KosherZmanim calculates the following dayTimes:
     // - Sunrise: ~06:39 AM
     // - Sunset: ~16:45 PM
@@ -612,12 +610,12 @@ describe("getUpcomingSchedules", () => {
     }
 
     const fromDate = new Date("2023-01-01T10:00:00"); // 10 AM
-    
+
     // Mock the coordinates for the minyan to ensure proper dayTimes calculation
     savedMinyan.latitude = 31.9; // Jerusalem latitude
     savedMinyan.longitude = 35.2; // Jerusalem longitude
     await saveMinyan(savedMinyan);
-    
+
     // Note: With these coordinates, KosherZmanim calculates the following dayTimes:
     // - Sunrise: ~06:39 AM
     // - Sunset: ~16:45 PM
@@ -632,7 +630,7 @@ describe("getUpcomingSchedules", () => {
 
     // Only the schedules within the 10 AM - 12 PM timeframe should be returned
     expect(upcomingSchedules).toHaveLength(2);
-    
+
     // Check names
     expect(upcomingSchedules[0].name).toBe(
       "After Sunrise Prayer - Within Range"
@@ -640,28 +638,28 @@ describe("getUpcomingSchedules", () => {
     expect(upcomingSchedules[1].name).toBe(
       "Before Sunset Prayer - Within Range"
     );
-    
+
     // Check calculatedHour values
     expect(upcomingSchedules[0].calculatedHour).toBeDefined();
     expect(upcomingSchedules[1].calculatedHour).toBeDefined();
-    
+
     // Verify time format (HH:mm)
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     expect(timeRegex.test(upcomingSchedules[0].calculatedHour)).toBe(true);
     expect(timeRegex.test(upcomingSchedules[1].calculatedHour)).toBe(true);
-    
+
     // Verify times are within the 10 AM - 12 PM range
-    const hour0 = parseInt(upcomingSchedules[0].calculatedHour.split(':')[0]);
-    const hour1 = parseInt(upcomingSchedules[1].calculatedHour.split(':')[0]);
+    const hour0 = parseInt(upcomingSchedules[0].calculatedHour.split(":")[0]);
+    const hour1 = parseInt(upcomingSchedules[1].calculatedHour.split(":")[0]);
     expect(hour0).toBeGreaterThanOrEqual(10);
     expect(hour0).toBeLessThan(12);
     expect(hour1).toBeGreaterThanOrEqual(10);
     expect(hour1).toBeLessThan(12);
-    
+
     // Verify specific time values
     // After Sunrise Prayer - Within Range (4:30 after sunrise which is at 06:39:26)
     expect(upcomingSchedules[0].calculatedHour).toBe("11:09");
-    
+
     // Before Sunset Prayer - Within Range (6:00 before sunset which is at 16:45:51)
     expect(upcomingSchedules[1].calculatedHour).toBe("10:45");
   });
@@ -695,12 +693,12 @@ describe("getUpcomingSchedules", () => {
     }
 
     const fromDate = new Date("2023-01-01T10:00:00"); // Sunday 10 AM
-    
+
     // Mock the coordinates for the minyan to ensure proper dayTimes calculation
     savedMinyan.latitude = 31.9; // Jerusalem latitude
     savedMinyan.longitude = 35.2; // Jerusalem longitude
     await saveMinyan(savedMinyan);
-    
+
     // Note: With these coordinates, KosherZmanim calculates the following dayTimes:
     // - Sunrise: ~06:39 AM
     // - Sunset: ~16:45 PM
@@ -715,5 +713,344 @@ describe("getUpcomingSchedules", () => {
 
     // None of the schedules should be in this timeframe
     expect(upcomingSchedules).toHaveLength(0);
+  });
+
+  describe("weekday and date range filtering", () => {
+    it("should filter schedules by weekday configuration", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const schedules = [
+        {
+          name: "Monday Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+          weekDays: [WeekDay.Monday],
+        },
+        {
+          name: "Wednesday Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+          weekDays: [WeekDay.Wednesday],
+        },
+        {
+          name: "Friday Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+          weekDays: [WeekDay.Friday],
+        },
+      ];
+
+      for (const schedule of schedules) {
+        await addSchedule(schedule);
+      }
+
+      // Test on Monday (2023-01-16 is a Monday)
+      const mondayDate = new Date("2023-01-16T07:00:00");
+      const mondaySchedules = await getUpcomingSchedules(120, mondayDate);
+      expect(mondaySchedules).toHaveLength(1);
+      expect(mondaySchedules[0].name).toBe("Monday Prayer");
+
+      // Test on Wednesday (2023-01-18 is a Wednesday)
+      const wednesdayDate = new Date("2023-01-18T07:00:00");
+      const wednesdaySchedules = await getUpcomingSchedules(120, wednesdayDate);
+      expect(wednesdaySchedules).toHaveLength(1);
+      expect(wednesdaySchedules[0].name).toBe("Wednesday Prayer");
+
+      // Test on Friday (2023-01-20 is a Friday)
+      const fridayDate = new Date("2023-01-20T07:00:00");
+      const fridaySchedules = await getUpcomingSchedules(120, fridayDate);
+      expect(fridaySchedules).toHaveLength(1);
+      expect(fridaySchedules[0].name).toBe("Friday Prayer");
+
+      // Test on Tuesday (2023-01-17 is a Tuesday) - should return no schedules
+      const tuesdayDate = new Date("2023-01-17T07:00:00");
+      const tuesdaySchedules = await getUpcomingSchedules(120, tuesdayDate);
+      expect(tuesdaySchedules).toHaveLength(0);
+    });
+
+    it("should filter schedules by date range configuration", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const schedules = [
+        {
+          name: "January Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+          startAt: new Date("2023-01-01"),
+          endAt: new Date("2023-01-31"),
+        },
+        {
+          name: "February Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+          startAt: new Date("2023-02-01"),
+          endAt: new Date("2023-02-28"),
+        },
+        {
+          name: "March Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+          startAt: new Date("2023-03-01"),
+          endAt: new Date("2023-03-31"),
+        },
+      ];
+
+      for (const schedule of schedules) {
+        await addSchedule(schedule);
+      }
+
+      // Test in January
+      const januaryDate = new Date("2023-01-15T07:00:00");
+      const januarySchedules = await getUpcomingSchedules(120, januaryDate);
+      expect(januarySchedules).toHaveLength(1);
+      expect(januarySchedules[0].name).toBe("January Prayer");
+
+      // Test in February
+      const februaryDate = new Date("2023-02-15T07:00:00");
+      const februarySchedules = await getUpcomingSchedules(120, februaryDate);
+      expect(februarySchedules).toHaveLength(1);
+      expect(februarySchedules[0].name).toBe("February Prayer");
+
+      // Test in March
+      const marchDate = new Date("2023-03-15T07:00:00");
+      const marchSchedules = await getUpcomingSchedules(120, marchDate);
+      expect(marchSchedules).toHaveLength(1);
+      expect(marchSchedules[0].name).toBe("March Prayer");
+
+      // Test in April - should return no schedules
+      const aprilDate = new Date("2023-04-15T07:00:00");
+      const aprilSchedules = await getUpcomingSchedules(120, aprilDate);
+      expect(aprilSchedules).toHaveLength(0);
+    });
+
+    it("should filter schedules by both weekday and date range", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const schedules = [
+        {
+          name: "Monday January Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+          weekDays: [WeekDay.Monday],
+          startAt: new Date("2023-01-01"),
+          endAt: new Date("2023-01-31"),
+        },
+        {
+          name: "Wednesday February Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+          weekDays: [WeekDay.Wednesday],
+          startAt: new Date("2023-02-01"),
+          endAt: new Date("2023-02-28"),
+        },
+        {
+          name: "Friday March Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+          weekDays: [WeekDay.Friday],
+          startAt: new Date("2023-03-01"),
+          endAt: new Date("2023-03-31"),
+        },
+      ];
+
+      for (const schedule of schedules) {
+        await addSchedule(schedule);
+      }
+
+      // Test Monday in January - should match
+      const mondayJanuaryDate = new Date("2023-01-16T07:00:00"); // Monday
+      const mondayJanuarySchedules = await getUpcomingSchedules(
+        120,
+        mondayJanuaryDate
+      );
+      expect(mondayJanuarySchedules).toHaveLength(1);
+      expect(mondayJanuarySchedules[0].name).toBe("Monday January Prayer");
+
+      // Test Monday in February - should not match (wrong month)
+      const mondayFebruaryDate = new Date("2023-02-06T07:00:00"); // Monday
+      const mondayFebruarySchedules = await getUpcomingSchedules(
+        120,
+        mondayFebruaryDate
+      );
+      expect(mondayFebruarySchedules).toHaveLength(0);
+
+      // Test Wednesday in February - should match
+      const wednesdayFebruaryDate = new Date("2023-02-01T07:00:00"); // Wednesday
+      const wednesdayFebruarySchedules = await getUpcomingSchedules(
+        120,
+        wednesdayFebruaryDate
+      );
+      expect(wednesdayFebruarySchedules).toHaveLength(1);
+      expect(wednesdayFebruarySchedules[0].name).toBe(
+        "Wednesday February Prayer"
+      );
+
+      // Test Friday in March - should match
+      const fridayMarchDate = new Date("2023-03-03T07:00:00"); // Friday
+      const fridayMarchSchedules = await getUpcomingSchedules(
+        120,
+        fridayMarchDate
+      );
+      expect(fridayMarchSchedules).toHaveLength(1);
+      expect(fridayMarchSchedules[0].name).toBe("Friday March Prayer");
+    });
+
+    it("should return schedules with no constraints", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const schedules = [
+        {
+          name: "Unconstrained Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+        },
+        {
+          name: "Constrained Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+          weekDays: [WeekDay.Monday],
+          startAt: new Date("2023-02-01"),
+          endAt: new Date("2023-02-28"),
+        },
+      ];
+
+      for (const schedule of schedules) {
+        await addSchedule(schedule);
+      }
+
+      // Test on any day - unconstrained schedule should always be returned
+      const anyDate = new Date("2023-01-15T07:00:00"); // Sunday
+      const anySchedules = await getUpcomingSchedules(120, anyDate);
+      expect(anySchedules).toHaveLength(1);
+      expect(anySchedules[0].name).toBe("Unconstrained Prayer");
+    });
+
+    it("should handle schedules with only start date constraint", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const schedules = [
+        {
+          name: "Start Date Only Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+          startAt: new Date("2023-01-15"),
+        },
+      ];
+
+      for (const schedule of schedules) {
+        await addSchedule(schedule);
+      }
+
+      // Test before start date - should not match
+      const beforeStartDate = new Date("2023-01-10T07:00:00");
+      const beforeStartSchedules = await getUpcomingSchedules(
+        120,
+        beforeStartDate
+      );
+      expect(beforeStartSchedules).toHaveLength(0);
+
+      // Test after start date - should match
+      const afterStartDate = new Date("2023-01-20T07:00:00");
+      const afterStartSchedules = await getUpcomingSchedules(
+        120,
+        afterStartDate
+      );
+      expect(afterStartSchedules).toHaveLength(1);
+      expect(afterStartSchedules[0].name).toBe("Start Date Only Prayer");
+    });
+
+    it("should handle schedules with only end date constraint", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const schedules = [
+        {
+          name: "End Date Only Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+          endAt: new Date("2023-01-15"),
+        },
+      ];
+
+      for (const schedule of schedules) {
+        await addSchedule(schedule);
+      }
+
+      // Test before end date - should match
+      const beforeEndDate = new Date("2023-01-10T07:00:00");
+      const beforeEndSchedules = await getUpcomingSchedules(120, beforeEndDate);
+      expect(beforeEndSchedules).toHaveLength(1);
+      expect(beforeEndSchedules[0].name).toBe("End Date Only Prayer");
+
+      // Test after end date - should not match
+      const afterEndDate = new Date("2023-01-20T07:00:00");
+      const afterEndSchedules = await getUpcomingSchedules(120, afterEndDate);
+      expect(afterEndSchedules).toHaveLength(0);
+    });
+
+    it("should handle schedules with multiple weekdays", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const schedules = [
+        {
+          name: "Weekdays Prayer",
+          prayer: Prayer.Shacharit,
+          time: "08:00:00",
+          minyan: savedMinyan,
+          weekDays: [WeekDay.Monday, WeekDay.Wednesday, WeekDay.Friday],
+        },
+      ];
+
+      for (const schedule of schedules) {
+        await addSchedule(schedule);
+      }
+
+      // Test on Monday - should match
+      const mondayDate = new Date("2023-01-16T07:00:00"); // Monday
+      const mondaySchedules = await getUpcomingSchedules(120, mondayDate);
+      expect(mondaySchedules).toHaveLength(1);
+      expect(mondaySchedules[0].name).toBe("Weekdays Prayer");
+
+      // Test on Wednesday - should match
+      const wednesdayDate = new Date("2023-01-18T07:00:00"); // Wednesday
+      const wednesdaySchedules = await getUpcomingSchedules(120, wednesdayDate);
+      expect(wednesdaySchedules).toHaveLength(1);
+      expect(wednesdaySchedules[0].name).toBe("Weekdays Prayer");
+
+      // Test on Friday - should match
+      const fridayDate = new Date("2023-01-20T07:00:00"); // Friday
+      const fridaySchedules = await getUpcomingSchedules(120, fridayDate);
+      expect(fridaySchedules).toHaveLength(1);
+      expect(fridaySchedules[0].name).toBe("Weekdays Prayer");
+
+      // Test on Tuesday - should not match
+      const tuesdayDate = new Date("2023-01-17T07:00:00"); // Tuesday
+      const tuesdaySchedules = await getUpcomingSchedules(120, tuesdayDate);
+      expect(tuesdaySchedules).toHaveLength(0);
+
+      // Test on Thursday - should not match
+      const thursdayDate = new Date("2023-01-19T07:00:00"); // Thursday
+      const thursdaySchedules = await getUpcomingSchedules(120, thursdayDate);
+      expect(thursdaySchedules).toHaveLength(0);
+    });
   });
 });
