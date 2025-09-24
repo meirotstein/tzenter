@@ -613,6 +613,23 @@ describe("scheduleTimeUtils", () => {
       expect(result).toBe(true);
     });
 
+    it("should return true when date is exactly on end date", () => {
+      const schedule = {
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        endAt: new Date("2023-01-31"),
+        minyan: mockMinyan,
+      } as Schedule;
+
+      const date = new Date("2023-01-31");
+      const result = isScheduleActiveOnDate(schedule, date);
+
+      expect(result).toBe(true);
+    });
+
     it("should return false when date is after end date", () => {
       const schedule = {
         id: 1,
