@@ -1,7 +1,8 @@
 import { DateTime } from "luxon";
 import { DailyEvents } from "../types";
 import { ScheduleContext } from "./conversation/types";
-import { Prayer } from "./datasource/entities/Schedule";
+import { Prayer, Schedule } from "./datasource/entities/Schedule";
+import { ScheduleConfig } from "./datasource/entities/ScheduleConfig";
 import {
   BadInputError,
   InvalidInputError,
@@ -128,7 +129,10 @@ export function isLastExecution(
   }
 }
 
-export async function shouldSkipScheduleToday(date: Date): Promise<boolean> {
+export async function shouldSkipSchedule(
+  schedule: Schedule,
+  date: Date
+): Promise<boolean> {
   const eventsToday = await getJewishEventsOnDateWrapper(date);
   if (eventsToday?.length) {
     for (const event of eventsToday) {
@@ -143,7 +147,49 @@ export async function shouldSkipScheduleToday(date: Date): Promise<boolean> {
         isErevChag,
         isMinorChag,
         eventsToday,
+        scheduleConfig: schedule.config,
       });
+
+      // Check if this is a major holiday (chag or erev chag) and not a minor holiday
+      const isMajorHoliday = (isChag || isErevChag) && !isMinorChag;
+
+      if (isMajorHoliday) {
+        // If it's a major holiday, check schedule configuration
+        const shouldRunOnHoliday = ScheduleConfig.shouldRunOnHoliday(
+          schedule.config
+        );
+        const shouldRunOnHolidayEve = ScheduleConfig.shouldRunOnHolidayEve(
+          schedule.config
+        );
+
+        // Skip if it's a holiday and schedule is not configured to run on holidays
+        if (isChag && !shouldRunOnHoliday) {
+          return true;
+        }
+
+        // Skip if it's a holiday eve and schedule is not configured to run on holiday eves
+        if (isErevChag && !shouldRunOnHolidayEve) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+// Keep the old function for backward compatibility, but mark as deprecated
+/** @deprecated Use shouldSkipSchedule(schedule, date) instead */
+export async function shouldSkipScheduleToday(date: Date): Promise<boolean> {
+  // For backward compatibility, we'll assume no schedule config (skip on holidays)
+  // This maintains the old behavior
+  const eventsToday = await getJewishEventsOnDateWrapper(date);
+  if (eventsToday?.length) {
+    for (const event of eventsToday) {
+      const flagsBitmask = event.mask;
+      const isChag = (flagsBitmask & flags.CHAG) === flags.CHAG;
+      const isErevChag = (flagsBitmask & flags.EREV) === flags.EREV;
+      const isMinorChag =
+        (flagsBitmask & flags.MINOR_HOLIDAY) === flags.MINOR_HOLIDAY;
 
       return (isChag || isErevChag) && !isMinorChag;
     }

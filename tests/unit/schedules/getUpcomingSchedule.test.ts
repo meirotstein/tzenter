@@ -3,6 +3,7 @@ import {
   RelativeTime,
   WeekDay,
 } from "../../../src/datasource/entities/Schedule";
+import { ScheduleConfig } from "../../../src/datasource/entities/ScheduleConfig";
 import { saveMinyan } from "../../../src/datasource/minyansRepository";
 import {
   addSchedule,
@@ -1051,6 +1052,189 @@ describe("getUpcomingSchedules", () => {
       const thursdayDate = new Date("2023-01-19T07:00:00"); // Thursday
       const thursdaySchedules = await getUpcomingSchedules(120, thursdayDate);
       expect(thursdaySchedules).toHaveLength(0);
+    });
+  });
+
+  describe("Schedule Configuration Filtering", () => {
+    it("should filter out schedules that should be skipped on holidays", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      // Create schedules with different configurations
+      const regularSchedule = {
+        name: "Regular Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+        config: undefined, // No config = skip on holidays
+      };
+
+      const holidaySchedule = {
+        name: "Holiday Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+        config: ScheduleConfig.setRunOnHoliday(undefined, true), // Run on holidays
+      };
+
+      await addSchedule(regularSchedule);
+      await addSchedule(holidaySchedule);
+
+      // Test on a regular day - both schedules should be returned
+      const regularDate = new Date("2023-01-01T07:00:00"); // Regular day
+      const regularDaySchedules = await getUpcomingSchedules(60, regularDate);
+      expect(regularDaySchedules).toHaveLength(2);
+
+      // Test on a holiday - only the holiday schedule should be returned
+      const holidayDate = new Date("2025-04-13T07:00:00"); // Passover
+      const holidayDaySchedules = await getUpcomingSchedules(60, holidayDate);
+      expect(holidayDaySchedules).toHaveLength(1);
+      expect(holidayDaySchedules[0].name).toBe("Holiday Schedule");
+    });
+
+    it("should filter out schedules that should be skipped on holiday eves", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      // Create schedules with different configurations
+      const regularSchedule = {
+        name: "Regular Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+        config: undefined, // No config = skip on holiday eves
+      };
+
+      const holidayEveSchedule = {
+        name: "Holiday Eve Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+        config: ScheduleConfig.setRunOnHolidayEve(undefined, true), // Run on holiday eves
+      };
+
+      await addSchedule(regularSchedule);
+      await addSchedule(holidayEveSchedule);
+
+      // Test on a regular day - both schedules should be returned
+      const regularDate = new Date("2023-01-01T07:00:00"); // Regular day
+      const regularDaySchedules = await getUpcomingSchedules(60, regularDate);
+      expect(regularDaySchedules).toHaveLength(2);
+
+      // Test on a holiday eve - only the holiday eve schedule should be returned
+      const holidayEveDate = new Date("2025-06-01T07:00:00"); // Shavuot eve
+      const holidayEveDaySchedules = await getUpcomingSchedules(
+        60,
+        holidayEveDate
+      );
+      expect(holidayEveDaySchedules).toHaveLength(1);
+      expect(holidayEveDaySchedules[0].name).toBe("Holiday Eve Schedule");
+    });
+
+    it("should include schedules configured to run on both holidays and holiday eves", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      // Create a schedule that runs on both holidays and holiday eves
+      let config = ScheduleConfig.setRunOnHoliday(undefined, true);
+      config = ScheduleConfig.setRunOnHolidayEve(config, true);
+
+      const flexibleSchedule = {
+        name: "Flexible Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+        config,
+      };
+
+      await addSchedule(flexibleSchedule);
+
+      // Test on a regular day
+      const regularDate = new Date("2023-01-01T07:00:00");
+      const regularDaySchedules = await getUpcomingSchedules(60, regularDate);
+      expect(regularDaySchedules).toHaveLength(1);
+
+      // Test on a holiday
+      const holidayDate = new Date("2025-04-13T07:00:00"); // Passover
+      const holidayDaySchedules = await getUpcomingSchedules(60, holidayDate);
+      expect(holidayDaySchedules).toHaveLength(1);
+
+      // Test on a holiday eve
+      const holidayEveDate = new Date("2025-06-01T07:00:00"); // Shavuot eve
+      const holidayEveDaySchedules = await getUpcomingSchedules(
+        60,
+        holidayEveDate
+      );
+      expect(holidayEveDaySchedules).toHaveLength(1);
+    });
+
+    it("should not filter schedules on minor holidays", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const regularSchedule = {
+        name: "Regular Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+        config: undefined, // No config = skip on major holidays
+      };
+
+      await addSchedule(regularSchedule);
+
+      // Test on a minor holiday - schedule should still be returned
+      const minorHolidayDate = new Date("2025-05-16T07:00:00"); // Lag BaOmer
+      const minorHolidaySchedules = await getUpcomingSchedules(
+        60,
+        minorHolidayDate
+      );
+      expect(minorHolidaySchedules).toHaveLength(1);
+    });
+
+    it("should not filter schedules on rosh hodesh", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const regularSchedule = {
+        name: "Regular Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+        config: undefined, // No config = skip on major holidays
+      };
+
+      await addSchedule(regularSchedule);
+
+      // Test on rosh hodesh - schedule should still be returned
+      const roshHodeshDate = new Date("2025-04-28T07:00:00"); // Rosh Hodesh Iyar
+      const roshHodeshSchedules = await getUpcomingSchedules(
+        60,
+        roshHodeshDate
+      );
+      expect(roshHodeshSchedules).toHaveLength(1);
+    });
+
+    it("should not filter schedules on national holidays", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const regularSchedule = {
+        name: "Regular Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+        config: undefined, // No config = skip on major holidays
+      };
+
+      await addSchedule(regularSchedule);
+
+      // Test on national holiday - schedule should still be returned
+      const nationalHolidayDate = new Date("2025-05-01T07:00:00"); // Yom Ha'atzmaut
+      const nationalHolidaySchedules = await getUpcomingSchedules(
+        60,
+        nationalHolidayDate
+      );
+      expect(nationalHolidaySchedules).toHaveLength(1);
     });
   });
 });

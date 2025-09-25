@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 import { ScheduleStatus } from "../../src/conversation/types";
-import { Prayer } from "../../src/datasource/entities/Schedule";
+import { Prayer, Schedule } from "../../src/datasource/entities/Schedule";
+import { ScheduleConfig } from "../../src/datasource/entities/ScheduleConfig";
 import { BadInputError, InvalidInputError } from "../../src/errors";
 import { WebhookObject } from "../../src/external/whatsapp/types/webhooks";
 import { WAMessageType } from "../../src/handlers/types";
@@ -12,6 +13,7 @@ import {
   isAtLeastMinApart,
   isLastExecution,
   prayerHebName,
+  shouldSkipSchedule,
   shouldSkipScheduleToday,
 } from "../../src/utils";
 
@@ -447,6 +449,154 @@ describe("utils tests", () => {
 
       let result = await shouldSkipScheduleToday(date);
       expect(result).toBe(false);
+    });
+  });
+
+  describe("shouldSkipSchedule", () => {
+    // Helper function to create a mock schedule
+    const createMockSchedule = (config?: number): Schedule =>
+      ({
+        id: 1,
+        name: "Test Schedule",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        enabled: true,
+        config,
+        minyan: {
+          id: 1,
+          name: "Test Minyan",
+          city: "Test City",
+          latitude: 31.7683,
+          longitude: 35.2137,
+        } as any,
+      } as Schedule);
+
+    it("should return false if there is no holiday", async () => {
+      const schedule = createMockSchedule();
+      const date = new Date(2025, 4, 13); // No holiday
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(false);
+    });
+
+    it("should return true if there is a major holiday and schedule is not configured to run on holidays", async () => {
+      const schedule = createMockSchedule(); // No config = default behavior (skip on holidays)
+      const date = new Date(2025, 3, 13); // Passover
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(true);
+    });
+
+    it("should return false if there is a major holiday and schedule is configured to run on holidays", async () => {
+      const config = ScheduleConfig.setRunOnHoliday(undefined, true);
+      const schedule = createMockSchedule(config);
+      const date = new Date(2025, 3, 13); // Passover
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(false);
+    });
+
+    it("should return true if there is a holiday eve and schedule is not configured to run on holiday eves", async () => {
+      const schedule = createMockSchedule(); // No config = default behavior (skip on holiday eves)
+      const date = new Date(2025, 5, 1); // Shavuot eve
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(true);
+    });
+
+    it("should return false if there is a holiday eve and schedule is configured to run on holiday eves", async () => {
+      const config = ScheduleConfig.setRunOnHolidayEve(undefined, true);
+      const schedule = createMockSchedule(config);
+      const date = new Date(2025, 5, 1); // Shavuot eve
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(false);
+    });
+
+    it("should return false if there is a minor holiday regardless of configuration", async () => {
+      const schedule = createMockSchedule(); // No config
+      const date = new Date(2025, 4, 16); // Lag BaOmer
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(false);
+    });
+
+    it("should return false if there is a minor holiday eve regardless of configuration", async () => {
+      const schedule = createMockSchedule(); // No config
+      const date = new Date(2025, 4, 15); // Lag BaOmer eve
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(false);
+    });
+
+    it("should return false if schedule is configured to run on both holidays and holiday eves", async () => {
+      let config = ScheduleConfig.setRunOnHoliday(undefined, true);
+      config = ScheduleConfig.setRunOnHolidayEve(config, true);
+      const schedule = createMockSchedule(config);
+      const date = new Date(2025, 3, 13); // Passover
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(false);
+    });
+
+    it("should return false if schedule is configured to run on both holidays and holiday eves on holiday eve", async () => {
+      let config = ScheduleConfig.setRunOnHoliday(undefined, true);
+      config = ScheduleConfig.setRunOnHolidayEve(config, true);
+      const schedule = createMockSchedule(config);
+      const date = new Date(2025, 5, 1); // Shavuot eve
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(false);
+    });
+
+    it("should return true if schedule is configured to run on holidays but not on holiday eves", async () => {
+      const config = ScheduleConfig.setRunOnHoliday(undefined, true);
+      const schedule = createMockSchedule(config);
+      const date = new Date(2025, 5, 1); // Shavuot eve
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(true);
+    });
+
+    it("should return true if schedule is configured to run on holiday eves but not on holidays", async () => {
+      const config = ScheduleConfig.setRunOnHolidayEve(undefined, true);
+      const schedule = createMockSchedule(config);
+      const date = new Date(2025, 3, 13); // Passover
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(true);
+    });
+
+    it("should return false on rosh hodesh regardless of configuration", async () => {
+      const schedule = createMockSchedule(); // No config
+      const date = new Date(2025, 3, 28); // Rosh Hodesh Iyar
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(false);
+    });
+
+    it("should return false on national holiday regardless of configuration", async () => {
+      const schedule = createMockSchedule(); // No config
+      const date = new Date(2025, 4, 1); // Yom Ha'atzmaut
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(false);
+    });
+
+    it("should handle null config the same as undefined config", async () => {
+      const schedule = createMockSchedule(null as any); // Null config
+      const date = new Date(2025, 3, 13); // Passover
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(true); // Should skip on holidays by default
+    });
+
+    it("should handle config with value 0", async () => {
+      const schedule = createMockSchedule(0); // Config = 0
+      const date = new Date(2025, 3, 13); // Passover
+
+      const result = await shouldSkipSchedule(schedule, date);
+      expect(result).toBe(true); // Should skip on holidays by default
     });
   });
 
