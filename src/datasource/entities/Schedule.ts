@@ -72,11 +72,11 @@ export class Schedule {
   roundToNearestFiveMinutes?: boolean;
 
   // Start date of the schedule (Optional)
-  @Column({ type: "datetime", nullable: true })
+  @Column({ type: "date", nullable: true })
   startAt?: Date;
 
   // End date of the schedule (Optional)
-  @Column({ type: "datetime", nullable: true })
+  @Column({ type: "date", nullable: true })
   endAt?: Date;
 
   // Weekdays when the schedule should be invoked (Optional)
