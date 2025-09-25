@@ -1,4 +1,5 @@
 import { Prayer, WeekDay } from "../../../src/datasource/entities/Schedule";
+import { ScheduleConfig, ScheduleConfigFlag } from "../../../src/datasource/entities/ScheduleConfig";
 import { saveMinyan } from "../../../src/datasource/minyansRepository";
 import {
   addSchedule,
@@ -384,5 +385,147 @@ describe("scheduleRepository", () => {
     expect(fetchedSchedule).toBeDefined();
     expect(fetchedSchedule?.weekDays).toEqual(["1", "2", "3", "4", "5", "6", "7"]); // simple-array serializes as strings
     expect(fetchedSchedule?.weekDays).toHaveLength(7);
+  });
+
+  describe("Schedule Configuration (Bitmap)", () => {
+    it("should save and retrieve a schedule with config field", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const config = ScheduleConfig.setRunOnHoliday(undefined, true);
+      const schedule = {
+        name: "Holiday Prayer",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+        config: config,
+      };
+
+      const savedSchedule = await addSchedule(schedule);
+      const fetchedSchedule = await getScheduleById(savedSchedule.id);
+
+      expect(fetchedSchedule).toBeDefined();
+      expect(fetchedSchedule?.config).toBe(1); // RUN_ON_HOLIDAY flag = 1
+      expect(ScheduleConfig.shouldRunOnHoliday(fetchedSchedule?.config)).toBe(true);
+      expect(ScheduleConfig.shouldRunOnHolidayEve(fetchedSchedule?.config)).toBe(false);
+    });
+
+    it("should save and retrieve a schedule with multiple config flags", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      let config = ScheduleConfig.setRunOnHoliday(undefined, true);
+      config = ScheduleConfig.setRunOnHolidayEve(config, true);
+      
+      const schedule = {
+        name: "Holiday and Eve Prayer",
+        prayer: Prayer.Mincha,
+        time: "13:00:00",
+        minyan: savedMinyan,
+        config: config,
+      };
+
+      const savedSchedule = await addSchedule(schedule);
+      const fetchedSchedule = await getScheduleById(savedSchedule.id);
+
+      expect(fetchedSchedule).toBeDefined();
+      expect(fetchedSchedule?.config).toBe(3); // RUN_ON_HOLIDAY (1) + RUN_ON_HOLIDAY_EVE (2) = 3
+      expect(ScheduleConfig.shouldRunOnHoliday(fetchedSchedule?.config)).toBe(true);
+      expect(ScheduleConfig.shouldRunOnHolidayEve(fetchedSchedule?.config)).toBe(true);
+    });
+
+    it("should handle null config field", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const schedule = {
+        name: "Regular Prayer",
+        prayer: Prayer.Arvit,
+        time: "19:00:00",
+        minyan: savedMinyan,
+        config: undefined,
+      };
+
+      const savedSchedule = await addSchedule(schedule);
+      const fetchedSchedule = await getScheduleById(savedSchedule.id);
+
+      expect(fetchedSchedule).toBeDefined();
+      expect(fetchedSchedule?.config).toBeNull();
+      expect(ScheduleConfig.shouldRunOnHoliday(fetchedSchedule?.config)).toBe(false);
+      expect(ScheduleConfig.shouldRunOnHolidayEve(fetchedSchedule?.config)).toBe(false);
+    });
+
+    it("should update schedule config field", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const schedule = {
+        name: "Original Prayer",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+      };
+
+      const savedSchedule = await addSchedule(schedule);
+
+      // Add holiday flag
+      const newConfig = ScheduleConfig.setRunOnHoliday(undefined, true);
+      const updatedSchedule = await updateSchedule(savedSchedule.id, { config: newConfig });
+      let fetchedSchedule = await getScheduleById(savedSchedule.id);
+
+      expect(fetchedSchedule?.config).toBe(1);
+      expect(ScheduleConfig.shouldRunOnHoliday(fetchedSchedule?.config)).toBe(true);
+
+      // Add holiday eve flag
+      const updatedConfig = ScheduleConfig.setRunOnHolidayEve(fetchedSchedule?.config, true);
+      await updateSchedule(savedSchedule.id, { config: updatedConfig });
+      fetchedSchedule = await getScheduleById(savedSchedule.id);
+
+      expect(fetchedSchedule?.config).toBe(3);
+      expect(ScheduleConfig.shouldRunOnHoliday(fetchedSchedule?.config)).toBe(true);
+      expect(ScheduleConfig.shouldRunOnHolidayEve(fetchedSchedule?.config)).toBe(true);
+
+      // Remove holiday flag
+      const finalConfig = ScheduleConfig.unsetFlag(fetchedSchedule?.config, ScheduleConfigFlag.RUN_ON_HOLIDAY);
+      await updateSchedule(savedSchedule.id, { config: finalConfig });
+      fetchedSchedule = await getScheduleById(savedSchedule.id);
+
+      expect(fetchedSchedule?.config).toBe(2);
+      expect(ScheduleConfig.shouldRunOnHoliday(fetchedSchedule?.config)).toBe(false);
+      expect(ScheduleConfig.shouldRunOnHolidayEve(fetchedSchedule?.config)).toBe(true);
+    });
+
+    it("should save and retrieve a schedule with all fields including config", async () => {
+      const minyan = { id: 1, name: "Main Hall", city: "Bruchin" };
+      const savedMinyan = await saveMinyan(minyan);
+
+      const startDate = new Date("2024-01-01T00:00:00Z");
+      const endDate = new Date("2024-12-31T23:59:59Z");
+      const weekDays = [WeekDay.Monday, WeekDay.Wednesday, WeekDay.Friday];
+      let config = ScheduleConfig.setRunOnHoliday(undefined, true);
+      config = ScheduleConfig.setRunOnHolidayEve(config, true);
+
+      const schedule = {
+        name: "Complete Schedule with Config",
+        prayer: Prayer.Shacharit,
+        time: "08:00:00",
+        minyan: savedMinyan,
+        startAt: startDate,
+        endAt: endDate,
+        weekDays: weekDays,
+        config: config,
+      };
+
+      const savedSchedule = await addSchedule(schedule);
+      const fetchedSchedule = await getScheduleById(savedSchedule.id);
+
+      expect(fetchedSchedule).toBeDefined();
+      expect(fetchedSchedule?.startAt).toEqual("2024-01-01");
+      expect(fetchedSchedule?.endAt).toEqual("2025-01-01");
+      expect(fetchedSchedule?.weekDays).toEqual(["2", "4", "6"]);
+      expect(fetchedSchedule?.config).toBe(3);
+      expect(ScheduleConfig.shouldRunOnHoliday(fetchedSchedule?.config)).toBe(true);
+      expect(ScheduleConfig.shouldRunOnHolidayEve(fetchedSchedule?.config)).toBe(true);
+    });
   });
 });
