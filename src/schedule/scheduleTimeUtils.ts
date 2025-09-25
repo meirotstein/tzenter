@@ -289,7 +289,9 @@ export function isScheduleActiveOnDate(
 
   // Check start date
   if (schedule.startAt) {
-    const startDate = DateTime.fromJSDate(schedule.startAt);
+    const startDate = typeof schedule.startAt === 'string' 
+      ? DateTime.fromISO(schedule.startAt)
+      : DateTime.fromJSDate(schedule.startAt);
     if (checkDate < startDate) {
       return false;
     }
@@ -297,7 +299,9 @@ export function isScheduleActiveOnDate(
 
   // Check end date
   if (schedule.endAt) {
-    const endDate = DateTime.fromJSDate(schedule.endAt);
+    const endDate = typeof schedule.endAt === 'string'
+      ? DateTime.fromISO(schedule.endAt)
+      : DateTime.fromJSDate(schedule.endAt);
     if (checkDate > endDate) {
       return false;
     }

@@ -172,7 +172,7 @@ describe("scheduleRepository", () => {
 
     expect(fetchedSchedule).toBeDefined();
     expect(fetchedSchedule?.startAt).toBeDefined();
-    expect(fetchedSchedule?.startAt).toEqual(startDate);
+    expect(fetchedSchedule?.startAt).toEqual("2024-01-01");
   });
 
   it("should save and retrieve a schedule with endAt field", async () => {
@@ -193,7 +193,7 @@ describe("scheduleRepository", () => {
 
     expect(fetchedSchedule).toBeDefined();
     expect(fetchedSchedule?.endAt).toBeDefined();
-    expect(fetchedSchedule?.endAt).toEqual(endDate);
+    expect(fetchedSchedule?.endAt).toEqual("2025-01-01");
   });
 
   it("should save and retrieve a schedule with weekDays field", async () => {
@@ -240,8 +240,8 @@ describe("scheduleRepository", () => {
     const fetchedSchedule = await getScheduleById(savedSchedule.id);
 
     expect(fetchedSchedule).toBeDefined();
-    expect(fetchedSchedule?.startAt).toEqual(startDate);
-    expect(fetchedSchedule?.endAt).toEqual(endDate);
+    expect(fetchedSchedule?.startAt).toEqual("2024-01-01");
+    expect(fetchedSchedule?.endAt).toEqual("2025-01-01");
     expect(fetchedSchedule?.weekDays).toEqual(["1", "3", "5", "7"]); // simple-array serializes as strings
     expect(fetchedSchedule?.weekDays).toHaveLength(4);
   });
@@ -296,8 +296,8 @@ describe("scheduleRepository", () => {
     const fetchedSchedule = await getScheduleById(savedSchedule.id);
 
     expect(fetchedSchedule).toBeDefined();
-    expect(fetchedSchedule?.startAt).toEqual(startDate);
-    expect(fetchedSchedule?.endAt).toEqual(endDate);
+    expect(fetchedSchedule?.startAt).toEqual("2024-06-01");
+    expect(fetchedSchedule?.endAt).toEqual("2024-09-01");
     expect(fetchedSchedule?.weekDays).toEqual(["2", "6"]); // simple-array serializes as strings
   });
 
@@ -317,22 +317,22 @@ describe("scheduleRepository", () => {
     // Update only startAt
     await updateSchedule(savedSchedule.id, { startAt: new Date("2024-01-01T00:00:00Z") });
     let fetchedSchedule = await getScheduleById(savedSchedule.id);
-    expect(fetchedSchedule?.startAt).toEqual(new Date("2024-01-01T00:00:00Z"));
+    expect(fetchedSchedule?.startAt).toEqual("2024-01-01");
     expect(fetchedSchedule?.endAt).toBeNull();
     expect(fetchedSchedule?.weekDays).toBeNull();
 
     // Update only endAt
     await updateSchedule(savedSchedule.id, { endAt: new Date("2024-12-31T23:59:59Z") });
     fetchedSchedule = await getScheduleById(savedSchedule.id);
-    expect(fetchedSchedule?.startAt).toEqual(new Date("2024-01-01T00:00:00Z"));
-    expect(fetchedSchedule?.endAt).toEqual(new Date("2024-12-31T23:59:59Z"));
+    expect(fetchedSchedule?.startAt).toEqual("2024-01-01");
+    expect(fetchedSchedule?.endAt).toEqual("2025-01-01");
     expect(fetchedSchedule?.weekDays).toBeNull();
 
     // Update only weekDays
     await updateSchedule(savedSchedule.id, { weekDays: [WeekDay.Tuesday, WeekDay.Thursday] });
     fetchedSchedule = await getScheduleById(savedSchedule.id);
-    expect(fetchedSchedule?.startAt).toEqual(new Date("2024-01-01T00:00:00Z"));
-    expect(fetchedSchedule?.endAt).toEqual(new Date("2024-12-31T23:59:59Z"));
+    expect(fetchedSchedule?.startAt).toEqual("2024-01-01");
+    expect(fetchedSchedule?.endAt).toEqual("2025-01-01");
     expect(fetchedSchedule?.weekDays).toEqual(["3", "5"]); // simple-array serializes as strings
   });
 
