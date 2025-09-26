@@ -4,7 +4,6 @@ import { getScheduleById } from "../../../src/datasource/scheduleRepository";
 import { ScheduleHandler } from "../../../src/handlers/ScheduleHandler";
 import { getUpcomingSchedules } from "../../../src/schedule/getUpcomingSchedule";
 import { invokeSchedule } from "../../../src/schedule/invokeSchedule";
-import { shouldSkipScheduleToday } from "../../../src/utils";
 
 jest.mock("../../../src/clients/WhatsappClient");
 jest.mock("../../../src/datasource/scheduleRepository");
@@ -24,7 +23,6 @@ describe("ScheduleHandler", () => {
 
   it("should return status 'done' when no schedules are found", async () => {
     (getUpcomingSchedules as jest.Mock).mockResolvedValue([]);
-    (shouldSkipScheduleToday as jest.Mock).mockResolvedValue(false);
 
     const response = await scheduleHandler.handle({});
 
@@ -63,13 +61,12 @@ describe("ScheduleHandler", () => {
     expect(response).toEqual({ status: "done", schedules: 2 });
   });
 
-  it("should not search for schedule if schedules should be skipped today", async () => {
+  it("should search for schedules and return empty result when no schedules are found", async () => {
     (getUpcomingSchedules as jest.Mock).mockResolvedValue([]);
-    (shouldSkipScheduleToday as jest.Mock).mockResolvedValue(true);
 
     const response = await scheduleHandler.handle({});
 
-    expect(getUpcomingSchedules).not.toHaveBeenCalled();
-    expect(response).toEqual({ status: "skipped" });
+    expect(getUpcomingSchedules).toHaveBeenCalledWith(46);
+    expect(response).toEqual({ status: "done", schedules: 0 });
   });
 });
