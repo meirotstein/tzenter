@@ -63,6 +63,7 @@ export interface IntegrationTestData {
     weekDays?: WeekDay[];
     startAt?: Date;
     endAt?: Date;
+    config?: number;
   }>;
   users?: Array<{
     phoneNum: number;
@@ -104,6 +105,7 @@ export async function initMocksAndData(data: IntegrationTestData) {
       schedule.roundToNearestFiveMinutes =
         scheduleData.roundToNearestFiveMinutes;
       schedule.weeklyDetermineByDay = scheduleData.weeklyDetermineByDay;
+      schedule.config = scheduleData.config;
       const minyan = await getMinyanByName(scheduleData.minyanName);
       schedule.minyan = minyan!;
 
@@ -347,13 +349,70 @@ export async function expectTzenterTemplateMessageSequence(
     template: string;
     params?: Record<string, any>;
     replyIds?: Array<string>;
-  }>
+  }>,
+  forceOrder: boolean = true
 ) {
-  msgs.forEach(({ phoneNum, template, params, replyIds }, idx) => {
-    let lastCallArgs =
-      sendTemplateMessageMock.mock.calls[
-        sendTemplateMessageMock.mock.calls.length - msgs.length + idx
-      ];
-    expect(lastCallArgs).toEqual([phoneNum, template, params, replyIds]);
-  });
+  if (forceOrder) {
+    // Original behavior - check messages in exact order
+    msgs.forEach(({ phoneNum, template, params, replyIds }, idx) => {
+      let lastCallArgs =
+        sendTemplateMessageMock.mock.calls[
+          sendTemplateMessageMock.mock.calls.length - msgs.length + idx
+        ];
+      expect(lastCallArgs).toEqual([phoneNum, template, params, replyIds]);
+    });
+  } else {
+    // Order-insensitive matching - check that all messages exist in any order
+    const totalCalls = sendTemplateMessageMock.mock.calls.length;
+    const expectedCount = msgs.length;
+    const actualCalls = sendTemplateMessageMock.mock.calls.slice(
+      totalCalls - expectedCount
+    );
+
+    // Create a copy of expected messages to track which ones we've matched
+    const remainingMsgs = [...msgs];
+
+    // For each actual call, try to find a matching expected message
+    for (const actualCall of actualCalls) {
+      const [actualPhoneNum, actualTemplate, actualParams, actualReplyIds] =
+        actualCall;
+
+      // Find a matching expected message
+      const matchingIndex = remainingMsgs.findIndex(
+        (expectedMsg) =>
+          expectedMsg.phoneNum === actualPhoneNum &&
+          expectedMsg.template === actualTemplate &&
+          JSON.stringify(expectedMsg.params) === JSON.stringify(actualParams) &&
+          JSON.stringify(expectedMsg.replyIds) ===
+            JSON.stringify(actualReplyIds)
+      );
+
+      if (matchingIndex === -1) {
+        // No matching message found
+        expect(actualCall).toEqual([
+          actualPhoneNum,
+          actualTemplate,
+          actualParams,
+          actualReplyIds,
+        ]);
+        throw new Error(
+          `No matching expected message found for call: ${JSON.stringify(
+            actualCall
+          )}`
+        );
+      }
+
+      // Remove the matched message from remaining messages
+      remainingMsgs.splice(matchingIndex, 1);
+    }
+
+    // Check that all expected messages were matched
+    if (remainingMsgs.length > 0) {
+      throw new Error(
+        `Some expected messages were not found: ${JSON.stringify(
+          remainingMsgs
+        )}`
+      );
+    }
+  }
 }

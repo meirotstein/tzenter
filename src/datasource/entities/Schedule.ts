@@ -83,5 +83,9 @@ export class Schedule {
   @Column({ type: "simple-array", nullable: true })
   weekDays?: WeekDay[];
 
+  // Configuration flags using bitmap (Optional)
+  @Column({ type: "integer", nullable: true })
+  config?: number;
+
   // TODO: refer schedule type: one-time (= initiatedByUserId), recurring
 }

@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 import { Schedule } from "../datasource/entities/Schedule";
 import { getAllSchedules } from "../datasource/scheduleRepository";
+import { shouldSkipSchedule } from "../utils";
 import {
   DayTimes,
   calculateDayTimes,
@@ -26,9 +27,19 @@ export async function getUpcomingSchedules(
   // Get schedules with enabled flag
   const schedules = await getAllSchedules(enabled);
 
-  // Calculate actual times for each schedule and filter those within range
-  const result = schedules
-    .filter((schedule) => isScheduleRelevantForDate(schedule, from))
+  // Filter schedules by relevance and configuration
+  const filteredSchedules = [];
+  for (const schedule of schedules) {
+    if (isScheduleRelevantForDate(schedule, from)) {
+      const shouldSkip = await shouldSkipSchedule(schedule, from);
+      if (!shouldSkip) {
+        filteredSchedules.push(schedule);
+      }
+    }
+  }
+
+  // Calculate actual times for each filtered schedule and filter those within range
+  const result = filteredSchedules
     .map((schedule) => {
       // Calculate dayTimes if the schedule is relative and has coordinates
       let dayTimes: DayTimes | undefined = undefined;

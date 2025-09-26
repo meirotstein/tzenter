@@ -3,7 +3,6 @@ import { Context, ContextType } from "../conversation/context";
 import { ScheduleContext } from "../conversation/types";
 import { getUpcomingSchedules } from "../schedule/getUpcomingSchedule";
 import { invokeSchedule } from "../schedule/invokeSchedule";
-import { shouldSkipScheduleToday } from "../utils";
 import { HandlerRequest, HandlerResponse, IHandler } from "./types";
 
 const oneHourInMinutes = 60;
@@ -23,11 +22,6 @@ export class ScheduleHandler implements IHandler {
     console.log("schedule messages started", {
       time: today.toISOString(),
     });
-
-    if (await shouldSkipScheduleToday(today)) {
-      console.log("skipping schedule today");
-      return { status: "skipped" };
-    }
 
     const nextSchedules = await getUpcomingSchedules(schedulePeriod);
 
