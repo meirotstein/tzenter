@@ -8,9 +8,14 @@ import { Context, ContextType } from "../../../src/conversation/context";
 import { ScheduleStatus } from "../../../src/conversation/types";
 import { Schedule } from "../../../src/datasource/entities/Schedule";
 import { getMinyanById } from "../../../src/datasource/minyansRepository";
+import {
+  getScheduleInvocationOccurrence,
+  saveScheduleOccurrence,
+} from "../../../src/datasource/scheduleOccurrencesRepository";
 import { invokeSchedule } from "../../../src/schedule/invokeSchedule";
 
 jest.mock("../../../src/datasource/minyansRepository");
+jest.mock("../../../src/datasource/scheduleOccurrencesRepository");
 jest.mock("../../../src/conversation/context");
 jest.mock("../../../src/conversation", () => ({
   getInitScheduleStep: jest.fn(),
@@ -26,6 +31,7 @@ describe("invokeSchedule", () => {
   beforeEach(() => {
     waClient = {} as WhatsappClient;
     schedule = {
+      id: 1,
       minyan: {
         id: 1,
         users: [{ id: 1, phone: "1234567890" }],
@@ -43,6 +49,9 @@ describe("invokeSchedule", () => {
       id: 1,
       users: [{ id: 1, phone: "1234567890" }],
     });
+
+    (getScheduleInvocationOccurrence as jest.Mock).mockResolvedValue(null);
+    (saveScheduleOccurrence as jest.Mock).mockResolvedValue({});
 
     (getInitScheduleStep as jest.Mock).mockReturnValue({
       id: "initStep",
@@ -145,5 +154,51 @@ describe("invokeSchedule", () => {
       updatedAt: expect.any(Number),
       status: ScheduleStatus.initiated,
     });
+  });
+
+  it("should save schedule occurrence when invoked with context", async () => {
+    jest.spyOn(scheduleContext, "get").mockResolvedValue({
+      approved: { "1234567890": 1, "9876543210": 2 },
+      rejected: ["1111111111"],
+      snoozed: ["2222222222", "3333333333"],
+      status: ScheduleStatus.processing,
+    });
+
+    await invokeSchedule(waClient, schedule, scheduleContext);
+
+    expect(getScheduleInvocationOccurrence).toHaveBeenCalled();
+    expect(saveScheduleOccurrence).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scheduleId: 1,
+        approved: 3,
+        rejected: 1,
+        snoozed: 2,
+        invocationId: expect.any(String),
+      })
+    );
+  });
+
+  it("should not save schedule occurrence if values have not changed", async () => {
+    const mockInvocationId = "test-invocation-id";
+    jest.spyOn(scheduleContext, "get").mockResolvedValue({
+      invocationId: mockInvocationId,
+      approved: { "1234567890": 1 },
+      rejected: [],
+      snoozed: [],
+      status: ScheduleStatus.processing,
+    });
+
+    (getScheduleInvocationOccurrence as jest.Mock).mockResolvedValue({
+      scheduleId: 1,
+      approved: 1,
+      rejected: 0,
+      snoozed: 0,
+      invocationId: mockInvocationId,
+    });
+
+    await invokeSchedule(waClient, schedule, scheduleContext);
+
+    expect(getScheduleInvocationOccurrence).toHaveBeenCalled();
+    expect(saveScheduleOccurrence).not.toHaveBeenCalled();
   });
 });

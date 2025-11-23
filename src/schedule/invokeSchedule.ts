@@ -16,11 +16,7 @@ import {
   saveScheduleOccurrence,
 } from "../datasource/scheduleOccurrencesRepository";
 import { WATextMessage } from "../handlers/types";
-import {
-  calculatedAttendees,
-  isAtLeastMinApart,
-  isLastExecution,
-} from "../utils";
+import { calculatedAttendees, isAtLeastMinApart } from "../utils";
 
 export async function invokeSchedule(
   waClient: WhatsappClient,
@@ -104,19 +100,41 @@ export async function invokeSchedule(
     startedAt: scheduleContext?.startedAt || Date.now(),
   });
 
-  const scheduleHour = scheduleContext?.calculatedHour || schedule.time;
+  // Update schedule occurrence if anything has changed
+  if (scheduleContext) {
+    const currentApproved = calculatedAttendees(scheduleContext);
+    const currentRejected = (scheduleContext.rejected || []).length;
+    const currentSnoozed = (scheduleContext.snoozed || []).length;
 
-  if (isLastExecution(scheduleHour, scheduleInterval) && scheduleContext) {
-    const scheduleOccurrence =
-      (await getScheduleInvocationOccurrence(invocationId)) ||
-      new ScheduleOccurrence();
-    scheduleOccurrence.datetime = new Date();
-    scheduleOccurrence.scheduleId = schedule.id;
-    scheduleOccurrence.approved = calculatedAttendees(scheduleContext);
-    scheduleOccurrence.rejected = (scheduleContext.rejected || []).length;
-    scheduleOccurrence.snoozed = (scheduleContext.snoozed || []).length;
-    scheduleOccurrence.invocationId = invocationId;
-    await saveScheduleOccurrence(scheduleOccurrence);
+    const existingOccurrence = await getScheduleInvocationOccurrence(
+      invocationId
+    );
+
+    // Only update if values have changed or if this is a new occurrence
+    const hasChanged =
+      !existingOccurrence ||
+      existingOccurrence.approved !== currentApproved ||
+      existingOccurrence.rejected !== currentRejected ||
+      existingOccurrence.snoozed !== currentSnoozed;
+
+    if (hasChanged) {
+      const scheduleOccurrence = existingOccurrence || new ScheduleOccurrence();
+      scheduleOccurrence.datetime = new Date();
+      scheduleOccurrence.scheduleId = schedule.id;
+      scheduleOccurrence.approved = currentApproved;
+      scheduleOccurrence.rejected = currentRejected;
+      scheduleOccurrence.snoozed = currentSnoozed;
+      scheduleOccurrence.invocationId = invocationId;
+      await saveScheduleOccurrence(scheduleOccurrence);
+
+      console.log("schedule occurrence updated", {
+        scheduleId: schedule.id,
+        invocationId,
+        approved: currentApproved,
+        rejected: currentRejected,
+        snoozed: currentSnoozed,
+      });
+    }
   }
 
   return status;
