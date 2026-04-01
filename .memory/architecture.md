@@ -98,10 +98,17 @@ Key behaviors:
   - `@hebcal/core`
   - `kosher-zmanim`
 
+## Testing boundaries
+
+- unit tests validate isolated logic, handlers, repositories, and verifiers
+- integration tests call `onMessage` and `onSchedule` directly
+- integration tests keep the real conversation/schedule/data stack but replace
+  WhatsApp, Redis, request verification, and Hebcal with mocks
+- the integration harness lives in `tests/integration/integrationUtils.ts`
+
 ## Risks and quirks worth remembering
 
 - Context keys expire after 1 hour, so stale flows self-clear over time
 - `verifyWhatsappMessage` reads raw request body for HMAC validation
 - Production datasource currently relies on schema synchronization
 - Relative scheduling depends on minyan coordinates being present
-- The repository field in `package.json` still points to `vercel/examples.git`

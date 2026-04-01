@@ -48,6 +48,18 @@
 - Test database is SQLite in-memory
 - Many integration tests exercise end-to-end message flows
 - Unit tests cover repositories, handlers, scheduling, utils, and verifiers
+- Detailed testing notes live in `.memory/testing.md`
+
+## Test architecture summary
+
+- Unit tests are a mix of fully mocked tests and narrow tests over the real
+  in-memory TypeORM datasource
+- Integration tests call the real API entrypoints and run handlers,
+  conversation logic, scheduling, and repositories together
+- Integration tests mock the external boundaries: WhatsApp client, KV client,
+  verifiers, and Hebcal lookups
+- Integration tests are therefore deterministic application-flow tests rather
+  than full external end-to-end tests
 
 ## Good entry points when making changes
 
