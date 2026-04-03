@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { shouldSkipScheduleToday } from "../utils";
 
-module.exports = async (req: VercelRequest, res: VercelResponse) => {
+const onDate = async (req: VercelRequest, res: VercelResponse) => {
   try {
     const shouldSkip = await shouldSkipScheduleToday(new Date());
     console.log({ shouldSkip });
@@ -11,3 +11,5 @@ module.exports = async (req: VercelRequest, res: VercelResponse) => {
     return res.status(500).send(e.message);
   }
 };
+
+export default onDate;
