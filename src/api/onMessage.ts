@@ -27,5 +27,4 @@ const onMessage = async (req: VercelRequest, res: VercelResponse) => {
   }
 };
 
-module.exports = onMessage;
 export default onMessage;

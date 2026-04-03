@@ -5,9 +5,10 @@ import {
   ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
+  Relation,
 } from "typeorm";
-import { User } from "./User";
-import { Schedule } from "./Schedule";
+import type { User } from "./User";
+import type { Schedule } from "./Schedule";
 
 @Entity("minyans")
 export class Minyan {
@@ -20,12 +21,16 @@ export class Minyan {
   @Column()
   city!: string;
 
-  @ManyToMany((type) => User, (user) => user.minyans)
+  @ManyToMany("User", "minyans")
   @JoinTable()
-  users?: User[];
+  users?: Relation<User[]>;
 
-  @OneToMany(() => Schedule, (schedule) => schedule.minyan)
-  schedules?: Schedule[]; // Optional: a minyan may have no schedules
+  @ManyToMany("User", "adminMinyans")
+  @JoinTable({ name: "minyan_admin_users" })
+  admins?: Relation<User[]>;
+
+  @OneToMany("Schedule", "minyan")
+  schedules?: Relation<Schedule[]>; // Optional: a minyan may have no schedules
 
   @Column({ type: "boolean", nullable: true, default: false })
   hidden?: boolean;

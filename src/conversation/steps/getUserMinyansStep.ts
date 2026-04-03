@@ -26,12 +26,16 @@ export const getUserMinyansStep: Step = {
         minyanId: number;
         minyanIndex: number;
         name: string;
+        isAdmin: boolean;
       }> = [];
-      user.minyans.forEach((minyan, index) => {
+      user!.minyans!.forEach((minyan, index) => {
         userMinyans.push({
           minyanId: minyan.id,
           minyanIndex: index + 1,
           name: minyan.name,
+          isAdmin:
+            user!.adminMinyans?.some((adminMinyan) => adminMinyan.id === minyan.id) ||
+            false,
         });
       });
       await waClient.sendTextMessage(

@@ -23,6 +23,17 @@ export async function getScheduleById(id: number): Promise<Schedule | null> {
   });
 }
 
+export async function getSchedulesByMinyanId(
+  minyanId: number
+): Promise<Schedule[]> {
+  const repo = await getRepo();
+  return repo.find({
+    where: { minyan: { id: minyanId } },
+    relations: ["minyan"],
+    order: { id: "ASC" },
+  });
+}
+
 export async function updateSchedule(
   id: number,
   updatedData: Partial<Schedule>
@@ -45,4 +56,9 @@ export async function getAllSchedules(enabled: boolean = true): Promise<Schedule
     relations: ["minyan"],
     order: { id: "ASC" }
   });
+}
+
+export async function deleteSchedule(id: number): Promise<void> {
+  const repo = await getRepo();
+  await repo.delete({ id });
 }

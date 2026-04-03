@@ -28,5 +28,4 @@ const onSchedule = async (req: VercelRequest, res: VercelResponse) => {
   }
 };
 
-module.exports = onSchedule;
 export default onSchedule;
