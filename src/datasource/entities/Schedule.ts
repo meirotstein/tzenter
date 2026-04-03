@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
   Relation,
 } from "typeorm";
-import type { Minyan } from "./Minyan";
+import { Minyan } from "./Minyan";
 
 export enum Prayer {
   Shacharit = 1,
@@ -40,7 +40,7 @@ export class Schedule {
   @Column()
   name!: string;
 
-  @ManyToOne("Minyan", "schedules", {
+  @ManyToOne((type) => Minyan, (minyan) => minyan.schedules, {
     nullable: false,
     onDelete: "CASCADE",
   })
