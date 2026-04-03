@@ -4,7 +4,7 @@ import {
   ComponentTypesEnum,
   LanguagesEnum,
   ParametersTypesEnum,
-} from "whatsapp/build/types/enums";
+} from "../external/whatsapp/types/enums";
 
 export class WhatsappClient {
   wa: WhatsApp;

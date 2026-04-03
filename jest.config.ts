@@ -18,7 +18,12 @@ const config: Config = {
       },
     ],
     // Transform hebcal lib ESM modules to CommonJS
-    "^.+/node_modules/@hebcal/.+\\.js$": "babel-jest",
+    "^.+/node_modules/@hebcal/.+\\.js$": [
+      "babel-jest",
+      {
+        presets: [["@babel/preset-env", { targets: { node: "current" } }]],
+      },
+    ],
   },
   transformIgnorePatterns: [
     "/node_modules/(?!(@hebcal/core|@hebcal/hdate|@hebcal/noaa)/)",

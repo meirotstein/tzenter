@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import manageMinyan from "../../src/api/manage-minyan";
 import manageMinyanDetails from "../../src/api/manage-minyan-details";
 import manageMinyanSchedules from "../../src/api/manage-minyan-schedules";
 import { messages } from "../../src/conversation/messageTemplates";
 import { getMinyanByName } from "../../src/datasource/minyansRepository";
+import { getManageMinyanPageProps } from "../../src/manage/pageProps";
 import {
   expectTzenterTextMessage,
   getLastTextMessage,
@@ -95,43 +95,42 @@ describe("admin manage minyan flow", () => {
       setHeader: jest.fn((name: string, value: string) => {
         headers[name] = value;
       }),
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn(),
     } as unknown as VercelResponse;
 
-    await manageMinyan(
-      {
-        method: "GET",
-        query: { t: manageToken },
-        headers: {},
-      } as unknown as VercelRequest,
-      redirectRes
-    );
+    const redirectResult = await getManageMinyanPageProps({
+      query: { t: manageToken },
+      headers: {},
+      res: redirectRes,
+    });
 
-    expect(redirectRes.status).toHaveBeenCalledWith(302);
-    expect(headers["Location"]).toBe("/manage-minyan");
+    expect(redirectResult).toEqual({
+      redirect: {
+        destination: "/manage-minyan",
+        permanent: false,
+      },
+    });
     expect(headers["Set-Cookie"]).toContain("tzenter_manage_session=");
     sessionCookie = headers["Set-Cookie"].split(";")[0];
 
-    const pageRes = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn(),
-    } as unknown as VercelResponse;
-
-    await manageMinyan(
-      {
-        method: "GET",
-        query: {},
+    const pageResult = await getManageMinyanPageProps({
+      query: {},
+      req: {
         headers: {
           cookie: sessionCookie,
         },
-      } as unknown as VercelRequest,
-      pageRes
-    );
+      },
+    });
 
-    expect(pageRes.status).toHaveBeenCalledWith(200);
-    expect(pageRes.send).toHaveBeenCalledWith(
-      expect.stringContaining("בית הכנסת המרכזי")
+    expect(pageResult).toEqual(
+      expect.objectContaining({
+        props: expect.objectContaining({
+          expired: false,
+          displayName: user.name,
+          initialMinyan: expect.objectContaining({
+            name: "בית הכנסת המרכזי",
+          }),
+        }),
+      })
     );
   });
 
@@ -141,20 +140,20 @@ describe("admin manage minyan flow", () => {
       setHeader: jest.fn((name: string, value: string) => {
         headers[name] = value;
       }),
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn(),
     } as unknown as VercelResponse;
 
-    await manageMinyan(
-      {
-        method: "GET",
-        query: { t: manageToken },
-        headers: {},
-      } as unknown as VercelRequest,
-      redirectRes
-    );
+    const redirectResult = await getManageMinyanPageProps({
+      query: { t: manageToken },
+      headers: {},
+      res: redirectRes,
+    });
 
-    expect(redirectRes.status).toHaveBeenCalledWith(302);
+    expect(redirectResult).toEqual({
+      redirect: {
+        destination: "/manage-minyan",
+        permanent: false,
+      },
+    });
     expect(headers["Set-Cookie"]).toContain(sessionCookie);
   });
 

@@ -1,5 +1,11 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Minyan } from "./Minyan";
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  Relation,
+} from "typeorm";
+import type { Minyan } from "./Minyan";
 
 @Entity("users")
 export class User {
@@ -12,9 +18,9 @@ export class User {
   @Column()
   name!: string;
 
-  @ManyToMany((type) => Minyan, (minyan) => minyan.users)
-  minyans?: Minyan[];
+  @ManyToMany("Minyan", "users")
+  minyans?: Relation<Minyan[]>;
 
-  @ManyToMany((type) => Minyan, (minyan) => minyan.admins)
-  adminMinyans?: Minyan[];
+  @ManyToMany("Minyan", "admins")
+  adminMinyans?: Relation<Minyan[]>;
 }
