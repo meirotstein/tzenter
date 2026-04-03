@@ -4,7 +4,8 @@ import getRawBody from "raw-body";
 import { UnauthorizedMessageError } from "./errors";
 
 export async function verifyWhatsappMessage(
-  req: IncomingMessage & { headers: any }
+  req: IncomingMessage & { headers: any },
+  rawBody?: string
 ) {
   if (req.method !== "POST") {
     return;
@@ -22,8 +23,8 @@ export async function verifyWhatsappMessage(
 
   const hmac = crypto.createHmac("sha256", WA_APP_SECRET);
 
-  const rawBody = (await getRawBody(req)).toString("utf8");
-  hmac.update(rawBody);
+  const payload = rawBody ?? (await getRawBody(req)).toString("utf8");
+  hmac.update(payload);
 
   const expectedSignature = `sha256=${hmac.digest("hex")}`;
   if (signature !== expectedSignature) {
