@@ -8,6 +8,7 @@ import { Context } from "../context";
 import { getMessage, messages } from "../messageTemplates";
 import { Step, UserContext } from "../types";
 import { registerMinyanStep } from "./registerMinyanStep";
+import { sendManageMinyanLinkStep } from "./sendManageMinyanLinkStep";
 import { unregisterMinyanStep } from "./unregisterMinyanStep";
 
 export const selectedMinyanStep: Step = {
@@ -32,9 +33,14 @@ export const selectedMinyanStep: Step = {
     const isUserRegistered = !!user?.minyans?.find(
       (userMinyan) => userMinyan.id === selectedMinyanId
     );
+    const isUserAdmin = !!user?.adminMinyans?.find(
+      (adminMinyan) => adminMinyan.id === selectedMinyanId
+    );
 
     const responseText = getMessage(
-      isUserRegistered
+      isUserRegistered && isUserAdmin
+        ? messages.ADMIN_MINYAN_ACTIONS
+        : isUserRegistered
         ? messages.UNREGISTER_MINYAN_CONFIRMATION
         : messages.REGISTER_MINYAN_CONFIRMATION,
       { minyanName: minyan.name }
@@ -43,6 +49,7 @@ export const selectedMinyanStep: Step = {
     await context.update({
       context: {
         isUserRegistered,
+        isUserAdmin,
         isUserExists: !!user,
         userId: user?.id,
         minyanId: minyan.id,
@@ -50,8 +57,19 @@ export const selectedMinyanStep: Step = {
     });
   },
   getNextStepId: async (userText: string, context: Context<UserContext>) => {
+    const selectedContext = (await context.get())?.context;
+    if (selectedContext?.isUserRegistered && selectedContext?.isUserAdmin) {
+      if (userText === "1") {
+        return unregisterMinyanStep.id;
+      }
+      if (userText === "2") {
+        return sendManageMinyanLinkStep.id;
+      }
+      throw new UnexpectedUserInputError(userText);
+    }
+
     if (yesWords.includes(userText.toLowerCase())) {
-      const isUserRegistered = (await context.get())?.context?.isUserRegistered;
+      const isUserRegistered = selectedContext?.isUserRegistered;
       if (isUserRegistered) {
         return unregisterMinyanStep.id;
       }

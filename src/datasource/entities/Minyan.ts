@@ -24,6 +24,10 @@ export class Minyan {
   @JoinTable()
   users?: User[];
 
+  @ManyToMany((type) => User, (user) => user.adminMinyans)
+  @JoinTable({ name: "minyan_admin_users" })
+  admins?: User[];
+
   @OneToMany(() => Schedule, (schedule) => schedule.minyan)
   schedules?: Schedule[]; // Optional: a minyan may have no schedules
 

@@ -8,6 +8,7 @@ import {
 } from "../../../src/datasource/minyansRepository";
 import {
   assignUserToAMinyan,
+  assignAdminToMinyan,
   getRepo as getUserRepo,
   saveUser,
 } from "../../../src/datasource/usersRepository";
@@ -62,6 +63,13 @@ describe("minyansRepository", () => {
     expect(_minyan).toBeDefined();
     expect(_minyan!.users).toHaveLength(1);
     expect(_minyan!.users![0].id).toBe(user.id);
+  });
+
+  it("should get minyan admins", async () => {
+    await assignAdminToMinyan(user.id, minyan.id);
+    const foundMinyan = await getMinyanById(minyan.id);
+    expect(foundMinyan?.admins).toHaveLength(1);
+    expect(foundMinyan?.admins?.[0].id).toBe(user.id);
   });
 
   it("should get a minyan by id", async () => {

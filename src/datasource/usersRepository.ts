@@ -16,12 +16,18 @@ export async function saveUser(user: User): Promise<User> {
 
 export async function getUserByPhone(phone: string): Promise<User | null> {
   const repo = await getRepo();
-  return repo.findOne({ where: { phone }, relations: ["minyans"] });
+  return repo.findOne({
+    where: { phone },
+    relations: ["minyans", "adminMinyans"],
+  });
 }
 
 export async function getUserById(userId: number): Promise<User | null> {
   const repo = await getRepo();
-  return repo.findOne({ where: { id: userId }, relations: ["minyans"] });
+  return repo.findOne({
+    where: { id: userId },
+    relations: ["minyans", "adminMinyans"],
+  });
 }
 
 export async function assignUserToAMinyan(
@@ -80,6 +86,53 @@ export async function removeUserFromMinyan(
   if (minyan.users) {
     // Filter out the user from the minyan's users
     minyan.users = minyan.users.filter((u: User) => u.id !== user.id);
+  }
+
+  const minyanWithAdmins = await minyanRepo.findOne({
+    where: { id: minyanId },
+    relations: ["admins"],
+  });
+
+  if (minyanWithAdmins?.admins) {
+    minyanWithAdmins.admins = minyanWithAdmins.admins.filter(
+      (admin: User) => admin.id !== user.id
+    );
+    await minyanRepo.save(minyanWithAdmins);
+  }
+
+  await minyanRepo.save(minyan);
+}
+
+export async function assignAdminToMinyan(
+  userId: number,
+  minyanId: number
+): Promise<void> {
+  await assignUserToAMinyan(userId, minyanId);
+
+  const ds = await initDataSource();
+  const userRepo = ds.getRepository(User);
+  const minyanRepo = ds.getRepository(Minyan);
+
+  const user = await userRepo.findOne({ where: { id: userId } });
+  if (!user) throw new UserNotFoundError(userId);
+
+  const minyan = await minyanRepo.findOne({
+    where: { id: minyanId },
+    relations: ["admins"],
+  });
+  if (!minyan) throw new MinyanNotFoundError(minyanId);
+
+  minyan.admins = minyan.admins || [];
+  if (!minyan.admins.some((admin: User) => admin.id === user.id)) {
+    minyan.admins.push(user);
     await minyanRepo.save(minyan);
   }
+}
+
+export async function isUserAdminOfMinyan(
+  userId: number,
+  minyanId: number
+): Promise<boolean> {
+  const user = await getUserById(userId);
+  return !!user?.adminMinyans?.some((minyan) => minyan.id === minyanId);
 }

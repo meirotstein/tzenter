@@ -31,6 +31,7 @@ import {
 } from "../../src/datasource/scheduleRepository";
 import {
   assignUserToAMinyan,
+  assignAdminToMinyan,
   getRepo as getUsersRepo,
   saveUser,
 } from "../../src/datasource/usersRepository";
@@ -69,6 +70,7 @@ export interface IntegrationTestData {
     phoneNum: number;
     name: string;
     minyanNames: Array<string>;
+    adminMinyanNames?: Array<string>;
   }>;
 }
 
@@ -125,6 +127,13 @@ export async function initMocksAndData(data: IntegrationTestData) {
         for (const minyanName of userData.minyanNames) {
           const minyan = await getMinyanByName(minyanName);
           await assignUserToAMinyan(user.id, minyan!.id);
+        }
+      }
+
+      if (userData.adminMinyanNames?.length) {
+        for (const minyanName of userData.adminMinyanNames) {
+          const minyan = await getMinyanByName(minyanName);
+          await assignAdminToMinyan(user.id, minyan!.id);
         }
       }
     }
@@ -299,6 +308,12 @@ export async function expectTzenterTextMessage(
 
 export function getCurrentTextMessageCallsCount() {
   return sendTextMessageMock.mock.calls.length;
+}
+
+export function getLastTextMessage(): string | undefined {
+  const lastCallArgs =
+    sendTextMessageMock.mock.calls[sendTextMessageMock.mock.calls.length - 1];
+  return lastCallArgs?.[1];
 }
 
 export function getCurrentTemplateMessageCallsCount() {

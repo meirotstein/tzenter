@@ -38,10 +38,21 @@ export const messages = {
 
 <% for (let i = 0; i < userMinyans.length; i++) { 
      const minyan = userMinyans[i]; 
-%>\<%= minyan.minyanIndex + '. ' + minyan.name %>
+%>\<%= minyan.minyanIndex + '. ' + minyan.name + (minyan.isAdmin ? ' [מנהל]' : '') %>
 <% } %>
 
  כדי להמשיך יש להזין את מספר המניין הרצוי`,
+  ADMIN_MINYAN_ACTIONS: `בחרת במניין <%= minyanName %>
+
+מה ברצונך לעשות?
+
+1. הסר הרשמה
+2. ממשק ניהול`,
+  MANAGE_MINYAN_LINK: `לכניסה לממשק הניהול של <%= minyanName %>, לחץ על הקישור:
+
+<%= manageUrl %>
+
+הקישור יהיה זמין למספר דקות בלבד.`,
   APPROVAL_ACCEPTED: `קיבלתי, תודה על העדכון!
 אני אמשיך לעדכן אותך לגבי המניין.
 

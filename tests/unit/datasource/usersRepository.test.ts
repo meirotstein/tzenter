@@ -6,9 +6,11 @@ import {
 } from "../../../src/datasource/minyansRepository";
 import {
   assignUserToAMinyan,
+  assignAdminToMinyan,
   getUserById,
   getUserByPhone,
   getRepo as getUserRepo,
+  isUserAdminOfMinyan,
   removeUserFromMinyan,
   saveUser,
 } from "../../../src/datasource/usersRepository";
@@ -100,6 +102,26 @@ describe("usersRepository", () => {
     _user = await getUserByPhone("123456789");
     expect(_user).toBeDefined();
     expect(_user!.minyans).toHaveLength(0);
+  });
+
+  it("should assign an admin to a minyan and keep membership in sync", async () => {
+    await assignAdminToMinyan(user.id, minyan.id);
+
+    const foundUser = await getUserById(user.id);
+    expect(foundUser?.minyans?.map((item) => item.id)).toContain(minyan.id);
+    expect(foundUser?.adminMinyans?.map((item) => item.id)).toContain(minyan.id);
+    expect(await isUserAdminOfMinyan(user.id, minyan.id)).toBe(true);
+  });
+
+  it("should remove admin relation when removing a user from a minyan", async () => {
+    await assignAdminToMinyan(user.id, minyan.id);
+
+    await removeUserFromMinyan(user.id, minyan.id);
+
+    const foundUser = await getUserById(user.id);
+    expect(foundUser?.minyans).toHaveLength(0);
+    expect(foundUser?.adminMinyans).toHaveLength(0);
+    expect(await isUserAdminOfMinyan(user.id, minyan.id)).toBe(false);
   });
 
   it("should throw an error if user not found when removing from a minyan", async () => {

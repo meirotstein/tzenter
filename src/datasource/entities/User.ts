@@ -14,4 +14,7 @@ export class User {
 
   @ManyToMany((type) => Minyan, (minyan) => minyan.users)
   minyans?: Minyan[];
+
+  @ManyToMany((type) => Minyan, (minyan) => minyan.admins)
+  adminMinyans?: Minyan[];
 }

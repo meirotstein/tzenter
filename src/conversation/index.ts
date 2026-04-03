@@ -20,6 +20,7 @@ import { processScheduleStep } from "./steps/processScheduleStep";
 import { registerMinyanStep } from "./steps/registerMinyanStep";
 import { rejectScheduleStep } from "./steps/rejectScheduleStep";
 import { selectedMinyanStep } from "./steps/selectedMinyanStep";
+import { sendManageMinyanLinkStep } from "./steps/sendManageMinyanLinkStep";
 import { sendScheduleStatusStep } from "./steps/sendScheduleStatusStep";
 import { snoozeScheduleStep } from "./steps/snoozeScheduleStep";
 import { unregisterMinyanStep } from "./steps/unregisterMinyanStep";
@@ -57,6 +58,7 @@ const steps = {
   [getUserMinyansStep.id]: getUserMinyansStep,
   [listAvailableMinyansStep.id]: listAvailableMinyansStep,
   [selectedMinyanStep.id]: selectedMinyanStep,
+  [sendManageMinyanLinkStep.id]: sendManageMinyanLinkStep,
   [registerMinyanStep.id]: registerMinyanStep,
   [unregisterMinyanStep.id]: unregisterMinyanStep,
   [initScheduleStep.id]: initScheduleStep,
