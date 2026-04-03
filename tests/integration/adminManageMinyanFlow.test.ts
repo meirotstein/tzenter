@@ -76,13 +76,13 @@ describe("admin manage minyan flow", () => {
 
 מה ברצונך לעשות?
 
-1. הסר הרשמה
-2. ממשק ניהול`
+1. ממשק ניהול
+2. הסר הרשמה`
     );
   });
 
   it("sends a temporary management url and exchanges it for a session", async () => {
-    await userMessage(user.phoneNum, user.name, "2");
+    await userMessage(user.phoneNum, user.name, "1");
     const manageLinkMessage = getLastTextMessage() || "";
     expect(manageLinkMessage).toContain("/manage-minyan?t=");
 

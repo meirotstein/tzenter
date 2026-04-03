@@ -1,6 +1,11 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
+const CONFIG_FLAG_OPTIONS = [
+  { value: 1, label: "להפעיל גם בחג" },
+  { value: 2, label: "להפעיל גם בערב חג" },
+];
+
 const PRAYER_OPTIONS = [
   { value: 1, label: "שחרית" },
   { value: 2, label: "מנחה" },
@@ -51,10 +56,7 @@ function normalizeSchedule(schedule) {
         : String(schedule.weeklyDetermineByDay),
     startAt: schedule.startAt ? String(schedule.startAt).slice(0, 10) : "",
     endAt: schedule.endAt ? String(schedule.endAt).slice(0, 10) : "",
-    config:
-      schedule.config === null || schedule.config === undefined
-        ? ""
-        : String(schedule.config),
+    config: Number(schedule.config || 0),
     enabled: schedule.enabled !== false,
     roundToNearestFiveMinutes: !!schedule.roundToNearestFiveMinutes,
     weekDays: Array.isArray(schedule.weekDays)
@@ -72,11 +74,22 @@ function buildSchedulePayload(schedule) {
     weeklyDetermineByDay: schedule.weeklyDetermineByDay,
     startAt: schedule.startAt || "",
     endAt: schedule.endAt || "",
-    config: schedule.config,
+    config: Number(schedule.config || 0),
     enabled: schedule.enabled,
     roundToNearestFiveMinutes: schedule.roundToNearestFiveMinutes,
     weekDays: schedule.weekDays,
   };
+}
+
+function hasConfigFlag(config, flag) {
+  return (Number(config || 0) & flag) === flag;
+}
+
+function toggleConfigFlag(config, flag) {
+  const currentConfig = Number(config || 0);
+  return hasConfigFlag(currentConfig, flag)
+    ? currentConfig & ~flag
+    : currentConfig | flag;
 }
 
 function StatusBanner({ status, onDismiss }) {
@@ -86,7 +99,7 @@ function StatusBanner({ status, onDismiss }) {
 
   return (
     <div
-      className={`relative z-10 mx-auto mb-4 flex max-w-7xl items-center justify-between gap-3 rounded-2xl border px-4 py-3 ${
+      className={`relative z-10 mx-auto mb-4 flex max-w-7xl items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-right ${
         status.type === "error"
           ? "border-red-200 bg-red-50 text-red-800"
           : "border-emerald-200 bg-emerald-50 text-emerald-800"
@@ -107,7 +120,7 @@ function StatusBanner({ status, onDismiss }) {
 function ExpiredView() {
   return (
     <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_top,rgba(234,88,12,0.18),transparent_30%),linear-gradient(180deg,#f7ecdd_0%,#ebd8bc_100%)] px-6 py-10">
-      <section className="w-full max-w-xl rounded-[28px] border border-[rgba(146,64,14,0.14)] bg-[rgba(255,251,245,0.92)] px-8 py-10 text-center shadow-[0_24px_48px_rgba(124,45,18,0.12)]">
+      <section className="w-full max-w-xl rounded-[28px] border border-[rgba(146,64,14,0.14)] bg-[rgba(255,251,245,0.92)] px-8 py-10 text-center shadow-[0_24px_48px_rgba(124,45,18,0.12)]" dir="rtl">
         <div className="mx-auto h-[112px] w-[112px] overflow-hidden rounded-[28px] border border-[rgba(146,64,14,0.18)] bg-[rgba(255,255,255,0.82)] p-2 shadow-[0_18px_30px_rgba(154,52,18,0.18)]">
           <Image
             src="/tzenter-logo.webp"
@@ -140,7 +153,7 @@ function ScheduleEditor({
   isNew,
 }) {
   return (
-    <section className="rounded-[24px] border border-[rgba(144,82,22,0.14)] bg-[rgba(255,251,245,0.92)] p-6 shadow-[0_18px_42px_rgba(83,30,8,0.08)]">
+    <section className="rounded-[24px] border border-[rgba(144,82,22,0.14)] bg-[rgba(255,251,245,0.92)] p-6 text-right shadow-[0_18px_42px_rgba(83,30,8,0.08)]">
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
           <p className="mb-2 text-[13px] font-extrabold uppercase tracking-[0.08em] text-[#9a3412]">
@@ -253,15 +266,34 @@ function ScheduleEditor({
           />
         </label>
 
-        <label className="grid gap-2 font-bold text-[#4a3423]">
-          <span>קונפיג</span>
-          <input
-            className="w-full rounded-2xl border border-[rgba(120,53,15,0.14)] bg-[rgba(255,255,255,0.84)] px-4 py-3 text-[#1f2937] outline-none transition focus:border-[rgba(234,88,12,0.55)] focus:shadow-[0_0_0_3px_rgba(251,146,60,0.18)]"
-            type="number"
-            value={schedule.config}
-            onChange={(event) => onChange({ ...schedule, config: event.target.value })}
-          />
-        </label>
+      </div>
+
+      <div className="mt-5">
+        <span className="mb-3 block font-bold text-[#4a3423]">התנהגות בימים מיוחדים</span>
+        <div className="flex flex-wrap gap-2.5">
+          {CONFIG_FLAG_OPTIONS.map((option) => {
+            const checked = hasConfigFlag(schedule.config, option.value);
+            return (
+              <label
+                key={option.value}
+                className="inline-flex items-center gap-2 rounded-full bg-[rgba(255,237,213,0.82)] px-3.5 py-2.5 font-bold text-[#7c2d12]"
+              >
+                <input
+                  type="checkbox"
+                  className="m-0"
+                  checked={checked}
+                  onChange={() =>
+                    onChange({
+                      ...schedule,
+                      config: toggleConfigFlag(schedule.config, option.value),
+                    })
+                  }
+                />
+                <span>{option.label}</span>
+              </label>
+            );
+          })}
+        </div>
       </div>
 
       <div className="mt-5">
@@ -497,7 +529,10 @@ export default function ManageMinyanConsole({
   }
 
   return (
-    <main className="relative min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(216,119,6,0.22),transparent_32%),linear-gradient(180deg,#f8f0e5_0%,#efe0c8_100%)] px-4 py-8 md:px-6 md:py-12">
+    <main
+      dir="rtl"
+      className="relative min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(216,119,6,0.22),transparent_32%),linear-gradient(180deg,#f8f0e5_0%,#efe0c8_100%)] px-4 py-8 text-right md:px-6 md:py-12"
+    >
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] bg-[size:28px_28px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.65),transparent_88%)]" />
       <section className="relative z-10 mx-auto mb-6 flex max-w-7xl flex-col gap-5 rounded-[28px] border border-[rgba(157,90,25,0.18)] bg-[rgba(255,252,247,0.82)] p-6 shadow-[0_24px_50px_rgba(120,53,15,0.12)] backdrop-blur-[10px] lg:flex-row lg:items-start lg:justify-between">
         <div className="h-[92px] w-[92px] shrink-0 overflow-hidden rounded-[26px] border border-[rgba(157,90,25,0.18)] bg-[rgba(255,255,255,0.82)] p-2 shadow-[0_18px_32px_rgba(154,52,18,0.16)]">
@@ -533,19 +568,19 @@ export default function ManageMinyanConsole({
       <StatusBanner status={status} onDismiss={() => setStatus(null)} />
 
       <section className="relative z-10 mx-auto mb-6 grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="rounded-[24px] border border-[rgba(144,82,22,0.14)] bg-[rgba(255,251,245,0.92)] p-6 shadow-[0_18px_42px_rgba(83,30,8,0.08)]">
+        <div className="rounded-[24px] border border-[rgba(144,82,22,0.14)] bg-[rgba(255,251,245,0.92)] p-6 text-right shadow-[0_18px_42px_rgba(83,30,8,0.08)]">
           <span className="mb-2 block text-[13px] font-extrabold uppercase tracking-[0.08em] text-[#9a3412]">
             מניין פעיל
           </span>
           <strong>{minyan.name}</strong>
         </div>
-        <div className="rounded-[24px] border border-[rgba(144,82,22,0.14)] bg-[rgba(255,251,245,0.92)] p-6 shadow-[0_18px_42px_rgba(83,30,8,0.08)]">
+        <div className="rounded-[24px] border border-[rgba(144,82,22,0.14)] bg-[rgba(255,251,245,0.92)] p-6 text-right shadow-[0_18px_42px_rgba(83,30,8,0.08)]">
           <span className="mb-2 block text-[13px] font-extrabold uppercase tracking-[0.08em] text-[#9a3412]">
             מנהל מחובר
           </span>
           <strong>{displayName}</strong>
         </div>
-        <div className="rounded-[24px] border border-[rgba(144,82,22,0.14)] bg-[rgba(255,251,245,0.92)] p-6 shadow-[0_18px_42px_rgba(83,30,8,0.08)]">
+        <div className="rounded-[24px] border border-[rgba(144,82,22,0.14)] bg-[rgba(255,251,245,0.92)] p-6 text-right shadow-[0_18px_42px_rgba(83,30,8,0.08)]">
           <span className="mb-2 block text-[13px] font-extrabold uppercase tracking-[0.08em] text-[#9a3412]">
             תזמונים
           </span>
@@ -631,7 +666,7 @@ export default function ManageMinyanConsole({
         </section>
 
         <section className="grid gap-4">
-          <section className="rounded-[24px] border border-[rgba(144,82,22,0.14)] bg-[rgba(255,251,245,0.92)] p-6 shadow-[0_18px_42px_rgba(83,30,8,0.08)]">
+          <section className="rounded-[24px] border border-[rgba(144,82,22,0.14)] bg-[rgba(255,251,245,0.92)] p-6 text-right shadow-[0_18px_42px_rgba(83,30,8,0.08)]">
             <p className="mb-2 text-[13px] font-extrabold uppercase tracking-[0.08em] text-[#9a3412]">
               תזמונים
             </p>

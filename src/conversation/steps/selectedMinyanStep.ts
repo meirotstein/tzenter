@@ -60,10 +60,10 @@ export const selectedMinyanStep: Step = {
     const selectedContext = (await context.get())?.context;
     if (selectedContext?.isUserRegistered && selectedContext?.isUserAdmin) {
       if (userText === "1") {
-        return unregisterMinyanStep.id;
+        return sendManageMinyanLinkStep.id;
       }
       if (userText === "2") {
-        return sendManageMinyanLinkStep.id;
+        return unregisterMinyanStep.id;
       }
       throw new UnexpectedUserInputError(userText);
     }
