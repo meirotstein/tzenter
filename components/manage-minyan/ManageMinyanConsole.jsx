@@ -42,6 +42,36 @@ const WEEKLY_REFERENCE_OPTIONS = [
   { value: 7, label: "שבת" },
 ];
 
+function getTimeFieldCopy(relative) {
+  switch (relative) {
+    case "BEFORE_SUNSET":
+      return {
+        label: "זמן לפני שקיעה",
+        hint: "הזמן שיופחת משעת השקיעה.",
+      };
+    case "AFTER_SUNSET":
+      return {
+        label: "זמן אחרי שקיעה",
+        hint: "הזמן שייווסף לשעת השקיעה.",
+      };
+    case "BEFORE_SUNRISE":
+      return {
+        label: "זמן לפני זריחה",
+        hint: "הזמן שיופחת משעת הזריחה.",
+      };
+    case "AFTER_SUNRISE":
+      return {
+        label: "זמן אחרי זריחה",
+        hint: "הזמן שייווסף לשעת הזריחה.",
+      };
+    default:
+      return {
+        label: "שעת התזמון",
+        hint: "בשדה זה קובעים את השעה המדויקת של התזמון.",
+      };
+  }
+}
+
 const GOOGLE_MAPS_BASE_URL = "https://www.google.com/maps";
 const GOOGLE_MAPS_SCRIPT_ID = "tzenter-google-maps";
 const DEFAULT_MAP_CENTER = { lat: 31.778, lng: 35.235 };
@@ -241,6 +271,8 @@ function ScheduleEditor({
   deleting,
   isNew,
 }) {
+  const timeFieldCopy = getTimeFieldCopy(schedule.relative);
+
   return (
     <section className="rounded-[24px] border border-[rgba(144,82,22,0.14)] bg-[rgba(255,251,245,0.92)] p-6 text-right shadow-[0_18px_42px_rgba(83,30,8,0.08)]">
       <div className="mb-5 flex items-start justify-between gap-4">
@@ -287,13 +319,16 @@ function ScheduleEditor({
         </label>
 
         <label className="grid gap-2 font-bold text-[#4a3423]">
-          <span>שעה</span>
+          <span>{timeFieldCopy.label}</span>
           <input
             className="w-full rounded-2xl border border-[rgba(120,53,15,0.14)] bg-[rgba(255,255,255,0.84)] px-4 py-3 text-[#1f2937] outline-none transition focus:border-[rgba(234,88,12,0.55)] focus:shadow-[0_0_0_3px_rgba(251,146,60,0.18)]"
             type="time"
             value={schedule.time}
             onChange={(event) => onChange({ ...schedule, time: event.target.value })}
           />
+          <span className="text-sm leading-6 font-normal text-[#7b5c48]">
+            {timeFieldCopy.hint}
+          </span>
         </label>
 
         <label className="grid gap-2 font-bold text-[#4a3423]">
