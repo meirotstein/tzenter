@@ -17,6 +17,14 @@ function serializeMinyan(minyan: any) {
   };
 }
 
+function serializeUser(user: any) {
+  return {
+    id: user.id,
+    name: user.name,
+    phone: user.phone,
+  };
+}
+
 function serializeSchedule(schedule: any) {
   return {
     id: schedule.id,
@@ -90,6 +98,9 @@ export async function getManageMinyanPageProps(context: any) {
       expired: false,
       displayName: session.displayName,
       initialMinyan: serializeMinyan(minyan),
+      initialUsers: Array.isArray(minyan.users)
+        ? minyan.users.map(serializeUser)
+        : [],
       initialSchedules: schedules.map(serializeSchedule),
     },
   };
