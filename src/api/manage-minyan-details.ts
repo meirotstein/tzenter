@@ -23,6 +23,7 @@ const manageMinyanDetails = async (req: VercelRequest, res: VercelResponse) => {
           id: minyan.id,
           name: minyan.name,
           city: minyan.city,
+          locationName: minyan.locationName ?? null,
           latitude: minyan.latitude ?? null,
           longitude: minyan.longitude ?? null,
         },
@@ -41,5 +42,4 @@ const manageMinyanDetails = async (req: VercelRequest, res: VercelResponse) => {
   }
 };
 
-module.exports = manageMinyanDetails;
 export default manageMinyanDetails;

@@ -169,6 +169,7 @@ describe("admin manage minyan flow", () => {
         headers: { cookie: sessionCookie },
         body: {
           city: "בני ברק",
+          locationName: "בית הכנסת המרכזי, בני ברק",
           latitude: "32.083",
           longitude: "34.833",
         },
@@ -179,6 +180,7 @@ describe("admin manage minyan flow", () => {
     expect(res.status).toHaveBeenCalledWith(200);
     const updatedMinyan = await getMinyanByName("בית הכנסת המרכזי");
     expect(updatedMinyan?.city).toBe("בני ברק");
+    expect(updatedMinyan?.locationName).toBe("בית הכנסת המרכזי, בני ברק");
   });
 
   it("creates, updates, and deletes schedules through the authenticated management api", async () => {

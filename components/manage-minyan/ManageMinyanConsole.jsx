@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const CONFIG_FLAG_OPTIONS = [
   { value: 1, label: "להפעיל גם בחג" },
@@ -41,6 +41,95 @@ const WEEKLY_REFERENCE_OPTIONS = [
   { value: 6, label: "יום ו'" },
   { value: 7, label: "שבת" },
 ];
+
+const GOOGLE_MAPS_BASE_URL = "https://www.google.com/maps";
+const GOOGLE_MAPS_SCRIPT_ID = "tzenter-google-maps";
+const DEFAULT_MAP_CENTER = { lat: 31.778, lng: 35.235 };
+
+let googleMapsPromise;
+
+function loadGoogleMaps(apiKey) {
+  if (!apiKey) {
+    return Promise.reject(new Error("Google Maps API key is missing"));
+  }
+
+  if (typeof window === "undefined") {
+    return Promise.reject(new Error("Google Maps can only load in the browser"));
+  }
+
+  if (window.google?.maps?.places) {
+    return Promise.resolve(window.google);
+  }
+
+  if (googleMapsPromise) {
+    return googleMapsPromise;
+  }
+
+  googleMapsPromise = new Promise((resolve, reject) => {
+    const existing = document.getElementById(GOOGLE_MAPS_SCRIPT_ID);
+    if (existing) {
+      existing.addEventListener("load", () => resolve(window.google));
+      existing.addEventListener("error", () =>
+        reject(new Error("Failed to load Google Maps"))
+      );
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = GOOGLE_MAPS_SCRIPT_ID;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(
+      apiKey
+    )}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => resolve(window.google);
+    script.onerror = () => reject(new Error("Failed to load Google Maps"));
+    document.head.appendChild(script);
+  });
+
+  return googleMapsPromise;
+}
+
+function parseCoordinate(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function buildGoogleMapsViewUrl(minyan) {
+  if (minyan.latitude !== "" && minyan.longitude !== "") {
+    return `${GOOGLE_MAPS_BASE_URL}/search/?api=1&query=${encodeURIComponent(
+      `${minyan.latitude},${minyan.longitude}`
+    )}`;
+  }
+
+  const query = [minyan.name, minyan.city].filter(Boolean).join(" ");
+  return query
+    ? `${GOOGLE_MAPS_BASE_URL}/search/?api=1&query=${encodeURIComponent(query)}`
+    : GOOGLE_MAPS_BASE_URL;
+}
+
+function extractCityFromAddressComponents(addressComponents) {
+  if (!Array.isArray(addressComponents)) {
+    return "";
+  }
+
+  const candidateTypes = [
+    "locality",
+    "postal_town",
+    "administrative_area_level_2",
+    "sublocality_level_1",
+    "administrative_area_level_1",
+  ];
+
+  for (const type of candidateTypes) {
+    const component = addressComponents.find((item) => item.types?.includes(type));
+    if (component?.long_name) {
+      return component.long_name;
+    }
+  }
+
+  return "";
+}
 
 function normalizeSchedule(schedule) {
   return {
@@ -379,11 +468,19 @@ export default function ManageMinyanConsole({
   initialMinyan,
   initialSchedules,
 }) {
+  const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const mapContainerRef = useRef(null);
+  const searchInputRef = useRef(null);
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const autocompleteRef = useRef(null);
+  const geocoderRef = useRef(null);
   const [minyan, setMinyan] = useState(
     initialMinyan || {
       id: null,
       name: "",
       city: "",
+      locationName: "",
       latitude: "",
       longitude: "",
     }
@@ -404,6 +501,9 @@ export default function ManageMinyanConsole({
     })
   );
   const [status, setStatus] = useState(null);
+  const [placeLabel, setPlaceLabel] = useState("");
+  const [mapsReady, setMapsReady] = useState(false);
+  const [mapsError, setMapsError] = useState("");
   const [savingMinyan, setSavingMinyan] = useState(false);
   const [busyScheduleId, setBusyScheduleId] = useState(null);
   const [deletingScheduleId, setDeletingScheduleId] = useState(null);
@@ -414,6 +514,156 @@ export default function ManageMinyanConsole({
     }
     return `ממשק ניהול עבור ${minyan.name}`;
   }, [minyan]);
+
+  useEffect(() => {
+    if (!googleMapsApiKey) {
+      setMapsError("חסר מפתח Google Maps להצגת המפה.");
+      return;
+    }
+
+    let cancelled = false;
+
+    loadGoogleMaps(googleMapsApiKey)
+      .then(() => {
+        if (!cancelled) {
+          setMapsReady(true);
+          setMapsError("");
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setMapsError(error.message || "לא הצלחתי לטעון את Google Maps.");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [googleMapsApiKey]);
+
+  useEffect(() => {
+    if (!mapsReady || !window.google || !mapContainerRef.current) {
+      return;
+    }
+
+    const lat = parseCoordinate(minyan.latitude);
+    const lng = parseCoordinate(minyan.longitude);
+    const center =
+      lat !== null && lng !== null ? { lat, lng } : DEFAULT_MAP_CENTER;
+
+    if (!mapRef.current) {
+      mapRef.current = new window.google.maps.Map(mapContainerRef.current, {
+        center,
+        zoom: lat !== null && lng !== null ? 16 : 12,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        gestureHandling: "greedy",
+      });
+    } else {
+      mapRef.current.setCenter(center);
+      mapRef.current.setZoom(lat !== null && lng !== null ? 16 : 12);
+    }
+
+    if (!markerRef.current) {
+      markerRef.current = new window.google.maps.Marker({
+        map: mapRef.current,
+        position: center,
+        draggable: true,
+      });
+
+      markerRef.current.addListener("dragend", async (event) => {
+        const nextLat = event.latLng?.lat();
+        const nextLng = event.latLng?.lng();
+        if (nextLat == null || nextLng == null) {
+          return;
+        }
+
+        setMinyan((current) => ({
+          ...current,
+          latitude: nextLat.toFixed(6),
+          longitude: nextLng.toFixed(6),
+        }));
+
+        try {
+          if (!geocoderRef.current) {
+            geocoderRef.current = new window.google.maps.Geocoder();
+          }
+
+          const response = await geocoderRef.current.geocode({
+            location: { lat: nextLat, lng: nextLng },
+          });
+          const result = response.results?.[0];
+          const city = extractCityFromAddressComponents(result?.address_components);
+
+          setPlaceLabel(result?.formatted_address || "");
+          if (city) {
+            setMinyan((current) => ({
+              ...current,
+              city,
+              locationName: result?.formatted_address || current.locationName,
+            }));
+          } else if (result?.formatted_address) {
+            setMinyan((current) => ({
+              ...current,
+              locationName: result.formatted_address,
+            }));
+          }
+        } catch {
+          setPlaceLabel("");
+        }
+      });
+    }
+
+    markerRef.current.setPosition(center);
+    markerRef.current.setMap(mapRef.current);
+  }, [mapsReady, minyan.latitude, minyan.longitude]);
+
+  useEffect(() => {
+    if (!mapsReady || !window.google || !searchInputRef.current || autocompleteRef.current) {
+      return;
+    }
+
+    autocompleteRef.current = new window.google.maps.places.Autocomplete(
+      searchInputRef.current,
+      {
+        fields: [
+          "address_components",
+          "formatted_address",
+          "geometry",
+          "name",
+        ],
+      }
+    );
+
+    autocompleteRef.current.addListener("place_changed", () => {
+      const place = autocompleteRef.current.getPlace();
+      const location = place?.geometry?.location;
+      if (!location) {
+        setStatus({
+          type: "error",
+          message: "לא הצלחתי לחלץ מיקום מהחיפוש בגוגל מפות.",
+        });
+        return;
+      }
+
+      const city = extractCityFromAddressComponents(place.address_components);
+      const locationName = place.formatted_address || place.name || "";
+
+      setPlaceLabel(locationName);
+      setMinyan((current) => ({
+        ...current,
+        city: city || current.city,
+        locationName: locationName || current.locationName,
+        latitude: location.lat().toFixed(6),
+        longitude: location.lng().toFixed(6),
+      }));
+      setStatus({
+        type: "success",
+        message: "המיקום נבחר בהצלחה מגוגל מפות.",
+      });
+    });
+  }, [mapsReady]);
 
   if (expired) {
     return <ExpiredView />;
@@ -439,6 +689,7 @@ export default function ManageMinyanConsole({
         body: JSON.stringify({
           name: minyan.name,
           city: minyan.city,
+          locationName: minyan.locationName,
           latitude: minyan.latitude,
           longitude: minyan.longitude,
         }),
@@ -448,13 +699,14 @@ export default function ManageMinyanConsole({
         id: data.minyan.id,
         name: data.minyan.name,
         city: data.minyan.city,
+        locationName: data.minyan.locationName ?? "",
         latitude: data.minyan.latitude ?? "",
         longitude: data.minyan.longitude ?? "",
       });
       setStatus({ type: "success", message: "פרטי המניין נשמרו בהצלחה." });
     } catch (error) {
       setStatus({ type: "error", message: error.message });
-    } finally {
+      } finally {
       setSavingMinyan(false);
     }
   }
@@ -622,36 +874,79 @@ export default function ManageMinyanConsole({
                 }
               />
             </label>
-            <label className="grid gap-2 font-bold text-[#4a3423]">
-              <span>קו רוחב</span>
+
+          </div>
+
+          <div className="mt-5 rounded-[22px] border border-[rgba(144,82,22,0.14)] bg-[rgba(255,247,237,0.9)] p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="m-0 font-bold text-[#4a3423]">מיקום בגוגל מפות</p>
+                <p className="mt-1 text-sm leading-7 text-[#6b4d37]">
+                  חפש מקום, בחר אותו על המפה, או גרור את הסמן. אשמור למניין את
+                  העיר והקואורדינטות.
+                </p>
+              </div>
+              <a
+                href={buildGoogleMapsViewUrl(minyan)}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center rounded-full bg-[rgba(255,255,255,0.82)] px-4 py-2 font-bold text-[#9a3412] shadow-[inset_0_0_0_1px_rgba(154,52,18,0.18)] transition hover:-translate-y-0.5"
+              >
+                פתח בגוגל מפות
+              </a>
+            </div>
+
+            <label className="mt-4 grid gap-2 font-bold text-[#4a3423]">
+              <span>חיפוש מקום בגוגל מפות</span>
               <input
-                className="w-full rounded-2xl border border-[rgba(120,53,15,0.14)] bg-[rgba(255,255,255,0.84)] px-4 py-3 text-[#1f2937] outline-none transition focus:border-[rgba(234,88,12,0.55)] focus:shadow-[0_0_0_3px_rgba(251,146,60,0.18)]"
-                type="number"
-                step="0.000001"
-                value={minyan.latitude}
+                ref={searchInputRef}
+                className="w-full rounded-2xl border border-[rgba(120,53,15,0.14)] bg-white px-4 py-3 text-left text-[#1f2937] outline-none transition focus:border-[rgba(234,88,12,0.55)] focus:shadow-[0_0_0_3px_rgba(251,146,60,0.18)]"
+                dir="ltr"
+                placeholder="Search Google Maps"
+              />
+            </label>
+
+            {placeLabel ? (
+              <div className="mt-4 rounded-2xl bg-[rgba(255,255,255,0.82)] px-4 py-3 text-sm text-[#4a3423]">
+                <strong className="block text-[#2d160a]">מיקום שנבחר</strong>
+                <span>{placeLabel}</span>
+              </div>
+            ) : null}
+
+            <label className="mt-4 grid gap-2 font-bold text-[#4a3423]">
+              <span>שם המיקום</span>
+              <input
+                className="w-full rounded-2xl border border-[rgba(120,53,15,0.14)] bg-white px-4 py-3 text-[#1f2937] outline-none transition focus:border-[rgba(234,88,12,0.55)] focus:shadow-[0_0_0_3px_rgba(251,146,60,0.18)]"
+                value={minyan.locationName || ""}
                 onChange={(event) =>
                   setMinyan((current) => ({
                     ...current,
-                    latitude: event.target.value,
+                    locationName: event.target.value,
                   }))
                 }
               />
             </label>
-            <label className="grid gap-2 font-bold text-[#4a3423]">
-              <span>קו אורך</span>
-              <input
-                className="w-full rounded-2xl border border-[rgba(120,53,15,0.14)] bg-[rgba(255,255,255,0.84)] px-4 py-3 text-[#1f2937] outline-none transition focus:border-[rgba(234,88,12,0.55)] focus:shadow-[0_0_0_3px_rgba(251,146,60,0.18)]"
-                type="number"
-                step="0.000001"
-                value={minyan.longitude}
-                onChange={(event) =>
-                  setMinyan((current) => ({
-                    ...current,
-                    longitude: event.target.value,
-                  }))
-                }
-              />
-            </label>
+
+            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="rounded-2xl bg-[rgba(255,255,255,0.82)] px-4 py-3 text-sm text-[#4a3423]">
+                <strong className="block text-[#2d160a]">קו רוחב</strong>
+                <span dir="ltr">{minyan.latitude || "לא הוגדר"}</span>
+              </div>
+              <div className="rounded-2xl bg-[rgba(255,255,255,0.82)] px-4 py-3 text-sm text-[#4a3423]">
+                <strong className="block text-[#2d160a]">קו אורך</strong>
+                <span dir="ltr">{minyan.longitude || "לא הוגדר"}</span>
+              </div>
+            </div>
+
+            {mapsError ? (
+              <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {mapsError}
+              </div>
+            ) : (
+              <div className="mt-4 overflow-hidden rounded-[22px] border border-[rgba(120,53,15,0.14)] bg-white">
+                <div ref={mapContainerRef} className="h-[340px] w-full" />
+              </div>
+            )}
           </div>
 
           <div className="mt-5 flex flex-wrap gap-3">

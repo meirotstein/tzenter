@@ -11,6 +11,7 @@ function serializeMinyan(minyan: any) {
     id: minyan.id,
     name: minyan.name,
     city: minyan.city,
+    locationName: minyan.locationName ?? "",
     latitude: minyan.latitude ?? "",
     longitude: minyan.longitude ?? "",
   };

@@ -21,6 +21,9 @@ export class Minyan {
   @Column()
   city!: string;
 
+  @Column({ nullable: true })
+  locationName?: string;
+
   @ManyToMany((type) => User, (user) => user.minyans)
   @JoinTable()
   users?: Relation<User[]>;

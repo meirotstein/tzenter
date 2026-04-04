@@ -108,6 +108,10 @@ export function parseMinyanUpdateInput(body: RawBody): Partial<Minyan> {
     payload.city = parseRequiredTrimmedString(body.city, "city");
   }
 
+  if (body.locationName !== undefined) {
+    payload.locationName = parseOptionalTrimmedString(body.locationName);
+  }
+
   if (body.latitude !== undefined) {
     payload.latitude = parseOptionalNumber(body.latitude, "latitude") as any;
   }
