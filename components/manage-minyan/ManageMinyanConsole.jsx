@@ -538,6 +538,7 @@ export default function ManageMinyanConsole({
     })
   );
   const [status, setStatus] = useState(null);
+  const [usersExpanded, setUsersExpanded] = useState(false);
   const [placeLabel, setPlaceLabel] = useState("");
   const [mapsReady, setMapsReady] = useState(false);
   const [mapsError, setMapsError] = useState("");
@@ -1003,35 +1004,50 @@ export default function ManageMinyanConsole({
           </div>
 
           <div className="mt-8 border-t border-[rgba(144,82,22,0.12)] pt-6">
-            <p className="mb-2 text-[13px] font-extrabold uppercase tracking-[0.08em] text-[#9a3412]">
-              משתמשים רשומים
-            </p>
-            <h3 className="m-0 text-2xl font-bold text-[#2d160a]">
-              צפייה בלבד
-            </h3>
-            <p className="mt-3 text-sm leading-7 text-[#6b4d37]">
-              רשימת המשתמשים הרשומים כרגע למניין.
-            </p>
+            <button
+              type="button"
+              className="flex w-full items-center justify-between gap-4 rounded-[22px] bg-[rgba(255,247,237,0.9)] px-4 py-4 text-right shadow-[inset_0_0_0_1px_rgba(154,52,18,0.08)] transition hover:-translate-y-0.5"
+              onClick={() => setUsersExpanded((current) => !current)}
+            >
+              <div>
+                <p className="mb-2 text-[13px] font-extrabold uppercase tracking-[0.08em] text-[#9a3412]">
+                  משתמשים רשומים
+                </p>
+                <h3 className="m-0 text-2xl font-bold text-[#2d160a]">
+                  צפייה בלבד
+                </h3>
+                <p className="mt-2 text-sm leading-7 text-[#6b4d37]">
+                  {users.length
+                    ? `${users.length} משתמשים רשומים כרגע למניין`
+                    : "אין כרגע משתמשים רשומים למניין זה."}
+                </p>
+              </div>
+              <span className="text-2xl font-bold text-[#9a3412]">
+                {usersExpanded ? "−" : "+"}
+              </span>
+            </button>
 
-            {users.length ? (
-              <div className="mt-4 grid gap-3">
-                {users.map((user) => (
-                  <div
-                    key={user.id}
-                    className="rounded-2xl bg-[rgba(255,255,255,0.82)] px-4 py-3 shadow-[inset_0_0_0_1px_rgba(154,52,18,0.08)]"
-                  >
-                    <strong className="block text-[#2d160a]">{user.name}</strong>
-                    <span dir="ltr" className="mt-1 block text-sm text-[#6b4d37]">
-                      {user.phone}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="mt-4 rounded-2xl bg-[rgba(255,255,255,0.82)] px-4 py-3 text-sm text-[#6b4d37]">
-                אין כרגע משתמשים רשומים למניין זה.
-              </div>
-            )}
+            {usersExpanded ? (
+              users.length ? (
+                <div className="mt-4 grid gap-3">
+                  {users.map((user) => (
+                    <div
+                      key={user.id}
+                      className="rounded-2xl bg-[rgba(255,255,255,0.82)] px-4 py-3 shadow-[inset_0_0_0_1px_rgba(154,52,18,0.08)]"
+                    >
+                      <strong className="block text-[#2d160a]">{user.name}</strong>
+                      <span dir="ltr" className="mt-1 block text-sm text-[#6b4d37]">
+                        {user.phone}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-4 rounded-2xl bg-[rgba(255,255,255,0.82)] px-4 py-3 text-sm text-[#6b4d37]">
+                  אין כרגע משתמשים רשומים למניין זה.
+                </div>
+              )
+            ) : null}
           </div>
         </section>
 
