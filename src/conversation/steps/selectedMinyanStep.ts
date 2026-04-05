@@ -1,8 +1,14 @@
+import { DateTime } from "luxon";
 import { WhatsappClient } from "../../clients/WhatsappClient";
 import { getMinyanById } from "../../datasource/minyansRepository";
 import { getUserByPhone } from "../../datasource/usersRepository";
 import { UnexpectedUserInputError } from "../../errors";
 import { WATextMessage } from "../../handlers/types";
+import {
+  getNextMinyanSchedule,
+  NextMinyanSchedule,
+} from "../../schedule/getNextMinyanSchedule";
+import { prayerHebName } from "../../utils";
 import { noWords, yesWords } from "../consts";
 import { Context } from "../context";
 import { getMessage, messages } from "../messageTemplates";
@@ -11,6 +17,30 @@ import { registerMinyanStep } from "./registerMinyanStep";
 import { sendManageMinyanLinkStep } from "./sendManageMinyanLinkStep";
 import { unregisterMinyanStep } from "./unregisterMinyanStep";
 
+export function formatNextMinyanScheduleText(
+  nextSchedule: NextMinyanSchedule | undefined,
+  from: Date = new Date(),
+  timezone: string = "Asia/Jerusalem"
+): string {
+  if (!nextSchedule) {
+    return "אין תזמונים עתידיים";
+  }
+
+  const now = DateTime.fromJSDate(from).setZone(timezone);
+  const calculatedTime = nextSchedule.calculatedTime.setZone(timezone);
+
+  let dayLabel = calculatedTime.toFormat("d/M/yyyy");
+  if (calculatedTime.hasSame(now, "day")) {
+    dayLabel = "היום";
+  } else if (calculatedTime.hasSame(now.plus({ days: 1 }), "day")) {
+    dayLabel = "מחר";
+  }
+
+  return `${dayLabel} בשעה ${calculatedTime.toFormat("HH:mm")} - תפילת ${prayerHebName(
+    nextSchedule.schedule.prayer
+  )}`;
+}
+
 export const selectedMinyanStep: Step = {
   id: "selectedMinyanStep",
   action: async (
@@ -18,7 +48,7 @@ export const selectedMinyanStep: Step = {
     waClient: WhatsappClient,
     message: WATextMessage,
     context: Context<UserContext>
-  ) => {
+  ): Promise<void> => {
     const selectedMinyanId = (await context.get())?.context?.selectedMinyanId;
     if (!selectedMinyanId) {
       throw new Error("selectedMinyan is not defined in context");
@@ -36,6 +66,8 @@ export const selectedMinyanStep: Step = {
     const isUserAdmin = !!user?.adminMinyans?.find(
       (adminMinyan) => adminMinyan.id === selectedMinyanId
     );
+    const nextSchedule = await getNextMinyanSchedule(minyan.id);
+    const nextScheduleText = formatNextMinyanScheduleText(nextSchedule);
 
     const responseText = getMessage(
       isUserRegistered && isUserAdmin
@@ -43,7 +75,10 @@ export const selectedMinyanStep: Step = {
         : isUserRegistered
         ? messages.UNREGISTER_MINYAN_CONFIRMATION
         : messages.REGISTER_MINYAN_CONFIRMATION,
-      { minyanName: minyan.name }
+      {
+        minyanName: minyan.name,
+        nextScheduleText,
+      }
     );
     await waClient.sendTextMessage(userNum, responseText);
     await context.update({
@@ -56,7 +91,10 @@ export const selectedMinyanStep: Step = {
       },
     });
   },
-  getNextStepId: async (userText: string, context: Context<UserContext>) => {
+  getNextStepId: async (
+    userText: string,
+    context: Context<UserContext>
+  ): Promise<string | undefined> => {
     const selectedContext = (await context.get())?.context;
     if (selectedContext?.isUserRegistered && selectedContext?.isUserAdmin) {
       if (userText === "1") {

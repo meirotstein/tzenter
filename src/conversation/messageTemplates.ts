@@ -23,8 +23,12 @@ export const messages = {
  כדי להמשיך יש להזין את מספר המניין הרצוי`,
   REGISTER_MINYAN_CONFIRMATION: `בחרת במניין <%= minyanName %>
 
+התזמון הבא: <%= nextScheduleText %>
+
 האם אתה רוצה להירשם למניין זה?`,
   UNREGISTER_MINYAN_CONFIRMATION: `בחרת במניין <%= minyanName %>
+
+התזמון הבא: <%= nextScheduleText %>
 
 אתה רשום למניין זה, האם אתה מעוניין להסיר את ההרשמה?`,
   REGISTER_MINYAN_SUCCESS: `ההרשמה למניין בוצעה בהצלחה!
@@ -43,6 +47,8 @@ export const messages = {
 
  כדי להמשיך יש להזין את מספר המניין הרצוי`,
   ADMIN_MINYAN_ACTIONS: `בחרת במניין <%= minyanName %>
+
+התזמון הבא: <%= nextScheduleText %>
 
 מה ברצונך לעשות?
 

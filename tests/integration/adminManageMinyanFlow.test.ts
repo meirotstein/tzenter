@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { Prayer } from "../../src/datasource/entities/Schedule";
 import manageMinyanDetails from "../../src/api/manage-minyan-details";
 import manageMinyanSchedules from "../../src/api/manage-minyan-schedules";
 import { messages } from "../../src/conversation/messageTemplates";
@@ -26,6 +27,7 @@ let manageToken = "";
 describe("admin manage minyan flow", () => {
   beforeAll(async () => {
     process.env.APP_BASE_URL = "https://tzenter.example";
+    jest.useFakeTimers().setSystemTime(new Date("2026-04-05T09:00:00+03:00"));
 
     await initMocksAndData({
       minyans: [
@@ -34,6 +36,14 @@ describe("admin manage minyan flow", () => {
           city: "ירושלים",
           latitude: 31.778,
           longitude: 35.235,
+        },
+      ],
+      schedules: [
+        {
+          name: "תפילת מנחה",
+          prayer: Prayer.Mincha,
+          time: "13:25:00",
+          minyanName: "בית הכנסת המרכזי",
         },
       ],
       users: [
@@ -49,6 +59,7 @@ describe("admin manage minyan flow", () => {
 
   afterAll(async () => {
     delete process.env.APP_BASE_URL;
+    jest.useRealTimers();
     await resetAll();
   });
 
@@ -73,6 +84,8 @@ describe("admin manage minyan flow", () => {
     await expectTzenterTextMessage(
       user.phoneNum,
       `בחרת במניין בית הכנסת המרכזי
+
+התזמון הבא: היום בשעה 13:25 - תפילת מנחה
 
 מה ברצונך לעשות?
 

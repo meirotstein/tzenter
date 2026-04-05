@@ -51,6 +51,8 @@ describe("register a minyan flow", () => {
       user.phoneNum,
       `בחרת במניין איצקוביץ
 
+התזמון הבא: אין תזמונים עתידיים
+
 האם אתה רוצה להירשם למניין זה?`
     );
   });
@@ -106,6 +108,8 @@ describe("register a minyan flow", () => {
     await expectTzenterTextMessage(
       user.phoneNum,
       `בחרת במניין איצקוביץ
+
+התזמון הבא: אין תזמונים עתידיים
 
 אתה רשום למניין זה, האם אתה מעוניין להסיר את ההרשמה?`
     );
