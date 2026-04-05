@@ -1,34 +1,23 @@
-import { Event } from "@hebcal/core";
-import { execFile } from "child_process";
-import path from "path";
+import { Event, HebrewCalendar } from "@hebcal/core";
 
 const cache: Record<string, Event[]> = {};
 
-export function getJewishEventsOnDateWrapper(date: Date): Promise<Event[]> {
-  return new Promise<Event[]>((resolve, reject) => {
-    const dateStr = date.toISOString();
-    if (cache[dateStr]) {
-      console.log("cache hit", dateStr);
-      return resolve(cache[dateStr]);
-    }
-    const scriptPath = path.join(
-      __dirname,
-      "../../../scripts/get-daily-jewish-events.mjs"
-    );
-    execFile(
-      "node",
-      [scriptPath, date.toISOString()],
-      { shell: false },
-      (error: any, stdout: any) => {
-        if (error) return reject(error);
-        try {
-          const holidays = JSON.parse(stdout);
-          cache[dateStr] = holidays;
-          resolve(holidays as Event[]);
-        } catch (e) {
-          reject(e);
-        }
-      }
-    );
-  });
+export async function getJewishEventsOnDateWrapper(
+  date: Date
+): Promise<Event[]> {
+  const dateStr = date.toISOString();
+  if (cache[dateStr]) {
+    console.log("cache hit", dateStr);
+    return cache[dateStr];
+  }
+
+  const holidays = HebrewCalendar.calendar({
+    omer: true,
+    il: true,
+    start: date,
+    end: date,
+  }) as Event[];
+
+  cache[dateStr] = holidays;
+  return holidays;
 }
