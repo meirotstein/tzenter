@@ -4,6 +4,7 @@
 
 - `npm run dev`: runs `./dev.sh`, which sets
   `NODE_TLS_REJECT_UNAUTHORIZED=0` and starts `vercel dev`
+- `npm run build`: Next production build
 - `npm test`: full Jest suite
 - `npm run unit`: unit tests only
 - `npm run integration`: integration tests only
@@ -36,11 +37,13 @@
 - `SCHEDULE_INVOCATION_INTERVAL_MIN`
 - `SCHEDULE_ALLOWED_IPS`
 - `ADMIN_ALLOWED_IPS`
+- `APP_BASE_URL`
 
 ### Misc
 
 - `DEBUG`
 - `NODE_ENV`
+- `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
 
 ## Test setup
 
@@ -68,15 +71,28 @@ If changing conversation behavior:
 - start in `src/conversation/index.ts`
 - inspect the relevant step under `src/conversation/steps`
 - check `src/conversation/messageTemplates.ts`
+- if the selected-Minyan copy changes, also check
+  `src/schedule/getNextMinyanSchedule.ts` and
+  `tests/unit/conversation/steps/selectedMinyanStep.test.ts`
 - run the closest integration flow test afterward
 
 If changing schedule timing or recurrence:
 
 - start in `src/schedule/getUpcomingSchedule.ts`
+- inspect `src/schedule/getNextMinyanSchedule.ts` if Minyan-selection copy is
+  affected
 - inspect `src/schedule/scheduleTimeUtils.ts`
 - verify related tests under `tests/unit/schedules`
 - also check any affected integration tests under
   `tests/integration/relativeSchedules`
+
+If changing the admin management UI:
+
+- start in `pages/manage-minyan.tsx`
+- inspect `components/manage-minyan/ManageMinyanConsole.jsx`
+- inspect `src/manage/pageProps.ts`
+- inspect the relevant `src/api/manage-minyan-*.ts` handler
+- verify `tests/integration/adminManageMinyanFlow.test.ts`
 
 If changing persistence behavior:
 
@@ -90,3 +106,7 @@ If changing persistence behavior:
 - Hebrew content is normal throughout the conversation layer and tests
 - Unsupported inbound WhatsApp message types are ignored rather than errored
 - Hook words and payload regexes can bypass normal step progression
+- Next public endpoints include `/manage-minyan`, `/api/onMessage`,
+  `/api/onSchedule`, and `/api/onDate`
+- Legacy `/onMessage`, `/onSchedule`, and `/onDate` paths are preserved via
+  Next rewrites

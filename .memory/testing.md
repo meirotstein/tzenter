@@ -20,8 +20,12 @@ Common unit-test styles in this repo:
 
 - pure/small logic checks, such as
   `tests/unit/schedules/scheduleTimeUtils.test.ts`
+- schedule-selection tests, such as
+  `tests/unit/schedules/getNextMinyanSchedule.test.ts`
 - handler tests with mocked collaborators, such as
   `tests/unit/handlers/ScheduleHandler.test.ts`
+- conversation step formatting tests, such as
+  `tests/unit/conversation/steps/selectedMinyanStep.test.ts`
 - repository tests that still use the in-memory TypeORM datasource, such as
   `tests/unit/datasource/minyansRepository.test.ts`
 - client and verifier tests with mocked network/crypto helpers
@@ -40,6 +44,7 @@ Integration tests exercise real application flows by calling the actual API
 
 - `src/api/onMessage.ts`
 - `src/api/onSchedule.ts`
+- selected management APIs directly when needed
 
 They run more of the stack together:
 
@@ -86,6 +91,9 @@ Assertion helpers:
 Examples:
 
 - registration and unregistration
+- Minyan selection now includes next-schedule copy in the user-visible prompt
+- admin Minyan flow includes management-link handoff and authenticated schedule
+  editing
 - restart hook words
 - updating attendance after approval
 - multi-minyan user choices when multiple schedules are active
@@ -133,12 +141,18 @@ If changing step transitions or bot copy:
 
 - start with the nearest integration flow test
 - treat the existing flow tests as executable conversation specs
+- if the selected-Minyan copy changes, prefer:
+  - unit coverage in `tests/unit/conversation/steps/selectedMinyanStep.test.ts`
+  - integration coverage in registration/admin Minyan flow tests
 
 If changing scheduling logic:
 
 - add or update unit tests around the calculation helper first
 - then confirm behavior through an integration flow if user-visible timing or
   notifications change
+- for next-schedule lookup, keep lookup and formatting tested separately:
+  - lookup: `tests/unit/schedules/getNextMinyanSchedule.test.ts`
+  - formatting: `tests/unit/conversation/steps/selectedMinyanStep.test.ts`
 
 If changing a repository or entity relation:
 
@@ -154,3 +168,5 @@ If changing a repository or entity relation:
   behavior; that coverage lives in unit tests
 - mocked WhatsApp and KV clients mean these tests will not catch provider API
   contract drift
+- some schedule tests can accidentally land on Jewish holidays and get filtered
+  by real holiday-skip logic, so choose test dates intentionally

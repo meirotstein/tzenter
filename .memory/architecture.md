@@ -4,8 +4,10 @@
 
 ### WhatsApp webhook
 
-1. `src/api/onMessage.ts` verifies the request signature with
-   `verifyWhatsappMessage`.
+1. Next exposes `/api/onMessage` via `pages/api/onMessage.ts`, and legacy
+   `/onMessage` is preserved via a rewrite in `next.config.mjs`.
+2. `src/api/onMessage.ts` reads the raw request body, verifies the request
+   signature with `verifyWhatsappMessage`, and then parses JSON.
 2. `HandlerFactory` chooses `MessageHandler` for `POST` or
    `VerificationHandler` for `GET`.
 3. `MessageHandler` extracts a supported text payload from the webhook body.
@@ -18,7 +20,9 @@
 
 ### Schedule execution
 
-1. `src/api/onSchedule.ts` verifies caller IPs with
+1. Next exposes `/api/onSchedule`, and legacy `/onSchedule` is preserved with a
+   rewrite.
+2. `src/api/onSchedule.ts` verifies caller IPs with
    `verifyValidScheduleExecuter`.
 2. `HandlerFactory` returns `ScheduleHandler`.
 3. `ScheduleHandler` finds upcoming schedules within a configurable window.
@@ -39,8 +43,25 @@ Useful step clusters:
 
 - onboarding/menu: `initialMenuStep`, `getUserMinyansStep`
 - membership management: `registerMinyanStep`, `unregisterMinyanStep`
+- selected-Minyan branching: `selectedMinyanStep`, `sendManageMinyanLinkStep`
 - scheduling: `initScheduleStep`, `processScheduleStep`
 - schedule actions: approve, reject, snooze, attendee updates
+
+### Selected Minyan behavior
+
+- after a user picks a Minyan, `selectedMinyanStep` now computes the next
+  future schedule for that Minyan
+- schedule lookup lives in `src/schedule/getNextMinyanSchedule.ts`
+- text formatting lives in `selectedMinyanStep` itself, not in the schedule
+  utility
+- displayed variants are:
+  - `אין תזמונים עתידיים`
+  - `היום בשעה ...`
+  - `מחר בשעה ...`
+  - `d/M/yyyy בשעה ...`
+- admins get:
+  - `1. ממשק ניהול`
+  - `2. הסר הרשמה`
 
 ## Data model
 
@@ -49,14 +70,17 @@ Useful step clusters:
 - unique phone number
 - display name
 - many-to-many relation with `Minyan`
+- separate many-to-many relation for administered `Minyan` records
 
 ### `Minyan`
 
 - unique name
 - city
+- optional location name
 - optional hidden flag
 - optional latitude/longitude for relative zmanim-based schedules
 - many-to-many users
+- many-to-many admins
 - one-to-many schedules
 
 ### `Schedule`
@@ -86,9 +110,18 @@ Key behaviors:
 
 - fixed schedules are anchored to the current date in the target timezone
 - relative schedules use sunrise/sunset from `kosher-zmanim`
+- relative schedule offsets are interpreted as:
+  - `BEFORE_*`: subtract `schedule.time`
+  - `AFTER_*`: add `schedule.time`
 - midnight wrapping is handled explicitly
 - date-range and weekday relevance are evaluated before invocation
 - upcoming schedules are selected within a start/end time window
+
+`src/schedule/getNextMinyanSchedule.ts` is a narrower helper that:
+
+- scans a single Minyan's enabled schedules over a look-ahead window
+- skips irrelevant and holiday-filtered schedules
+- returns only the next `schedule + calculatedTime`, or `undefined`
 
 ## External integrations
 
@@ -97,6 +130,24 @@ Key behaviors:
 - Jewish calendar / zmanim helpers:
   - `@hebcal/core`
   - `kosher-zmanim`
+- Google Maps in the admin UI:
+  - `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
+  - location selection/search/marker interaction happens client-side
+
+## Management console
+
+- `/manage-minyan` is a Next.js page rendered by React
+- page props are assembled in `src/manage/pageProps.ts`
+- first visit with `?t=<token>` creates or reuses a Redis-backed management
+  session and sets an HTTP-only cookie
+- the token stays usable for 1 hour as long as its linked session still exists
+- once the linked session expires, the URL shows the expired page
+- management APIs use the same session cookie for auth and actor identity
+- current management UI supports:
+  - editing Minyan details
+  - editing Minyan location with Google Maps
+  - creating/updating/deleting schedules
+  - viewing registered users read-only
 
 ## Testing boundaries
 
@@ -110,5 +161,8 @@ Key behaviors:
 
 - Context keys expire after 1 hour, so stale flows self-clear over time
 - `verifyWhatsappMessage` reads raw request body for HMAC validation
+- the Next wrapper layer under `pages/api` is required even though business
+  logic lives in `src/api`
+- Vercel must point to the repo root and use the Next.js framework preset
 - Production datasource currently relies on schema synchronization
 - Relative scheduling depends on minyan coordinates being present
